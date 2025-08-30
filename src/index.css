@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: BespokeTencil;
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Regular.otf")
+    format("opentype");
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: BespokeTencil;
+  src: url("./assets/fonts/BespokeStencil-Medium.otf") format("opentype");
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: BespokeTencil;
+  src: url("./assets/fonts/BespokeStencil-Bold.otf") format("opentype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Supreme;
+  src: url("./assets/fonts/Supreme/Supreme-Regular.otf") format("opentype");
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-heading: "BespokeTencil", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Supreme", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-orange: #ff7d00;
+  --color-brand-white: #ffecd1;
+  --color-brand-black: #11001c;
+  --color-brand-green: #15616d;
+
+  /* Light */
+
+  --color-light-bg: #f9fafb;
+  --color-light-surface: #ffffff;
+  --color-light-text: #111827;
+  --color-light-text-muted: #6b7280;
+  --color-light-border: #e5e7eb;
+
+  /* Dark */
+
+  --color-dark-bg: #11001c;
+  --color-dark-surface: #1c1a29;
+  --color-dark-text: #f3f4f6;
+  --color-dark-text-muted: #9ca3af;
+  --color-dark-border: #2e2b3a;
+}
+
+@layer base {
+  :root {
+    --background-color: var(--color-light-bg);
+    --text-color: var(--color-light-text);
+  }
+  .dark {
+    --background-color: var(--color-dark-bg);
+    --text-color: var(--color-dark-text);
+  }
+
+  html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+
+  section {
+    scroll-snap-align: center;
+    min-height: 100vh;
+    display: flex;
+    justify-items: center;
+    align-items: center;
+  }
+
+  body {
+    background-color: var(--background-color);
+    /* transition: background-color 150ms ease, color 150ms ease; */
+    color: var(--text-color);
+    font-family: var(--font-body);
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading) !important;
+    @apply font-bold;
+  }
+
+  h1 {
+    @apply text-5xl;
+  }
+  h2 {
+    @apply text-4xl;
+  }
+  h3 {
+    @apply text-3xl;
+  }
+  h4 {
+    @apply text-2xl;
+  }
+  h5 {
+    @apply text-xl;
+  }
+  h6 {
+    @apply text-lg;
+  }
+}
