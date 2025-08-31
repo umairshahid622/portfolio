@@ -1,13 +1,12 @@
 import { motion } from "motion/react";
 import ThemeToggler from "./ThemeToggler";
 import { DELAY, DURATION } from "../constants/framer-duration";
-import { user } from "../data/user";
 
 const Header = () => {
   return (
     <header
       className="
-        z-20
+        z-50
         w-full
         bg-light-bg
         dark:bg-dark-bg
@@ -20,6 +19,7 @@ const Header = () => {
           flex
           max-w-7xl
           mx-auto py-6
+          px-4
           items-center justify-between relative capitalize
         "
       >
@@ -28,7 +28,6 @@ const Header = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: DURATION, delay: DELAY }}
         >
-          {user.firstName}'s{" "}
           <span
             className="
               text-brand-orange

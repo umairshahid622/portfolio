@@ -3,31 +3,43 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
-  font-family: BespokeTencil;
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Regular.otf")
-    format("opentype");
+  font-family: "BespokeTencil";
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Regular.otf") format("opentype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: BespokeTencil;
-  src: url("./assets/fonts/BespokeStencil-Medium.otf") format("opentype");
+  font-family: "BespokeTencil";
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Medium.otf") format("opentype");
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: BespokeTencil;
-  src: url("./assets/fonts/BespokeStencil-Bold.otf") format("opentype");
+  font-family: "BespokeTencil";
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "BespokeTencil";
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Extrabold.otf") format("opentype");
+  font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
+/* Body font */
 @font-face {
-  font-family: Supreme;
+  font-family: "Supreme";
   src: url("./assets/fonts/Supreme/Supreme-Regular.otf") format("opentype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
 
 @theme {
   --font-heading: "BespokeTencil", ui-sans-serif, system-ui, sans-serif;
@@ -59,10 +71,12 @@
   :root {
     --background-color: var(--color-light-bg);
     --text-color: var(--color-light-text);
+    --paragraph-color:var(--color-light-text-muted)
   }
   .dark {
     --background-color: var(--color-dark-bg);
     --text-color: var(--color-dark-text);
+    --paragraph-color:var(--color-dark-text-muted)
   }
 
   html {
@@ -92,25 +106,28 @@
   h5,
   h6 {
     font-family: var(--font-heading) !important;
-    @apply font-bold;
   }
 
   h1 {
-    @apply text-5xl font-black;
+    @apply text-4xl md:text-7xl font-extrabold;
   }
   h2 {
-    @apply text-4xl;
+    @apply text-3xl md:text-6xl font-bold;
   }
   h3 {
-    @apply text-3xl;
+    @apply text-2xl md:text-5xl font-medium;
   }
   h4 {
-    @apply text-2xl;
+    @apply text-xl md:text-4xl;
   }
   h5 {
-    @apply text-xl;
+    @apply text-lg md:text-3xl;
   }
   h6 {
-    @apply text-lg;
+    @apply text-base md:text-2xl;
+  }
+
+  p {
+    @apply text-xl text-[var(--paragraph-color)];
   }
 }

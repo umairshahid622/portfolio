@@ -2,15 +2,21 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
 import { Suspense } from "react";
-import CanvasLoader from "../CanvasLoader";
+import CanvasLoader from "./CanvasLoader";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 function Computer() {
+  const isMobile = useIsMobile();
   const { scene } = useGLTF("./desktop_pc/scene.gltf");
   return (
     <mesh>
       <hemisphereLight intensity={3} groundColor="black" />
       <pointLight intensity={3} />
-      <primitive object={scene} scale={1} position={[0, -1, -1.5]} />
+      <primitive
+        object={scene}
+        scale={isMobile ? 0.70 : 1}
+        position={[0, -1.25, -1.1]}
+      />
     </mesh>
   );
 }

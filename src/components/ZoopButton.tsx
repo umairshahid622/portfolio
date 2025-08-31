@@ -4,13 +4,20 @@ import {
   hideTextVariants,
   showTextVariants,
   STAGGER,
-} from "../constants/zoop-button";
+} from "../constants/zoop-button-variants";
 
-const ZoopButton = ({ title }: { title: string }) => {
+const ZoopButton = ({
+  title,
+  click,
+}: {
+  title: string;
+  click?: () => void;
+}) => {
   const chars = title.split("");
   const renderChar = (ch: string) => (ch === " " ? "\u00A0" : ch);
   return (
     <motion.button
+      onClick={click}
       initial="rest"
       whileHover="hovered"
       className="
