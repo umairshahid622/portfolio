@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTheme } from "../hooks/useTheme";
 import type { ThemeItems } from "../types/theme.type";
 import { MoonIcon, SunIcon } from "./icons/Icons";
-import { AnimatePresence, motion, stagger, type Variants } from "motion/react";
-import { itemVairants, panelVariants } from "../constants/themeToggleFramerVariants";
+import { AnimatePresence, motion } from "motion/react";
+import { itemVairants, panelVariants } from "../constants/theme-toggle-framer-variants";
 
 const ThemeToggler = () => {
   const { theme, resolved } = useTheme();

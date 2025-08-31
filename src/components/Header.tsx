@@ -1,15 +1,17 @@
 import { motion } from "motion/react";
 import ThemeToggler from "./ThemeToggler";
-import { transitionDuration } from "../constants/framer_duration";
-import { user } from "../utilities/user";
+import { DELAY, DURATION } from "../constants/framer-duration";
+import { user } from "../data/user";
 
 const Header = () => {
   return (
     <header
       className="
+        z-20
         w-full
-        p-4
-        bg-transparent
+        bg-light-bg
+        dark:bg-dark-bg
+        shadow-sm
         fixed top-0 right-0
       "
     >
@@ -17,17 +19,16 @@ const Header = () => {
         className="
           flex
           max-w-7xl
-          mx-auto
-          items-center justify-between relative
-          capitalize
+          mx-auto py-6
+          items-center justify-between relative capitalize
         "
       >
         <motion.h4
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: transitionDuration }}
+          transition={{ duration: DURATION, delay: DELAY }}
         >
-          {user.firstName}'s {" "}
+          {user.firstName}'s{" "}
           <span
             className="
               text-brand-orange

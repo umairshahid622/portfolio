@@ -71,16 +71,12 @@
   }
 
   section {
-    scroll-snap-align: center;
-    min-height: 100vh;
-    display: flex;
-    justify-items: center;
-    align-items: center;
+    @apply flex flex-col items-start justify-center min-h-screen snap-center space-y-6 relative overflow-hidden;
   }
 
   body {
     background-color: var(--background-color);
-    /* transition: background-color 150ms ease, color 150ms ease; */
+    transition: color 150ms ease;
     color: var(--text-color);
     font-family: var(--font-body);
   }
@@ -100,7 +96,7 @@
   }
 
   h1 {
-    @apply text-5xl;
+    @apply text-5xl font-black;
   }
   h2 {
     @apply text-4xl;

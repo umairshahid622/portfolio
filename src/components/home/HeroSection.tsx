@@ -1,22 +1,19 @@
-import { user } from "../../utilities/user";
+// HeroSection.tsx
+import { user } from "../../data/user";
+import ComputerCanvas from "../canvas/Computer";
 import { ScrollIcon } from "../icons/Icons";
 import ZoopButton from "../ZoopButton";
 
 const HeroSection = () => {
   return (
-    <section>
-      <div className="flex relative">
-        <div className="space-y-6">
-          <p className="text-brand-orange text-2xl tracking-widest uppercase">
-            {user.firstName} {user.lastName}
-          </p>
-          <h1 className="uppercase">{user.profession}</h1>
-          <p>{user.professionDescription}</p>
-          <ZoopButton title="ContactMe" />
-          <ScrollIcon className="text-dark-bg dark:text-brand-white size-12" />
-        </div>
+    <>
+      <div className="space-y-4 relative z-10">
+        <p className="text-2xl text-brand-orange tracking-widest uppercase">{user.firstName + " " + user.lastName}</p>
+        <h1>{user.profession}</h1>
+        <ZoopButton title="Contact Me"/>
       </div>
-    </section>
+      <ComputerCanvas />
+    </>
   );
 };
 
