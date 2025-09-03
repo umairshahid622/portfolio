@@ -7,7 +7,7 @@ const Home = () => {
   const contactMeRef = useRef<HTMLDivElement | null>(null);
   return (
     <>
-      <section className="!justify-start pt-38">
+      <section className="">
         <HeroSection overViewRef={overviewRef} contactMeRef={contactMeRef} />
       </section>
       <section ref={overviewRef} className="px-4">

@@ -76,7 +76,7 @@ const DropDownLink = ({
         className="
           flex
           border-2 rounded-full border-brand-green
-          size-8 items-center justify-center dark:border-brand-white
+          size-10 items-center justify-center dark:border-brand-white
         "
       >
         {children}
@@ -96,7 +96,7 @@ const DropDownLink = ({
               bg-light-bg
               border border-light-border rounded-lg
               shadow-xl
-              absolute dark:border-dark-border dark:bg-dark-bg right-0 top-10 items-start
+              absolute dark:border-dark-border dark:bg-dark-bg right-0 top-12 items-start
             "
           >
             {items.map(({ key, title }) => {

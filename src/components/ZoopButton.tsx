@@ -6,13 +6,13 @@ import {
   STAGGER,
 } from "../constants/zoop-button-variants";
 
-const ZoopButton = ({
-  title,
-  click,
-}: {
+interface Props {
   title: string;
   click?: () => void;
-}) => {
+  color?: string;
+}
+
+const ZoopButton = ({ title, click, color }: Props) => {
   const chars = title.split("");
   const renderChar = (ch: string) => (ch === " " ? "\u00A0" : ch);
   return (
@@ -20,14 +20,16 @@ const ZoopButton = ({
       onClick={click}
       initial="rest"
       whileHover="hovered"
-      className="
+      className={`
+        ${color}
         inline-flex
+        transition-colors
         h-12
         px-6
         w-fit
         border-2 border-light-border rounded-lg
         items-center justify-center dark:border-dark-border relative
-      "
+      `}
     >
       <div
         className="

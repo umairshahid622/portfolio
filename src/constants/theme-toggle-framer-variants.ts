@@ -9,6 +9,7 @@ export const panelVariants: Variants = {
     opacity: 1,
     y: 0,
     transition: {
+      when: "beforeChildren",
       delayChildren: stagger(0.15, { from: "first" }),
     },
   },

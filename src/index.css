@@ -4,28 +4,32 @@
 
 @font-face {
   font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Regular.otf") format("opentype");
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Regular.otf")
+    format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Medium.otf") format("opentype");
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Medium.otf")
+    format("opentype");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Bold.otf") format("opentype");
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Bold.otf")
+    format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Extrabold.otf") format("opentype");
+  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Extrabold.otf")
+    format("opentype");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -39,7 +43,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 
 @theme {
   --font-heading: "BespokeTencil", ui-sans-serif, system-ui, sans-serif;
@@ -71,12 +74,12 @@
   :root {
     --background-color: var(--color-light-bg);
     --text-color: var(--color-light-text);
-    --paragraph-color:var(--color-light-text-muted)
+    --paragraph-color: var(--color-light-text-muted);
   }
   .dark {
     --background-color: var(--color-dark-bg);
     --text-color: var(--color-dark-text);
-    --paragraph-color:var(--color-dark-text-muted)
+    --paragraph-color: var(--color-dark-text-muted);
   }
 
   html {
@@ -85,7 +88,7 @@
   }
 
   section {
-    @apply flex flex-col items-start justify-center min-h-screen snap-center space-y-6 relative overflow-hidden;
+    @apply flex flex-col items-start min-h-screen snap-center space-y-6 relative overflow-hidden justify-start pt-38;
   }
 
   body {
@@ -109,7 +112,7 @@
   }
 
   h1 {
-    @apply text-4xl md:text-7xl font-extrabold;
+    @apply text-4xl md:text-5xl lg:text-6xl font-extrabold;
   }
   h2 {
     @apply text-3xl md:text-6xl font-bold;

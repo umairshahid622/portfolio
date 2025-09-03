@@ -40,8 +40,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   }, [effective, theme]);
 
   const value = useMemo(
-    () => ({ theme, setTheme, resolved: systemTheme }),
-    [theme, systemTheme]
+    () => ({ theme, setTheme, resolved: effective }),
+    [theme, effective]
   );
 
   if (!mounted) return null;
