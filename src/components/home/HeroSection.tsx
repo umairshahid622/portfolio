@@ -7,10 +7,6 @@ import { DELAY, DURATION } from "../../constants/framer-duration";
 import type { RefObject } from "react";
 import ComputerCanvas from "../canvas/ComputerCanvas";
 
-
-
-
-
 const HeroSection = ({
   overViewRef,
   contactMeRef,
@@ -51,15 +47,17 @@ const HeroSection = ({
         <motion.p variants={textVariants}>{user.titleDescription}</motion.p>
         <div className="flex items-center gap-3">
           <motion.div
-            onClick={() => {
-              contactMeRef.current?.scrollIntoView({
-                behavior: "smooth",
-              });
-            }}
             variants={textVariants}
             className="w-fit"
           >
-            <ZoopButton title="Contact Me" />
+            <ZoopButton
+              title="Contact Me"
+              click={() => {
+                contactMeRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                });
+              }}
+            />
           </motion.div>
           <motion.div variants={textVariants} className="w-fit">
             <ZoopButton title="Download Resume" />

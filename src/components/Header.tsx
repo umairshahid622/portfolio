@@ -8,8 +8,7 @@ const Header = () => {
       className="
         z-50
         w-full
-        bg-light-bg
-        dark:bg-dark-bg
+        bg-[var(--background-color)]
         shadow-sm
         fixed top-0 right-0
       "

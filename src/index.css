@@ -75,11 +75,15 @@
     --background-color: var(--color-light-bg);
     --text-color: var(--color-light-text);
     --paragraph-color: var(--color-light-text-muted);
+    --autofill-rgb: 21 97 109;
+    --autofill-opacity: .10;
   }
   .dark {
     --background-color: var(--color-dark-bg);
     --text-color: var(--color-dark-text);
     --paragraph-color: var(--color-dark-text-muted);
+    --autofill-rgb: 21 97 109;
+    --autofill-opacity: .16;
   }
 
   html {
@@ -100,6 +104,15 @@
 
   button {
     @apply cursor-pointer;
+  }
+
+  input,
+  textarea {
+    @apply w-full
+    p-3
+    bg-light-surface
+    rounded-lg    
+    dark:bg-dark-surface focus:outline-none focus:ring-1 focus:ring-light-border dark:focus:ring-dark-border autofill:bg-light-surface dark:autofill:shadow-[inset_0_0_0px_1000px_rgba(0,0,0,0.4)];
   }
 
   h1,
@@ -131,6 +144,6 @@
   }
 
   p {
-    @apply text-xl text-[var(--paragraph-color)];
+    @apply text-base md:text-xl text-[var(--paragraph-color)];
   }
 }

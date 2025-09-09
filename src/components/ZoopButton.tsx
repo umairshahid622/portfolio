@@ -9,24 +9,26 @@ import {
 interface Props {
   title: string;
   click?: () => void;
-  color?: string;
+  className?: string;
+  type?: "button" | "submit" | "reset";
 }
 
-const ZoopButton = ({ title, click, color }: Props) => {
+const ZoopButton = ({ title, click, className, type }: Props) => {
   const chars = title.split("");
   const renderChar = (ch: string) => (ch === " " ? "\u00A0" : ch);
   return (
     <motion.button
       onClick={click}
+      type={type}
       initial="rest"
       whileHover="hovered"
       className={`
-        ${color}
+        ${className}
         inline-flex
         transition-colors
         h-12
         px-6
-        w-fit
+        
         border-2 border-light-border rounded-lg
         items-center justify-center dark:border-dark-border relative
       `}

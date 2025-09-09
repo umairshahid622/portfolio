@@ -3,7 +3,7 @@ import { stagger, type Variants } from "motion";
 export const panelVariants: Variants = {
   hidden: {
     opacity: 0,
-    y: 15,
+    y: 25,
   },
   show: {
     opacity: 1,
@@ -15,7 +15,7 @@ export const panelVariants: Variants = {
   },
   exit: {
     opacity: 0,
-    y: 15,
+    y: 25,
     transition: {
       when: "afterChildren",
       delayChildren: stagger(0.15, { from: "last" }),

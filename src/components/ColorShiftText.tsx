@@ -3,16 +3,17 @@ import { useState } from "react";
 
 interface Props {
   title: string;
+  to?: string;
 }
 
-const ColorShiftText = ({ title }: Props) => {
+const ColorShiftText = ({ title, to }: Props) => {
   const control = useAnimation();
   const [cycleKey, setCycleKey] = useState(0);
   const chars = title.split("");
 
   const variants: Variants = {
     initial: { color: "var(--text-color)" },
-    animate: { color: "var(--color-brand-green)" },
+    animate: { color: to ? to : "var(--color-brand-green)" },
   };
 
   return (
