@@ -27,6 +27,9 @@ const TabItem = ({ icons }: Props) => {
             variants={variants}
             initial="initial"
             animate="animate"
+            href={icon.url}
+            target="_blank"
+            rel="noopener noreferrer"
             transition={{
               duration: DURATION + 1,
               repeat: Infinity,

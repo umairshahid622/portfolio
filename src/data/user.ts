@@ -3,13 +3,13 @@ import { FrontEndIcons } from "../assets/skills/Front-End";
 import { BackendEndIcons } from "../assets/skills/Back-End";
 import { DatabaseIcons } from "../assets/skills/Data-Bases";
 import { ToolsAndPlatformsIcons } from "../assets/skills/Tools & Platforms";
-import { OthersIcons } from "../assets/skills/Others";
+// import { OthersIcons } from "../assets/skills/Others";
 
 const frontEndIcons: SkillIcon[] = FrontEndIcons;
 const backendEndIcons: SkillIcon[] = BackendEndIcons;
 const databaseIcons: SkillIcon[] = DatabaseIcons;
 const toolsAndPlatformIcons: SkillIcon[] = ToolsAndPlatformsIcons;
-const othersIcons: SkillIcon[] = OthersIcons;
+// const othersIcons: SkillIcon[] = OthersIcons;
 
 export const user: User = {
   firstName: "umair",
@@ -27,7 +27,7 @@ export const user: User = {
         ...backendEndIcons,
         ...databaseIcons,
         ...toolsAndPlatformIcons,
-        ...othersIcons,
+        // ...othersIcons,
       ],
     },
     {
@@ -46,9 +46,9 @@ export const user: User = {
       title: "Tools & Plateforms",
       icons: toolsAndPlatformIcons,
     },
-    {
-      title: "Others",
-      icons: othersIcons,
-    },
+    // {
+    //   title: "Others",
+    //   icons: othersIcons,
+    // },
   ],
 };

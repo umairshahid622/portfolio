@@ -14,6 +14,7 @@ export interface TechnicalSkills {
 
 export interface SkillIcon {
   title: string;
+  url: string;
   iconPath: string;
   darkIconPath: string;
 }
