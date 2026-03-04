@@ -1,6 +1,8 @@
 import { useState } from "react";
 import ZoopButton from "../ZoopButton";
 import ColorShiftText from "../ColorShiftText";
+import { GitHubIcon, GmailIcon, LinkedInIcon } from "../icons/Icons";
+import { useTheme } from "../../hooks/useTheme";
 
 const ContactMeForm = () => {
   const [formData, setFormData] = useState({
@@ -10,7 +12,7 @@ const ContactMeForm = () => {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -19,57 +21,77 @@ const ContactMeForm = () => {
     e.preventDefault();
     console.log("Form submitted", formData);
   };
+
+  const { resolved } = useTheme();
   return (
-    <form
-      onSubmit={onFormSubmit}
+    <div
       className="
-      p-4 space-y-4
+    p-4 space-y-4
       rounded-lg border border-light-border
-      dark:border-dark-border
-    "
+      dark:border-dark-border"
     >
-      <div>
-        <p>Get in touch</p>
-        <ColorShiftText title="Contact Me" to="var(--color-brand-orange)" />
-      </div>
-      <div
+      <form
+        onSubmit={onFormSubmit}
         className="
-        space-y-4
+      space-y-4
       "
       >
-        <input
-          name="fullName"
-          type="text"
-          placeholder="Full Name"
-          required
-          value={formData.fullName}
-          onChange={handleChange}
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          required
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <textarea
-          name="message"
-          placeholder="Message"
-          required
-          rows={4}
-          value={formData.message}
-          onChange={handleChange}
-        ></textarea>
-      </div>
-      <ZoopButton
-        type="submit"
-        title="Send"
-        className="
+        <div>
+          <p>Get in touch</p>
+          <ColorShiftText title="Contact Me" to="var(--color-brand-orange)" />
+        </div>
+        <div
+          className="
+        space-y-4
+        "
+        >
+          <input
+            name="fullName"
+            type="text"
+            placeholder="Full Name"
+            required
+            value={formData.fullName}
+            onChange={handleChange}
+          />
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            required
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <textarea
+            name="message"
+            placeholder="Message"
+            required
+            rows={4}
+            value={formData.message}
+            onChange={handleChange}
+          ></textarea>
+        </div>
+        <ZoopButton
+          type="submit"
+          title="Send"
+          className="
         w-full
-      "
-      />
-    </form>
+        "
+        />
+      </form>
+      <p className="text-center">Or</p>
+      <div className="flex items-center justify-center gap-8">
+        <GitHubIcon
+          href="https://github.com/umairshahid622"
+          target="_blank"
+          className={`cursor-pointer size-6 ${resolved === "dark" ? "text-brand-white" : "text-brand-black"}`}
+        />
+        <LinkedInIcon
+          href="https://www.linkedin.com/in/umair-shahid-b72086243/"
+          target="_blank"
+          className="cursor-pointer size-6 text-[#007aaa]"
+        />
+      </div>
+    </div>
   );
 };
 

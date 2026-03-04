@@ -116,7 +116,7 @@
   textarea {
     @apply w-full
     p-3
-    bg-light-surface
+    bg-light-card
     rounded-lg
     placeholder:text-light-text-muted dark:placeholder:text-dark-text-muted
     dark:bg-dark-surface focus:outline-none autofill:bg-light-surface dark:autofill:shadow-[inset_0_0_0px_1000px_rgba(0,0,0,0.4)];

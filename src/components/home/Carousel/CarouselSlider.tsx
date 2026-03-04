@@ -23,7 +23,7 @@ const CarouselSlider = ({ items }: { items: WorkExperience[] }) => {
 
   if (items.length === 0) return null;
   return (
-    <div className="relative h-full max-h-96 flex items-center justify-center">
+    <div className="relative min-h-[260px] lg:h-96 flex items-center justify-center">
       <motion.div
         initial={{ scale: 1 }}
         whileHover={{ scale: 1.25 }}

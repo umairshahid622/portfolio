@@ -11,15 +11,17 @@ interface Props {
   click?: () => void;
   className?: string;
   type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
-const ZoopButton = ({ title, click, className, type }: Props) => {
+const ZoopButton = ({ title, click, className, type, disabled }: Props) => {
   const chars = title.split("");
   const renderChar = (ch: string) => (ch === " " ? "\u00A0" : ch);
   return (
     <motion.button
       onClick={click}
       type={type}
+      disabled={disabled}
       initial="rest"
       whileHover="hovered"
       className={`

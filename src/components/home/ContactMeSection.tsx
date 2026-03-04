@@ -15,6 +15,7 @@ const ContactMeSection = () => {
       >
         <div><TelePhoneCanvas /></div>
         <ContactMeForm />
+        
       </div>
     </>
   );
