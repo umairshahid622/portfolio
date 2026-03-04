@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowIcon } from "../../icons/Icons";
 import CarouselContent from "./CarouselContent";
 import type { WorkExperience } from "../../../types/user.type";
+import { AnimatePresence, motion } from "motion/react";
 
 const CarouselSlider = ({ items }: { items: WorkExperience[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -22,19 +23,39 @@ const CarouselSlider = ({ items }: { items: WorkExperience[] }) => {
 
   if (items.length === 0) return null;
   return (
-
-    <div className="flex w-full h-96 items-center justify-between">
-      <ArrowIcon
-        onClick={handlePrevious}
-        className="size-10 shrink-0 box-border cursor-pointer"
-      />
+    <div className="relative h-full max-h-96 flex items-center justify-center">
+      <motion.div
+        initial={{ scale: 1 }}
+        whileHover={{ scale: 1.25 }}
+        className="absolute left-0 top-1/2 -translate-y-1/2"
+      >
+        <ArrowIcon
+          onClick={handlePrevious}
+          className="size-10 shrink-0 box-border cursor-pointer"
+        />
+      </motion.div>
+      <motion.div
+        initial={{ scale: 1 }}
+        whileHover={{ scale: 1.25 }}
+        className="absolute right-0 top-1/2 -translate-y-1/2"
+      >
+        <ArrowIcon
+          onClick={handleNext}
+          className="size-10 shrink-0 box-border cursor-pointer rotate-180"
+        />
+      </motion.div>
       <div className="flex-grow px-4">
-        <CarouselContent item={items[currentIndex]} />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            <CarouselContent item={items[currentIndex]} />
+          </motion.div>
+        </AnimatePresence>
       </div>
-      <ArrowIcon
-        onClick={handleNext}
-        className="size-10 shrink-0 cursor-pointer rotate-180"
-      />
     </div>
   );
 };

@@ -1,3 +1,5 @@
+
+import TelePhoneCanvas from "../canvas/TelePhoneCanvas";
 import ContactMeForm from "./ContactMeForm";
 
 const ContactMeSection = () => {
@@ -11,7 +13,7 @@ const ContactMeSection = () => {
           lg:grid-cols-2
         "
       >
-        <div></div>
+        <div><TelePhoneCanvas /></div>
         <ContactMeForm />
       </div>
     </>

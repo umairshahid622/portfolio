@@ -18,6 +18,7 @@ const Header = () => {
           flex
           max-w-7xl
           mx-auto py-6
+          px-4
           items-center justify-between relative capitalize
         "
       >

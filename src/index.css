@@ -56,12 +56,13 @@
 
   /* Light */
 
-  --color-light-bg: #f9fafb;
+  --color-light-bg: #fdffff;
   --color-light-surface: #ffffff;
   --color-light-text: #111827;
   --color-light-text-muted: #6b7280;
   --color-light-border: #e5e7eb;
-  --color-light-card: #4a5759;
+  --color-light-card: #f2f2f2;
+  --color-light-card-border: #222725;
 
   /* Dark */
 
@@ -70,7 +71,8 @@
   --color-dark-text: #f3f4f6;
   --color-dark-text-muted: #9ca3af;
   --color-dark-border: #2e2b3a;
-  --color-dark-card: #001524;
+  --color-dark-card: #121113;
+  --color-dark-card-border: #222725;
   
 }
 

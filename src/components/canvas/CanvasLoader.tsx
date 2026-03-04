@@ -5,6 +5,7 @@ const CanvasLoader = () => {
 
   return (
     <Html center>
+      <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-current" />
       <div>{progress.toFixed(0)}%</div>
     </Html>
   );
