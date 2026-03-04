@@ -2,6 +2,7 @@ import { useRef } from "react";
 import HeroSection from "../components/home/HeroSection";
 import OverViewSection from "../components/home/OverViewSection";
 import ContactMeSection from "../components/home/ContactMeSection";
+import ExperienceSection from "../components/home/ExperienceSection";
 
 const Home = () => {
   const overviewRef = useRef<HTMLDivElement | null>(null);
@@ -14,8 +15,11 @@ const Home = () => {
       <section ref={overviewRef} className="px-4">
         <OverViewSection />
       </section>
+      <section className="px-4">
+        <ExperienceSection />
+      </section>
       <section ref={contactMeRef} className="px-4">
-          <ContactMeSection />
+        <ContactMeSection />
       </section>
     </>
   );

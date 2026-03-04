@@ -25,7 +25,7 @@ const ThemeToggler = () => {
         <ActiveIcon
           className="
             text-brand-green
-            size-5 dark:text-brand-white
+            size-full dark:text-brand-white
           "
         />
       }
@@ -75,8 +75,8 @@ const DropDownLink = ({
         key={activeKey}
         className="
           flex
-          border-2 rounded-full border-brand-green
-          size-10 items-center justify-center dark:border-brand-white
+          border-1 rounded-full border-brand-green
+          size-9 p-1.5 items-center justify-center dark:border-brand-white
         "
       >
         {children}
@@ -92,7 +92,7 @@ const DropDownLink = ({
             className="
               flex flex-col
               min-w-40
-              px-2 py-2 space-y-1
+              p-2 space-y-1
               bg-light-bg
               border border-light-border rounded-lg
               shadow-xl

@@ -5,6 +5,16 @@ export interface User {
   titleDescription: string;
   professionDescription: string;
   technicalSkills: TechnicalSkills[];
+  workExperience: WorkExperience[];
+}
+
+
+interface WorkExperience {
+  title: string;
+  companyName: string;
+  startDate: string;
+  endDate: string;
+  experiencePoints: string[];
 }
 
 export interface TechnicalSkills {

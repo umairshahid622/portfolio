@@ -13,7 +13,7 @@ const ColorShiftText = ({ title, to }: Props) => {
 
   const variants: Variants = {
     initial: { color: "var(--text-color)" },
-    animate: { color: to ? to : "var(--color-brand-green)" },
+    animate: { color: to ?? "var(--color-brand-green)" },
   };
 
   return (
