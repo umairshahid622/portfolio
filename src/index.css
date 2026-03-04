@@ -52,6 +52,7 @@
   --color-brand-white: #ffecd1;
   --color-brand-black: #11001c;
   --color-brand-green: #15616d;
+  
 
   /* Light */
 
@@ -60,6 +61,7 @@
   --color-light-text: #111827;
   --color-light-text-muted: #6b7280;
   --color-light-border: #e5e7eb;
+  --color-light-card: #4a5759;
 
   /* Dark */
 
@@ -68,6 +70,8 @@
   --color-dark-text: #f3f4f6;
   --color-dark-text-muted: #9ca3af;
   --color-dark-border: #2e2b3a;
+  --color-dark-card: #001524;
+  
 }
 
 @layer base {
@@ -146,5 +150,12 @@
 
   p {
     @apply text-base md:text-xl text-[var(--paragraph-color)];
+  }
+}
+
+
+@layer components {
+  .text-outline {
+    -webkit-text-stroke: 2px var(--text-color);
   }
 }

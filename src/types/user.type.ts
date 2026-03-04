@@ -9,7 +9,8 @@ export interface User {
 }
 
 
-interface WorkExperience {
+export interface WorkExperience {
+  num: string;
   title: string;
   companyName: string;
   startDate: string;
@@ -36,3 +37,4 @@ type SkillsCategory =
   | "Databases"
   | "Tools & Plateforms"
   | "Others";
+

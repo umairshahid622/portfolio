@@ -35,7 +35,7 @@ const HeroSection = ({
         variants={textVariants}
         initial="initial"
         whileInView="inView"
-        className="space-y-4 relative z-10 px-4"
+        className="space-y-4 relative z-10"
       >
         <motion.p
           variants={textVariants}

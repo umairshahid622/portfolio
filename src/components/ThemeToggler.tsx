@@ -71,12 +71,12 @@ const DropDownLink = ({
         initial={{ rotate: -90 }}
         animate={{ rotate: 0 }}
         exit={{ rotate: 90 }}
-        transition={{ duration: 0.18 }}
+        transition={{ duration: 0.28 }}
         key={activeKey}
         className="
-          flex
-          border-1 rounded-full border-brand-green
-          size-9 p-1.5 items-center justify-center dark:border-brand-white
+          
+          border-[1.25px] rounded-lg border-brand-green
+          size-9 p-1.5 dark:border-brand-white
         "
       >
         {children}
