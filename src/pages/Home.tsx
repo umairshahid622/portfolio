@@ -23,7 +23,7 @@ const Home = () => {
         <CarouselSlider items={user.workExperience} />
       </section>
 
-      <section ref={contactMeRef} className="">
+      <section ref={contactMeRef} className="pb-14">
         <ContactMeSection />
       </section>
     </>

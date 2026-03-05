@@ -14,6 +14,8 @@ const toolsAndPlatformIcons: SkillIcon[] = ToolsAndPlatformsIcons;
 export const user: User = {
   firstName: "umair",
   lastName: "shahid",
+  email:"shahidumair622@gmail.com",
+  phone:"92 321 5215701",
   profession: "Full Stack Developer",
   titleDescription: "Developing Modern Full-Stack Applications",
   professionDescription:

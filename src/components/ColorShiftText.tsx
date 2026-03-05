@@ -4,9 +4,10 @@ import { useState } from "react";
 interface Props {
   title: string;
   to?: string;
+  textSize?: string;
 }
 
-const ColorShiftText = ({ title, to }: Props) => {
+const ColorShiftText = ({ title, to, textSize }: Props) => {
   const control = useAnimation();
   const [cycleKey, setCycleKey] = useState(0);
   const chars = title.split("");
@@ -18,10 +19,12 @@ const ColorShiftText = ({ title, to }: Props) => {
 
   return (
     <motion.h1
+      className = {`${textSize}`}
       key={cycleKey}
       initial="initial"
       animate={control}
       whileInView="animate"
+
       onViewportLeave={() => {
         control.start("initial");
         setCycleKey((prev) => prev + 1);
