@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ZoopButton from "../ZoopButton";
 import ColorShiftText from "../ColorShiftText";
-import { GitHubIcon, GmailIcon, LinkedInIcon } from "../icons/Icons";
+import { GitHubIcon, LinkedInIcon } from "../icons/Icons";
 import { useTheme } from "../../hooks/useTheme";
 
 const ContactMeForm = () => {
@@ -80,16 +80,24 @@ const ContactMeForm = () => {
       </form>
       <p className="text-center">Or</p>
       <div className="flex items-center justify-center gap-8">
-        <GitHubIcon
+        <a
           href="https://github.com/umairshahid622"
           target="_blank"
-          className={`cursor-pointer size-6 ${resolved === "dark" ? "text-brand-white" : "text-brand-black"}`}
-        />
-        <LinkedInIcon
+          rel="noopener noreferrer"
+          aria-label="GitHub profile"
+        >
+          <GitHubIcon
+            className={`cursor-pointer size-6 ${resolved === "dark" ? "text-brand-white" : "text-brand-black"}`}
+          />
+        </a>
+        <a
           href="https://www.linkedin.com/in/umair-shahid-b72086243/"
           target="_blank"
-          className="cursor-pointer size-6 text-[#007aaa]"
-        />
+          rel="noopener noreferrer"
+          aria-label="LinkedIn profile"
+        >
+          <LinkedInIcon className="cursor-pointer size-6 text-[#007aaa]" />
+        </a>
       </div>
     </div>
   );
