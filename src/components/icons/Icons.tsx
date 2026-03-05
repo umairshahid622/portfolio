@@ -65,13 +65,12 @@ export const ArrowIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 export const GitHubIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
-  {...props}
+    {...props}
     fill="currentColor"
-    
     version="1.1"
-    xmlns="http://www.w3.org/2000/svg"    
+    xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 512 512"
-    enable-background="new 0 0 512 512"    
+    enable-background="new 0 0 512 512"
   >
     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
     <g
@@ -97,18 +96,48 @@ export const GitHubIcon = (props: SVGProps<SVGSVGElement>) => (
 export const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
+    viewBox="0 0 20 20"
+    version="1.1"
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
+    xmlnsXlink="http://www.w3.org/1999/xlink"
+    fill="currentColor"
   >
-    <path
-      d="M4.983 3.5C4.983 4.604 4.114 5.5 3 5.5 1.886 5.5 1 4.604 1 3.5 1 2.396 1.886 1.5 3 1.5c1.114 0 1.983.896 1.983 2Z"
-      fill="currentColor"
-    />
-    <path
-      d="M1.25 8.25h3.5v14.25h-3.5zM8.75 8.25h3.35v1.95h.05c.466-.883 1.604-1.85 3.3-1.85 3.53 0 4.18 2.188 4.18 5.033v9.067h-3.5v-8.033c0-1.917-.033-4.383-2.67-4.383-2.67 0-3.08 2.088-3.08 4.25v8.166h-3.5V8.25Z"
-      fill="currentColor"
-    />
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      {" "}
+      <title>linkedin [#161]</title> <desc>Created with Sketch.</desc>{" "}
+      <defs> </defs>{" "}
+      <g
+        id="Page-1"
+        stroke="none"
+        stroke-width="1"
+        fill="none"
+        fill-rule="evenodd"
+      >
+        {" "}
+        <g
+          id="Dribbble-Light-Preview"
+          transform="translate(-180.000000, -7479.000000)"
+          fill="currentColor"
+        >
+          {" "}
+          <g id="icons" transform="translate(56.000000, 160.000000)">
+            {" "}
+            <path
+              d="M144,7339 L140,7339 L140,7332.001 C140,7330.081 139.153,7329.01 137.634,7329.01 C135.981,7329.01 135,7330.126 135,7332.001 L135,7339 L131,7339 L131,7326 L135,7326 L135,7327.462 C135,7327.462 136.255,7325.26 139.083,7325.26 C141.912,7325.26 144,7326.986 144,7330.558 L144,7339 L144,7339 Z M126.442,7323.921 C125.093,7323.921 124,7322.819 124,7321.46 C124,7320.102 125.093,7319 126.442,7319 C127.79,7319 128.883,7320.102 128.883,7321.46 C128.884,7322.819 127.79,7323.921 126.442,7323.921 L126.442,7323.921 Z M124,7339 L129,7339 L129,7326 L124,7326 L124,7339 Z"
+              id="linkedin-[#161]"
+            >
+              {" "}
+            </path>{" "}
+          </g>{" "}
+        </g>{" "}
+      </g>{" "}
+    </g>
   </svg>
 );
 export const GmailIcon = (props: SVGProps<SVGSVGElement>) => (
@@ -143,5 +172,23 @@ export const GmailIcon = (props: SVGProps<SVGSVGElement>) => (
         fill="#fbbc04"
       ></path>
     </g>
+  </svg>
+);
+export const WhattsappIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 32 32"
+    aria-label="WhatsApp"
+    role="img"
+  >
+    <path
+      fill="currentColor"
+      d="M17,0C8.7,0,2,6.7,2,15c0,3.4,1.1,6.6,3.2,9.2l-2.1,6.4c-0.1,0.4,0,0.8,0.3,1.1C3.5,31.9,3.8,32,4,32 c0.1,0,0.3,0,0.4-0.1l6.9-3.1C13.1,29.6,15,30,17,30c8.3,0,15-6.7,15-15S25.3,0,17,0z"
+    />
+    <path
+      fill="#fff"
+      d="M25.7,20.5c-0.4,1.2-1.9,2.2-3.2,2.4C22.2,23,21.9,23,21.5,23c-0.8,0-2-0.2-4.1-1.1c-2.4-1-4.8-3.1-6.7-5.8 L10.7,16C10.1,15.1,9,13.4,9,11.6c0-2.2,1.1-3.3,1.5-3.8c0.5-0.5,1.2-0.8,2-0.8c0.2,0,0.3,0,0.5,0c0.7,0,1.2,0.2,1.7,1.2l0.4,0.8 c0.3,0.8,0.7,1.7,0.8,1.8c0.3,0.6,0.3,1.1,0,1.6c-0.1,0.3-0.3,0.5-0.5,0.7c-0.1,0.2-0.2,0.3-0.3,0.3c-0.1,0.1-0.1,0.1-0.2,0.2 c0.3,0.5,0.9,1.4,1.7,2.1c1.2,1.1,2.1,1.4,2.6,1.6l0,0c0.2-0.2,0.4-0.6,0.7-0.9l0.1-0.2c0.5-0.7,1.3-0.9,2.1-0.6 c0.4,0.2,2.6,1.2,2.6,1.2l0.2,0.1c0.3,0.2,0.7,0.3,0.9,0.7C26.2,18.5,25.9,19.8,25.7,20.5z"
+    />
   </svg>
 );

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import ZoopButton from "../ZoopButton";
 import ColorShiftText from "../ColorShiftText";
-import { GitHubIcon, LinkedInIcon } from "../icons/Icons";
-import { useTheme } from "../../hooks/useTheme";
+// import { GitHubIcon, LinkedInIcon } from "../icons/Icons";
+// import { useTheme } from "../../hooks/useTheme";
 
 const ContactMeForm = () => {
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const ContactMeForm = () => {
     console.log("Form submitted", formData);
   };
 
-  const { resolved } = useTheme();
+  // const { resolved } = useTheme();
   return (
     <div
       className="
@@ -56,7 +56,7 @@ const ContactMeForm = () => {
           <input
             name="email"
             type="email"
-            placeholder="Email"
+            placeholder="Your Email"
             required
             value={formData.email}
             onChange={handleChange}
@@ -72,14 +72,14 @@ const ContactMeForm = () => {
         </div>
         <ZoopButton
           type="submit"
-          title="Send"
+          title="Send Message"
           className="
         w-full
         "
         />
       </form>
-      <p className="text-center">Or</p>
-      <div className="flex items-center justify-center gap-8">
+      {/* <p className="text-center">Or</p> */}
+      {/* <div className="flex items-center justify-center gap-8">
         <a
           href="https://github.com/umairshahid622"
           target="_blank"
@@ -98,7 +98,7 @@ const ContactMeForm = () => {
         >
           <LinkedInIcon className="cursor-pointer size-6 text-[#007aaa]" />
         </a>
-      </div>
+      </div> */}
     </div>
   );
 };
