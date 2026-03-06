@@ -16,6 +16,8 @@ export const user: User = {
   lastName: "shahid",
   email:"shahidumair622@gmail.com",
   phone:"92 321 5215701",
+  githubLink: "https://github.com/umairshahid622",
+  linkedInLink: "https://www.linkedin.com/in/umair-shahid-b72086243/",
   profession: "Full Stack Developer",
   titleDescription: "Developing Modern Full-Stack Applications",
   professionDescription:

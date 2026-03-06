@@ -8,8 +8,7 @@ const ContactMeSection = () => {
     <div
       aria-labelledby="contact-heading"
       className="grid w-full grid-cols-1 gap-10 lg:grid-cols-2"
-    >
-    
+    >    
       <ContactDetails/>
       <ContactMeForm />
     </div>

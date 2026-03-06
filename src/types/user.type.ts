@@ -3,6 +3,8 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
+  githubLink: string;
+  linkedInLink: string;
   profession: string;
   titleDescription: string;
   professionDescription: string;

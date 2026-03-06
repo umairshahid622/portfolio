@@ -9,7 +9,7 @@ type SocialContactCardProps = {
 
 const variantStyles = {
   email: {
-    border: "border-[#EA4335]/40 hover:border-[#EA4335]",
+    border: "border-[#EA4335]/50 hover:border-[#EA4335]",
     iconBg: "bg-[#EA4335]/15 text-[#EA4335] group-hover/link:bg-[#EA4335]/25",
   },
   whatsapp: {
@@ -55,7 +55,7 @@ const SocialContactCard = ({
       href={href}
       target={target}
       rel={rel}
-      className={`group/link flex items-center gap-4 rounded-xl border-l-4 bg-light-card/70 py-3 pl-4 pr-4 transition-all hover:-translate-x-0.5 hover:bg-light-card dark:bg-dark-surface/70 dark:hover:bg-dark-surface ${styles.border}`}
+      className={`group/link flex items-center gap-4 rounded-xl border-l-4 bg-light-card/70 py-3 px-4 transition-all hover:-translate-x-0.5 hover:bg-light-card dark:bg-dark-surface/70 dark:hover:bg-dark-surface ${styles.border}`}
     >
       <span
         className={`flex size-12 shrink-0 items-center justify-center rounded-xl  transition group-hover/link:scale-105 ${styles.iconBg}`}

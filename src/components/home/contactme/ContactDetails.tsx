@@ -41,7 +41,7 @@ const ContactDetails = () => {
         </h6>
         <div className="flex flex-wrap items-center gap-3">
           <a
-            href="https://github.com/umairshahid622"
+            href={`${user.githubLink}`}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub profile"
@@ -54,7 +54,7 @@ const ContactDetails = () => {
             />
           </a>
           <a
-            href="https://www.linkedin.com/in/umair-shahid-b72086243/"
+            href = {`${user.linkedInLink}`}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn profile"

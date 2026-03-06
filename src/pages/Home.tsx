@@ -3,25 +3,22 @@ import HeroSection from "../components/home/HeroSection";
 import OverViewSection from "../components/home/OverViewSection";
 import ContactMeSection from "../components/home/ContactMeSection";
 import ExperienceSection from "../components/home/ExperienceSection";
-import CarouselSlider from "../components/home/Carousel/CarouselSlider";
-import { user } from "../data/user";
 const Home = () => {
   const overviewRef = useRef<HTMLDivElement | null>(null);
   const contactMeRef = useRef<HTMLDivElement | null>(null);
   return (
     <>
-      <section className="">
+      <section>
         <HeroSection overViewRef={overviewRef} contactMeRef={contactMeRef} />
       </section>
 
-      <section ref={overviewRef} className="">
+      <section ref={overviewRef}>
         <OverViewSection />
       </section>
 
-      <section className="">
-        <ExperienceSection />
-        <CarouselSlider items={user.workExperience} />
-      </section>
+      <section>
+        <ExperienceSection />        
+      </section>  
 
       <section ref={contactMeRef} className="pb-14">
         <ContactMeSection />
