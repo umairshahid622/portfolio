@@ -10,9 +10,9 @@ const CarouselContent = ({
   return (
     <div className="grid grid-cols-1 items-center gap-6 px-2 sm:px-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:px-10">
       <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-          Role #{num.toString().padStart(2, "0")}
-        </p>
+        <h1 className="font-semibold uppercase tracking-[0.15em] text-muted-foreground text-outline text-transparent">
+          <span className="text-5xl">#</span>{num.toString().padStart(2, "0")}
+        </h1>
         <h2 className="text-2xl font-semibold lg:text-3xl">{item.title}</h2>
         <div className="space-y-1 text-sm">
           <p className="font-medium text-brand-primary">{item.companyName}</p>
