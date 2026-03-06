@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { ArrowIcon } from "../../icons/Icons";
-import CarouselContent from "./CarouselContent";
+
 import type { WorkExperience } from "../../../types/user.type";
 import { AnimatePresence, motion } from "motion/react";
+import CarouselContent from "./CarouselContent";
 
 const CarouselSlider = ({ items }: { items: WorkExperience[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);

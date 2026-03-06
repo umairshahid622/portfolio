@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { user } from "../../data/user";
 import ColorShiftText from "../ColorShiftText";
-import CarouselSlider from "./carousel/CarouselSlider";
+import CarouselSlider from "./Carousel/CarouselSlider";
 import { DELAY, DURATION } from "../../constants/framer-duration";
 import RoundedBorderText from "../RoundedBorderText";
 
