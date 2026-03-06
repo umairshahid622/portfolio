@@ -20,7 +20,7 @@ const ContactDetails = () => {
         <div className="h-px w-16 rounded-full bg-gradient-to-r from-brand-primary to-transparent" />
       </header>
 
-      <div className="relative space-y-3">
+      <div className="relative space-y-4">
         <SocialContactCard
           variant="email"
           label="Email"
