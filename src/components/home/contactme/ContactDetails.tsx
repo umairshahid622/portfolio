@@ -2,16 +2,16 @@ import { user } from "../../../data/user";
 import { useTheme } from "../../../hooks/useTheme";
 import ColorShiftText from "../../ColorShiftText";
 import { GitHubIcon, LinkedInIcon } from "../../icons/Icons";
+import RoundedBorderText from "../../RoundedBorderText";
 import SocialContactCard from "./SocialContactCard";
 
 const ContactDetails = () => {
-    const { resolved } = useTheme();
+  const { resolved } = useTheme();
   return (
     <div className="group/card relative overflow-hidden rounded-2xl border border-light-border/60 bg-gradient-to-br from-light-bg/80 via-light-bg/40 to-light-bg/20 p-6 shadow-lg shadow-brand-primary/5 transition-shadow hover:shadow-brand-primary/10 dark:border-dark-border/60 dark:from-dark-bg/80 dark:via-dark-bg/40 dark:to-dark-bg/20 dark:shadow-brand-primary/10 dark:hover:shadow-brand-primary/20 lg:p-8">
       <header className="relative space-y-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-brand-primary/30 bg-brand-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-brand-primary dark:border-brand-primary/40 dark:bg-brand-primary/20">
-          Let&apos;s collaborate
-        </span>
+        <RoundedBorderText text={`Let's collaborate`} />
+
         <ColorShiftText textSize="text-4xl" title="Contact Details" />
         <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
           Whether you have an opportunity, a question, or just want to say
@@ -30,7 +30,7 @@ const ContactDetails = () => {
         <SocialContactCard
           variant="whatsapp"
           label="WhatsApp"
-          href={`https://wa.me/${user.phone.replaceAll(" ", '')}`}
+          href={`https://wa.me/${user.phone.replaceAll(" ", "")}`}
           value={`+${user.phone}`}
         />
       </div>
@@ -54,7 +54,7 @@ const ContactDetails = () => {
             />
           </a>
           <a
-            href = {`${user.linkedInLink}`}
+            href={`${user.linkedInLink}`}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn profile"

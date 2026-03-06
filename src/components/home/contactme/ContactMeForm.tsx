@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import ZoopButton from "../../ZoopButton";
 import ColorShiftText from "../../ColorShiftText";
 import { sendForm } from "@emailjs/browser";
+import RoundedBorderText from "../../RoundedBorderText";
 
 const ContactMeForm = () => {
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ const ContactMeForm = () => {
     setLoading(true);
     try {
       console.log("Form submitted", formData);
-      
+
       await sendForm(
         import.meta.env.VITE_APP_EMAILJS_SERVICE_ID,
         import.meta.env.VITE_APP_EMAILJS_TEMPLATE_ID,
@@ -39,7 +40,7 @@ const ContactMeForm = () => {
       });
     } catch (error) {
       console.error(error);
-      
+
       alert("Something went wrong");
     } finally {
       formRef.current.reset();
@@ -56,9 +57,7 @@ const ContactMeForm = () => {
         className="relative space-y-6"
       >
         <header className="space-y-3">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-primary/30 bg-brand-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-brand-primary dark:border-brand-primary/40 dark:bg-brand-primary/20">
-            Get in touch
-          </span>
+          <RoundedBorderText text={`Get in touch`} />
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             <ColorShiftText
               textSize="text-4xl"

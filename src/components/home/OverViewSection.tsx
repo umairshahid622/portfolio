@@ -3,13 +3,14 @@ import { user } from "../../data/user";
 import ColorShiftText from "../ColorShiftText";
 import { DELAY, DURATION } from "../../constants/framer-duration";
 import Tabs from "./Tabs";
+import RoundedBorderText from "../RoundedBorderText";
 
 const OverViewSection = () => {
   return (
     <div className="w-full space-y-6">
       <div>
-        <p>Introduction</p>
-        <ColorShiftText title={"OverView."}/>
+        <RoundedBorderText text={`Introduction`} />
+        <ColorShiftText title={"OverView."} />
         <p className="max-w-2xl">{user.professionDescription}</p>
       </div>
       <div className="space-y-6">

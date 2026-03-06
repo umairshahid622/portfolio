@@ -20,7 +20,7 @@ const Home = () => {
         <ExperienceSection />        
       </section>  
 
-      <section ref={contactMeRef} className="pb-14">
+      <section ref={contactMeRef} className="mb-6">
         <ContactMeSection />
       </section>
     </>

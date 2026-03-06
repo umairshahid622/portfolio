@@ -13,8 +13,7 @@ export interface User {
 }
 
 
-export interface WorkExperience {
-  num: string;
+export interface WorkExperience {  
   title: string;
   companyName: string;
   startDate: string;

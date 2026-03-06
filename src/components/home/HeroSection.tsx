@@ -29,6 +29,13 @@ const HeroSection = ({
     },
   };
 
+  const handleDownalodCV = () => {
+    const link = document.createElement("a");
+    link.href = "/Resume.pdf";
+    link.download = "Umair-Shahid-CV.pdf";
+    link.click();
+  };
+
   return (
     <>
       <motion.div
@@ -46,10 +53,7 @@ const HeroSection = ({
         <motion.h1 variants={textVariants}>{user.profession}</motion.h1>
         <motion.p variants={textVariants}>{user.titleDescription}</motion.p>
         <div className="flex items-center gap-3">
-          <motion.div
-            variants={textVariants}
-            className="w-fit"
-          >
+          <motion.div variants={textVariants} className="w-fit">
             <ZoopButton
               title="Contact Me"
               click={() => {
@@ -60,7 +64,7 @@ const HeroSection = ({
             />
           </motion.div>
           <motion.div variants={textVariants} className="w-fit">
-            <ZoopButton title="Download Resume" />
+            <ZoopButton click={handleDownalodCV} title="Download Resume" />
           </motion.div>
         </div>
       </motion.div>

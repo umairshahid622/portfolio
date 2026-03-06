@@ -56,8 +56,7 @@ export const user: User = {
     // },
   ],
   workExperience: [
-    {
-      num: "01",
+    {      
       title: "Front-End Developer",
       companyName: "Axian Group",
       startDate: "October 2025",
@@ -68,8 +67,7 @@ export const user: User = {
         "Implemented state management, form validations, and secure data handling aligned with Fintech standards.",
       ],
     },
-    {
-      num: "02",
+    {      
       title: "Front-End Developer",
       companyName: "BX TECHNOLOGIES",
       startDate: "April 2024",
@@ -80,8 +78,7 @@ export const user: User = {
         "Focused on accessibility, user experience, and modern design principles to enhance engagement and interactivity.",
       ],
     },
-    {
-      num: "03",
+    {      
       title: "Front-End Developer",
       companyName: "TECKLOGICS",
       startDate: "January 2024",
@@ -92,8 +89,7 @@ export const user: User = {
         " Integrated RESTful API endpoints to enable real-time data synchronization, ensuring up-to-date content delivery a smooth user experience throughout the application.",
       ],
     },
-    {
-      num: "04",
+    {      
       title: "Front-End Developer",
       companyName: "CYBER RECONNAISSANCE & COMBAT",
       startDate: "August 2022",

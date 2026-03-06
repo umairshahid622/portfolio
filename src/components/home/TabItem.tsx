@@ -37,7 +37,7 @@ const TabItem = ({ icons }: Props) => {
               repeatType: "mirror",
             }}
             key={index}
-            className="border-2 border-light-border dark:border-dark-border rounded-lg size-14 md:size-20 p-3 cursor-pointer relative"
+            className="border-2 border-light-border dark:border-dark-border rounded-lg size-14 md:size-19 p-3 cursor-pointer relative"
           >
             <img
               className="size-full"
