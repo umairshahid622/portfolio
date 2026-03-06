@@ -24,7 +24,7 @@ const CarouselSlider = ({ items }: { items: WorkExperience[] }) => {
   if (items.length === 0) return null;
   
   return (
-    <div className="relative flex min-h-[280px] items-center justify-center rounded-2xl border border-light-border/60 bg-gradient-to-br from-light-bg/80 via-light-bg/40 to-light-bg/10 p-4 shadow-lg shadow-brand-primary/5 dark:border-dark-border/60 dark:from-dark-bg/80 dark:via-dark-bg/40 dark:to-dark-bg/10 dark:shadow-brand-primary/15 lg:h-96 lg:p-6">
+    <div className="relative flex min-h-[280px] items-center justify-center rounded-2xl border border-light-border/60 bg-gradient-to-br from-light-bg/80 via-light-bg/40 to-light-bg/10 p-4 shadow-lg shadow-brand-primary/5 dark:border-dark-border/60 dark:from-dark-bg/80 dark:via-dark-bg/40 dark:to-dark-bg/10 dark:shadow-brand-primary/15 lg:h-94 lg:p-6">
       {/* Left arrow */}
       <motion.button
         type="button"
