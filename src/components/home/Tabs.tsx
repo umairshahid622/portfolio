@@ -20,7 +20,7 @@ const Tabs = ({ items }: Props) => {
                 activeIndex === index ? "text-brand-orange" : "text-color hover:text-brand-orange"
               }
               title={skill.title}
-              click={() => setActiveIndex((prev: number) => (prev = index))}
+              click={() => setActiveIndex(index)}
               key={skill.title}
             />
           );
