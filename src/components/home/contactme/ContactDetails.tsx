@@ -13,7 +13,7 @@ const ContactDetails = () => {
         <RoundedBorderText text={`Let's collaborate`} />
 
         <ColorShiftText textSize="text-4xl" title="Contact Details" />
-        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+        <p className="text-base leading-relaxed text-muted-foreground">
           Whether you have an opportunity, a question, or just want to say
           hi—reach out through any channel below.
         </p>

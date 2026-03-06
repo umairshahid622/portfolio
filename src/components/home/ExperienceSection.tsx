@@ -15,7 +15,7 @@ const ExperienceSection = () => {
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div className="space-y-2">
             <ColorShiftText title="Work Experience" />
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className=" text-muted-foreground">
               A snapshot of the roles where I&apos;ve built real products,
               shipped features, and learned from working with teams.
             </p>
