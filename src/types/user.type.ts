@@ -16,6 +16,7 @@ export interface User {
 export interface WorkExperience {  
   title: string;
   companyName: string;
+  techStack: string[];
   startDate: string;
   endDate: string;
   experiencePoints: string[];

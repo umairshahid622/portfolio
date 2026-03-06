@@ -1,4 +1,4 @@
-import mySqlIcon from "./icons/MySQL.png"
+// import mySqlIcon from "./icons/MySQL.png"
 import postgreSQLIcon from "./icons/PostgresSQL.png"
 import mongoDBIcon from "./icons/MongoDB.png"
 import firebaseIcon from "./icons/Firebase.png"
@@ -6,12 +6,12 @@ import firebaseIcon from "./icons/Firebase.png"
 
 
 export const DatabaseIcons = [
-    {
-      title: "MySQl",
-      url: "https://www.mysql.com/",
-      iconPath: mySqlIcon,
-      darkIconPath: mySqlIcon,
-    },
+    // {
+    //   title: "MySQl",
+    //   url: "https://www.mysql.com/",
+    //   iconPath: mySqlIcon,
+    //   darkIconPath: mySqlIcon,
+    // },
     {
       title: "PostgreSQL",
       url: "https://www.postgresql.org/",

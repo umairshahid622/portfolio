@@ -31,7 +31,7 @@ const CarouselSlider = ({ items }: { items: WorkExperience[] }) => {
         onClick={handlePrevious}
         whileHover={{ scale: 1.05, x: -2 }}
         whileTap={{ scale: 0.95 }}
-        className="absolute left-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full border border-light-border/70 bg-light-surface/80 p-2 text-muted-foreground shadow-sm backdrop-blur-md hover:border-brand-primary hover:text-brand-primary dark:border-dark-border/70 dark:bg-dark-surface/80"
+        className="absolute z-10 left-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full border border-light-border/70 bg-light-surface/80 p-2 text-muted-foreground shadow-sm backdrop-blur-md hover:border-brand-primary hover:text-brand-primary dark:border-dark-border/70 dark:bg-dark-surface/80"
         aria-label="Previous experience"
       >
         <ArrowIcon className="size-6" />
@@ -43,7 +43,7 @@ const CarouselSlider = ({ items }: { items: WorkExperience[] }) => {
         onClick={handleNext}
         whileHover={{ scale: 1.05, x: 2 }}
         whileTap={{ scale: 0.95 }}
-        className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full border border-light-border/70 bg-light-surface/80 p-2 text-muted-foreground shadow-sm backdrop-blur-md hover:border-brand-primary hover:text-brand-primary dark:border-dark-border/70 dark:bg-dark-surface/80"
+        className="absolute z-10 right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full border border-light-border/70 bg-light-surface/80 p-2 text-muted-foreground shadow-sm backdrop-blur-md hover:border-brand-primary hover:text-brand-primary dark:border-dark-border/70 dark:bg-dark-surface/80"
         aria-label="Next experience"
       >
         <ArrowIcon className="size-6 rotate-180" />

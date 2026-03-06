@@ -59,6 +59,7 @@ export const user: User = {
     {      
       title: "Front-End Developer",
       companyName: "Axian Group",
+      techStack: ["Flutter"],
       startDate: "October 2025",
       endDate: "March 2026",
       experiencePoints: [
@@ -70,6 +71,7 @@ export const user: User = {
     {      
       title: "Front-End Developer",
       companyName: "BX TECHNOLOGIES",
+      techStack: ["ReactJs", "Framer Motion"],
       startDate: "April 2024",
       endDate: "October 2024",
       experiencePoints: [
@@ -81,6 +83,7 @@ export const user: User = {
     {      
       title: "Front-End Developer",
       companyName: "TECKLOGICS",
+      techStack: ["Angular"],
       startDate: "January 2024",
       endDate: "March 2024",
       experiencePoints: [
@@ -92,6 +95,7 @@ export const user: User = {
     {      
       title: "Front-End Developer",
       companyName: "CYBER RECONNAISSANCE & COMBAT",
+      techStack: ["Angular"],
       startDate: "August 2022",
       endDate: "December 2022",
       experiencePoints: [
