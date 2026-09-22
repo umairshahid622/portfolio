@@ -2,51 +2,29 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Heading Font */
 @font-face {
-  font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Regular.otf")
-    format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Medium.otf")
-    format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Bold.otf")
-    format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "BespokeTencil";
-  src: url("./assets/fonts/BespokeStencil/BespokeStencil-Extrabold.otf")
-    format("opentype");
-  font-weight: 800;
+  font-family: "Thunder";
+  src: url("/fonts/Thunder-VF.woff2") format("woff2-variations"),
+       url("/fonts/Thunder-VF.woff2") format("woff2");
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
-/* Body font */
+/* Body Font */
 @font-face {
-  font-family: "Supreme";
-  src: url("./assets/fonts/Supreme/Supreme-Regular.otf") format("opentype");
-  font-weight: 400;
+  font-family: "GeneralSans";
+  src: url("/fonts/GeneralSans-Variable.woff2") format("woff2-variations"),
+       url("/fonts/GeneralSans-Variable.woff2") format("woff2");
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @theme {
-  --font-heading: "BespokeTencil", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Supreme", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Thunder", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "GeneralSans", ui-sans-serif, system-ui, sans-serif;
 
   --color-brand-orange: #ff7d00;
   --color-brand-white: #ffecd1;
@@ -101,11 +79,21 @@
     @apply flex flex-col items-start min-h-screen snap-center space-y-6 relative overflow-hidden justify-start pt-38;
   }
 
+  body,
+  p,
+  span,
+  a,
+  button,
+  input,
+  textarea,
+  label {
+    font-family: var(--font-body);
+  }
+
   body {
     background-color: var(--background-color);
-    transition: color 150ms ease;
+    transition: color 150ms ease, background-color 150ms ease;
     color: var(--text-color);
-    font-family: var(--font-body);
   }
 
   button {
@@ -130,6 +118,7 @@
   h5,
   h6 {
     font-family: var(--font-heading) !important;
+    letter-spacing: 0.03em;
   }
 
   h1 {
