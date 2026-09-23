@@ -71,12 +71,10 @@
   }
 
   html {
+    background-color: var(--background-color);
+    color: var(--text-color);
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
-  }
-
-  section {
-    @apply flex flex-col items-start min-h-screen snap-center space-y-6 relative overflow-hidden justify-start pt-38;
   }
 
   body,
@@ -91,9 +89,20 @@
   }
 
   body {
-    background-color: var(--background-color);
-    transition: color 150ms ease, background-color 150ms ease;
-    color: var(--text-color);
+    background-color: inherit;
+    color: inherit;
+  }
+
+  section {
+    @apply flex flex-col items-start min-h-screen snap-center space-y-6 relative overflow-hidden justify-start pt-38;
+  }
+
+  /* Smooth transition only when user clicks toggle, never during page load */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease !important;
   }
 
   button {

@@ -1,15 +1,7 @@
-import { useState, useEffect } from "react";
+import { useTheme } from "./context/ThemeContext";
 
 export default function App() {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDark]);
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center relative px-6 py-16 overflow-hidden select-none">
@@ -21,7 +13,7 @@ export default function App() {
       <header className="absolute top-6 right-6 z-20">
         <button
           id="theme-toggle-btn"
-          onClick={() => setIsDark(!isDark)}
+          onClick={toggleTheme}
           className="flex items-center gap-2 px-4 py-2 rounded-full border border-current/15 bg-white/60 dark:bg-black/30 backdrop-blur-md shadow-sm hover:scale-105 active:scale-95 transition-all text-xs md:text-sm font-medium"
           aria-label="Toggle dark mode"
         >
@@ -43,7 +35,7 @@ export default function App() {
 
         {/* Primary Requested Title */}
         <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] font-black uppercase tracking-[0.1px] leading-none bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-500 dark:from-white dark:via-neutral-200 dark:to-neutral-400 bg-clip-text text-transparent drop-shadow-sm">
-          THUNDER
+          Full Stack Developer
         </h1>
 
         {/* Primary Requested Subtitle */}

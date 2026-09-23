@@ -1,14 +1,49 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark" style="color-scheme: dark; background-color: #11001c;">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon_io_porfolio/android-chrome-512x512.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('portfolio-theme');
+          var isDark = stored ? stored === 'dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;
+          var root = document.documentElement;
+          if (isDark) {
+            root.classList.add('dark');
+            root.style.colorScheme = 'dark';
+            root.style.backgroundColor = '#11001c';
+          } else {
+            root.classList.remove('dark');
+            root.style.colorScheme = 'light';
+            root.style.backgroundColor = '#fdffff';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Critical inline styles to prevent FOUC / flash before CSS loads */
+      html {
+        background-color: #11001c;
+        color: #f3f4f6;
+      }
+      html:not(.dark) {
+        background-color: #fdffff;
+        color: #111827;
+      }
+      body {
+        margin: 0;
+        background-color: inherit;
+        color: inherit;
+      }
+    </style>
+    <link rel="icon" type="image/svg+xml" href="/favicon_io_porfolio/android-chrome-512x512.png" />
     <link rel="preload" href="/fonts/Thunder-VF.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/GeneralSans-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <title>Umair | Portfolio</title>
   </head>
-  <body>
+  <body style="background-color: inherit; color: inherit;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
