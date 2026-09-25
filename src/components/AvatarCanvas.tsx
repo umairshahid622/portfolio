@@ -43,7 +43,7 @@ function AvatarModel() {
   return (
     <group ref={avatarRef} rotation={[0, -Math.PI / 2, 0]}>
       <Center>
-        <primitive object={scene} scale={2.0} />
+        <primitive object={scene} scale={1.35} />
       </Center>
     </group>
   );
@@ -53,9 +53,9 @@ useGLTF.preload("/my3dAvatar.glb");
 
 export default function AvatarCanvas() {
   return (
-    <div className="w-full h-full min-h-[480px] relative flex items-center justify-center">
+    <div className="w-full h-[50vh] min-h-[360px] max-h-[500px] relative flex items-center justify-center">
       <Canvas
-        camera={{ position: [0, 0, 2.1], fov: 42 }}
+        camera={{ position: [0, 0, 2.5], fov: 38 }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true }}
       >
@@ -65,7 +65,7 @@ export default function AvatarCanvas() {
         <directionalLight position={[0, -2, -2]} intensity={0.6} color="#15616d" />
 
         <Suspense fallback={<Loader />}>
-          <Float speed={1.8} rotationIntensity={0.15} floatIntensity={0.25}>
+          <Float speed={1.8} rotationIntensity={0.15} floatIntensity={0.15}>
             <AvatarModel />
           </Float>
         </Suspense>
