@@ -28,13 +28,13 @@ export default function App() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen w-full relative select-none bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300"
+      className="min-h-screen w-full relative select-none overflow-x-hidden bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300"
     >
       {/* Fixed Transparent Navigation Header */}
       <Header />
 
       {/* Main Content Sections */}
-      <main className="w-full relative flex flex-col">
+      <main className="w-full relative flex flex-col overflow-x-hidden">
         <Hero />
         <Overview />
       </main>

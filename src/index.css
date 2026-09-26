@@ -32,15 +32,15 @@
   --color-brand-green: #15616d;
   
 
-  /* Light */
+  /* Light (Warm Ivory/Cream Palette) */
 
-  --color-light-bg: #fdffff;
-  --color-light-surface: #ffffff;
-  --color-light-text: #111827;
-  --color-light-text-muted: #6b7280;
-  --color-light-border: #e5e7eb;
-  --color-light-card: #f2f2f2;
-  --color-light-card-border: #222725;
+  --color-light-bg: #f8f3ea;
+  --color-light-surface: #fffdf9;
+  --color-light-text: #1c1814;
+  --color-light-text-muted: #6f665a;
+  --color-light-border: #e6ded3;
+  --color-light-card: #f1eae0;
+  --color-light-card-border: #ddd4c5;
 
   /* Dark */
 
@@ -75,6 +75,7 @@
     color: var(--text-color);
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body,
@@ -91,6 +92,9 @@
   body {
     background-color: inherit;
     color: inherit;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
   }
 
   section {

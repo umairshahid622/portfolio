@@ -42,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove("dark");
       root.style.colorScheme = "light";
-      root.style.backgroundColor = "#fdffff";
+      root.style.backgroundColor = "#f8f3ea";
     }
     try {
       localStorage.setItem(STORAGE_KEY, theme);

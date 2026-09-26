@@ -75,7 +75,7 @@ export default function Overview() {
     <div
       ref={sectionRef}
       id="overview"
-      className="w-full min-h-screen snap-start relative flex flex-col justify-center px-6 md:px-12 lg:px-20 py-20 md:py-28 bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300"
+      className="w-full min-h-screen snap-start relative flex flex-col justify-center px-6 md:px-12 lg:px-20 py-20 md:py-28 bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300 overflow-x-hidden"
     >
       {/* Atmospheric lighting orbs */}
       <div className="absolute top-1/4 -right-28 w-96 h-96 bg-brand-orange/10 dark:bg-brand-orange/15 rounded-full blur-3xl pointer-events-none" />
@@ -93,7 +93,7 @@ export default function Overview() {
 
         {/* Display Title */}
         <div className="overview-heading">
-          <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight leading-[0.88] text-[var(--text-color)]">
+          <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-[0.25px] leading-[0.95] text-[var(--text-color)]">
             Professional <span className="font-heading text-brand-orange">Summary</span>
           </h2>
         </div>
