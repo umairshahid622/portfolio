@@ -266,7 +266,10 @@ export default function Hero() {
       ref={containerRef}
       className="w-full h-screen min-h-screen relative overflow-hidden flex items-center justify-center p-0 m-0"
     >
-      <canvas ref={canvasRef} className="w-full h-full block object-cover" />
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full block object-cover will-change-transform transform-gpu"
+      />
 
       {/* Animated hero copy layered over the canvas */}
       <div className="pointer-events-none absolute inset-0 z-10">

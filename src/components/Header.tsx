@@ -14,14 +14,15 @@ export default function Header() {
   }, []);
 
   return (
-    <header
-      className={`nav-bar fixed top-0 left-0 right-0 z-50 w-full px-6 md:px-12 py-4 transition-all duration-300 ${
-        isScrolled
-          ? "bg-[var(--background-color)]/70 backdrop-blur-md border-b border-black/5 dark:border-white/5 shadow-sm"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="w-full max-w-6xl mx-auto flex items-center justify-between">
+    <header className="nav-bar fixed top-0 left-0 right-0 z-50 w-full px-6 md:px-12 py-4">
+      {/* Background & blur layer with smooth GPU opacity transition (prevents currentColor white border flashing) */}
+      <div
+        className={`absolute inset-0 -z-10 pointer-events-none transition-opacity duration-300 bg-[var(--background-color)]/70 backdrop-blur-md border-b border-black/5 dark:border-white/5 shadow-sm ${
+          isScrolled ? "opacity-100" : "opacity-0"
+        }`}
+      />
+
+      <div className="w-full max-w-6xl mx-auto flex items-center justify-between relative z-10">
         {/* Brand / Logo */}
         <a href="#" className="flex items-center gap-3 group cursor-pointer">
           <div className="w-9 h-9 rounded-xl bg-brand-orange flex items-center justify-center text-white font-bold text-lg shadow-md shadow-brand-orange/20 group-hover:scale-105 transition-transform">

@@ -118,70 +118,6 @@ export default function Overview() {
         "(prefers-reduced-motion: reduce)"
       ).matches;
 
-      // 1. Entrance animation for surrounding section components
-      const entranceTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          toggleActions: "play none none reverse",
-        },
-        defaults: { ease: "power3.out" },
-      });
-
-      entranceTl
-        .from(".overview-tag", {
-          y: 20,
-          opacity: 0,
-          duration: 0.6,
-        })
-        .from(
-          ".overview-heading",
-          {
-            y: 35,
-            opacity: 0,
-            duration: 0.85,
-          },
-          "-=0.3"
-        )
-        .from(
-          ".overview-lead",
-          {
-            y: 25,
-            opacity: 0,
-            duration: 0.75,
-          },
-          "-=0.45"
-        )
-        .from(
-          ".overview-btn",
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.6,
-            stagger: 0.1,
-          },
-          "-=0.4"
-        )
-        .from(
-          ".overview-badge",
-          {
-            y: 15,
-            opacity: 0,
-            duration: 0.5,
-            stagger: 0.08,
-          },
-          "-=0.3"
-        )
-        .from(
-          ".overview-pillar",
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.65,
-            stagger: 0.08,
-          },
-          "-=0.35"
-        );
 
       // 2. Word-by-word left-to-right color wipe scrub
       const fills = rightColRef.current?.querySelectorAll<HTMLElement>(".word-fill");
@@ -192,21 +128,51 @@ export default function Overview() {
         return;
       }
 
-      const scrubTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: rightColRef.current,
-          start: "top 70%",
-          end: "bottom 65%",
-          scrub: 0.3,
-          invalidateOnRefresh: true,
-        },
+      const mm = gsap.matchMedia();
+
+      // Desktop: Freeze the entire overview view in place while user scrolls through text reveal
+      mm.add("(min-width: 1024px)", () => {
+        const scrubTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top top",
+            end: "+=1200",
+            pin: true,
+            pinSpacing: true,
+            scrub: true,
+            fastScrollEnd: true,
+            preventOverlaps: true,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        fills.forEach((fill) => {
+          scrubTl.to(fill, {
+            clipPath: "inset(0 0% 0 0)",
+            duration: 1,
+            ease: "none",
+          });
+        });
       });
 
-      fills.forEach((fill) => {
-        scrubTl.to(fill, {
-          clipPath: "inset(0 0% 0 0)",
-          duration: 1,
-          ease: "none",
+      // Mobile / Tablet portrait: Natural scroll reveal without viewport overflow
+      mm.add("(max-width: 1023px)", () => {
+        const scrubTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: rightColRef.current,
+            start: "top 75%",
+            end: "bottom 60%",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        fills.forEach((fill) => {
+          scrubTl.to(fill, {
+            clipPath: "inset(0 0% 0 0)",
+            duration: 1,
+            ease: "none",
+          });
         });
       });
     },
@@ -217,12 +183,12 @@ export default function Overview() {
     <div
       ref={sectionRef}
       id="overview"
-      className="w-full min-h-screen relative flex flex-col justify-center px-6 md:px-12 lg:px-20 py-16 md:py-20 lg:py-24 bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300"
+      className="w-full min-h-screen lg:h-screen relative flex flex-col justify-center px-6 md:px-12 lg:px-20 pt-20 pb-12 lg:pt-24 lg:pb-16 bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300"
     >
-      {/* Atmospheric lighting orbs - contained locally without parent overflow issues */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -right-28 w-96 h-96 bg-brand-orange/10 dark:bg-brand-orange/15 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -left-28 w-96 h-96 bg-brand-green/10 dark:bg-brand-green/15 rounded-full blur-3xl" />
+      {/* Atmospheric lighting orbs - GPU layer isolated to prevent expensive rasterization on scroll */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none transform-gpu will-change-transform">
+        <div className="absolute top-1/4 -right-28 w-96 h-96 bg-brand-orange/10 dark:bg-brand-orange/15 rounded-full blur-3xl transform-gpu will-change-transform" />
+        <div className="absolute bottom-1/4 -left-28 w-96 h-96 bg-brand-green/10 dark:bg-brand-green/15 rounded-full blur-3xl transform-gpu will-change-transform" />
       </div>
 
       <div className="max-w-6xl mx-auto w-full flex flex-col gap-8 md:gap-10 relative z-10">
@@ -233,14 +199,7 @@ export default function Overview() {
             01 / Overview
           </span>
           <span className="h-px w-16 bg-black/10 dark:bg-white/10" />
-        </div>
-
-        {/* Display Title */}
-        <div className="overview-heading">
-          <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-[0.25px] leading-[0.95] text-[var(--text-color)]">
-            Professional <span className="font-heading text-brand-orange">Summary</span>
-          </h2>
-        </div>
+        </div>        
 
         {/* Two-Column Editorial Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
@@ -298,6 +257,57 @@ export default function Overview() {
                 🎓 BS Information Technology (Bahria University)
               </span>
             </div>
+
+            {/* Competency Pillars moved below empty space in first column */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-black/10 dark:border-white/10 mt-1">
+              <div className="overview-pillar p-3 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
+                  Frontend Systems
+                </span>
+                <span className="text-sm font-semibold text-[var(--text-color)]">
+                  React &middot; Next.js &middot; Angular
+                </span>
+                <p className="text-xs text-[var(--paragraph-color)] leading-snug">
+                  Scalable UI architectures &amp; responsive interfaces
+                </p>
+              </div>
+
+              <div className="overview-pillar p-3 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
+                  Backend &amp; APIs
+                </span>
+                <span className="text-sm font-semibold text-[var(--text-color)]">
+                  Node.js &middot; Express &middot; NestJS
+                </span>
+                <p className="text-xs text-[var(--paragraph-color)] leading-snug">
+                  Secure RESTful services &amp; JWT authentication
+                </p>
+              </div>
+
+              <div className="overview-pillar p-3 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
+                  Mobile Engineering
+                </span>
+                <span className="text-sm font-semibold text-[var(--text-color)]">
+                  Flutter &middot; Dart &middot; GetX / Bloc
+                </span>
+                <p className="text-xs text-[var(--paragraph-color)] leading-snug">
+                  Multi-flavor builds, isolates &amp; localization
+                </p>
+              </div>
+
+              <div className="overview-pillar p-3 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
+                  Data &amp; Scale
+                </span>
+                <span className="text-sm font-semibold text-[var(--text-color)]">
+                  Databases &middot; Cloud &middot; CI/CD
+                </span>
+                <p className="text-xs text-[var(--paragraph-color)] leading-snug">
+                  End-to-end delivery &amp; performance tuning
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Right Column: Detailed Architectural Background with Left-to-Right Word Fill */}
@@ -305,16 +315,6 @@ export default function Overview() {
             ref={rightColRef}
             className="overview-right-col lg:col-span-6 flex flex-col gap-4 text-sm sm:text-base leading-relaxed"
           >
-            {/* Context bar / Scroll hint */}
-            <div className="flex items-center justify-between pb-1 border-b border-black/5 dark:border-white/5">
-              <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-brand-orange font-semibold">
-                Architecture &amp; Engineering Focus
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--paragraph-color)]/70 flex items-center gap-1.5">
-                <span>Scroll to reveal</span>
-                <span className="animate-bounce">↓</span>
-              </span>
-            </div>
 
             {/* Paragraph 1 */}
             <p className="leading-relaxed">
@@ -395,57 +395,6 @@ export default function Overview() {
                   </span>
                 </span>
               ))}
-            </p>
-          </div>
-        </div>
-
-        {/* Competency Pillars derived directly from Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4 border-t border-black/10 dark:border-white/10">
-          <div className="overview-pillar p-3.5 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
-              Frontend Systems
-            </span>
-            <span className="text-sm font-semibold text-[var(--text-color)]">
-              React &middot; Next.js &middot; Angular
-            </span>
-            <p className="text-xs text-[var(--paragraph-color)] leading-snug">
-              Scalable UI architectures &amp; responsive interfaces
-            </p>
-          </div>
-
-          <div className="overview-pillar p-3.5 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
-              Backend &amp; APIs
-            </span>
-            <span className="text-sm font-semibold text-[var(--text-color)]">
-              Node.js &middot; Express &middot; NestJS
-            </span>
-            <p className="text-xs text-[var(--paragraph-color)] leading-snug">
-              Secure RESTful services &amp; JWT authentication
-            </p>
-          </div>
-
-          <div className="overview-pillar p-3.5 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
-              Mobile Engineering
-            </span>
-            <span className="text-sm font-semibold text-[var(--text-color)]">
-              Flutter &middot; Dart &middot; GetX / Bloc
-            </span>
-            <p className="text-xs text-[var(--paragraph-color)] leading-snug">
-              Multi-flavor builds, isolates &amp; localization
-            </p>
-          </div>
-
-          <div className="overview-pillar p-3.5 rounded-xl border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex flex-col gap-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-semibold">
-              Data &amp; Scale
-            </span>
-            <span className="text-sm font-semibold text-[var(--text-color)]">
-              Databases &middot; Cloud &middot; CI/CD
-            </span>
-            <p className="text-xs text-[var(--paragraph-color)] leading-snug">
-              End-to-end delivery &amp; performance tuning
             </p>
           </div>
         </div>
