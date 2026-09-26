@@ -73,9 +73,8 @@
   html {
     background-color: var(--background-color);
     color: var(--text-color);
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-    overflow-x: hidden;
+    scroll-behavior: auto;
+    overflow-x: clip;
   }
 
   body,
@@ -92,13 +91,12 @@
   body {
     background-color: inherit;
     color: inherit;
-    overflow-x: hidden;
     width: 100%;
     max-width: 100%;
   }
 
   section {
-    @apply flex flex-col items-start min-h-screen snap-center space-y-6 relative overflow-hidden justify-start pt-38;
+    @apply flex flex-col items-start min-h-screen space-y-6 relative overflow-hidden justify-start pt-38;
   }
 
   /* Smooth transition only when user clicks toggle, never during page load */

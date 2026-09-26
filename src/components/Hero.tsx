@@ -264,7 +264,7 @@ export default function Hero() {
   return (
     <div
       ref={containerRef}
-      className="w-full h-screen min-h-screen relative overflow-hidden flex items-center justify-center p-0 m-0 snap-start"
+      className="w-full h-screen min-h-screen relative overflow-hidden flex items-center justify-center p-0 m-0"
     >
       <canvas ref={canvasRef} className="w-full h-full block object-cover" />
 
