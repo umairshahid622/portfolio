@@ -237,15 +237,58 @@ export default function Hero() {
     };
   }, [isDark, renderFrame]);
 
+  // Animate the hero copy on mount with masked line reveals (StrictMode-safe)
+  useGSAP(
+    () => {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+      if (prefersReducedMotion) return;
+
+      const tl = gsap.timeline({
+        delay: 0.55,
+        defaults: { ease: "expo.out" },
+      });
+
+      tl.from(".hero-eyebrow", { yPercent: 130, opacity: 0, duration: 0.9 })
+        .from(
+          ".hero-name-line",
+          { yPercent: 115, opacity: 0, duration: 1.1 },
+          "-=0.55"
+        )
+        .from(".hero-tagline", { y: 26, opacity: 0, duration: 0.9 }, "-=0.7");
+    },
+    { scope: containerRef }
+  );
+
   return (
     <div
       ref={containerRef}
       className="w-full h-screen min-h-screen relative overflow-hidden flex items-center justify-center p-0 m-0"
     >
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full block object-cover"
-      />
+      <canvas ref={canvasRef} className="w-full h-full block object-cover" />
+
+      {/* Animated hero copy layered over the canvas */}
+      <div className="pointer-events-none absolute inset-0 z-10">
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-6 pb-32 md:px-12 md:pb-28">
+          <div className="overflow-hidden">
+            <p className="hero-eyebrow flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-brand-orange md:text-sm">
+              <span className="inline-block h-px w-8 bg-brand-orange md:w-12" />
+              Full-Stack Developer
+            </p>
+          </div>
+
+          <div className="mt-3 overflow-hidden pb-[0.15em] md:mt-4">
+            <h1 className="hero-name-line text-5xl leading-[0.9] text-white sm:text-6xl md:text-8xl lg:text-9xl">
+              Umair <span className="font-heading text-brand-orange">Shahid</span>
+            </h1>
+          </div>
+
+          <p className="hero-tagline mt-5 max-w-xl text-base text-white/90 md:mt-6 md:text-lg">
+            Developing Modern Full-Stack Applications
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

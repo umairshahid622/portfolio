@@ -11,10 +11,10 @@ export default function Header() {
             U
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-sm tracking-tight text-[var(--text-color)] drop-shadow-sm">
+            <span className="font-semibold text-sm tracking-tight text-white">
               Umair Shahid
             </span>
-            <span className="text-xs text-[var(--paragraph-color)] drop-shadow-sm">
+            <span className="text-xs text-white/80">
               Creative Technologist
             </span>
           </div>
