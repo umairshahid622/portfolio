@@ -1,31 +1,66 @@
+import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 export default function Header() {
   const { isDark, toggleTheme } = useTheme();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="nav-bar fixed top-0 left-0 right-0 z-50 w-full bg-transparent px-6 md:px-12 py-5 transition-colors duration-300">
+    <header
+      className={`nav-bar fixed top-0 left-0 right-0 z-50 w-full px-6 md:px-12 py-4 transition-all duration-300 ${
+        isScrolled
+          ? "bg-[var(--background-color)]/70 backdrop-blur-md border-b border-black/5 dark:border-white/5 shadow-sm"
+          : "bg-transparent"
+      }`}
+    >
       <div className="w-full max-w-6xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-orange flex items-center justify-center text-white font-bold text-lg shadow-md shadow-brand-orange/20">
+        {/* Brand / Logo */}
+        <a href="#" className="flex items-center gap-3 group cursor-pointer">
+          <div className="w-9 h-9 rounded-xl bg-brand-orange flex items-center justify-center text-white font-bold text-lg shadow-md shadow-brand-orange/20 group-hover:scale-105 transition-transform">
             U
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-sm tracking-tight text-white">
+            <span className="font-semibold text-sm tracking-tight text-[var(--text-color)] drop-shadow-sm">
               Umair Shahid
             </span>
-            <span className="text-xs text-white/80">
+            <span className="text-xs text-[var(--paragraph-color)] drop-shadow-sm">
               Creative Technologist
             </span>
           </div>
-        </div>
+        </a>
 
-        <div className="flex items-center gap-3">
+        {/* Navigation Items & Theme Toggle */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          <nav className="hidden sm:flex items-center gap-6 text-xs uppercase tracking-wider font-mono text-[var(--paragraph-color)]">
+            <a
+              href="#overview"
+              className="hover:text-brand-orange transition-colors cursor-pointer"
+            >
+              Overview
+            </a>
+            <a
+              href="/Resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-brand-orange transition-colors cursor-pointer"
+            >
+              Resume
+            </a>
+          </nav>
+
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
             aria-label="Toggle Theme"
-            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-white/40 dark:bg-black/40 backdrop-blur-md hover:bg-white/70 dark:hover:bg-black/60 transition-all shadow-sm active:scale-95 cursor-pointer"
+            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-white/40 dark:bg-black/40 backdrop-blur-md hover:bg-white/70 dark:hover:bg-black/60 transition-all shadow-sm active:scale-95 cursor-pointer text-[var(--text-color)]"
           >
             {isDark ? (
               <svg
@@ -45,7 +80,7 @@ export default function Header() {
             ) : (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5 text-zinc-700"
+                className="w-5 h-5 text-zinc-700 dark:text-zinc-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

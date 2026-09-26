@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
+import Overview from "./components/Overview";
 
 // Register GSAP plugins
 gsap.registerPlugin(useGSAP);
@@ -19,16 +20,7 @@ export default function App() {
         y: -30,
         opacity: 0,
         duration: 0.8,
-      }).from(
-        ".hero-canvas-container",
-        {
-          opacity: 0,
-          scale: 0.98,
-          duration: 1.1,
-          ease: "expo.out",
-        },
-        "-=0.4"
-      );
+      });
     },
     { scope: containerRef }
   );
@@ -36,21 +28,20 @@ export default function App() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen w-full relative overflow-x-hidden select-none bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300"
+      className="min-h-screen w-full relative select-none bg-[var(--background-color)] text-[var(--text-color)] transition-colors duration-300"
     >
       {/* Fixed Transparent Navigation Header */}
       <Header />
 
-      {/* Full-Screen Hero Canvas Section */}
-      <main className="w-full h-screen min-h-screen relative hero-canvas-container">
+      {/* Main Content Sections */}
+      <main className="w-full relative flex flex-col">
         <Hero />
+        <Overview />
       </main>
 
-      {/* Floating Transparent Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 w-full px-6 md:px-12 py-3 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Footer />
-        </div>
+      {/* Page Footer */}
+      <div className="w-full px-6 md:px-12 py-4 bg-[var(--background-color)] border-t border-black/5 dark:border-white/5">
+        <Footer />
       </div>
     </div>
   );

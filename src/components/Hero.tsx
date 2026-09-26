@@ -264,13 +264,13 @@ export default function Hero() {
   return (
     <div
       ref={containerRef}
-      className="w-full h-screen min-h-screen relative overflow-hidden flex items-center justify-center p-0 m-0"
+      className="w-full h-screen min-h-screen relative overflow-hidden flex items-center justify-center p-0 m-0 snap-start"
     >
       <canvas ref={canvasRef} className="w-full h-full block object-cover" />
 
       {/* Animated hero copy layered over the canvas */}
       <div className="pointer-events-none absolute inset-0 z-10">
-        <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-6 pb-32 md:px-12 md:pb-28">
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-6 pb-24 md:px-12 md:pb-24">
           <div className="overflow-hidden">
             <p className="hero-eyebrow flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-brand-orange md:text-sm">
               <span className="inline-block h-px w-8 bg-brand-orange md:w-12" />
@@ -284,9 +284,32 @@ export default function Hero() {
             </h1>
           </div>
 
-          <p className="hero-tagline mt-5 max-w-xl text-base text-white/90 md:mt-6 md:text-lg">
-            Developing Modern Full-Stack Applications
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-5 md:mt-6">
+            <p className="hero-tagline max-w-xl text-base text-white/90 md:text-lg">
+              Developing Modern Full-Stack Applications
+            </p>
+
+            <a
+              href="#overview"
+              className="hero-tagline pointer-events-auto inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-white/80 hover:text-brand-orange transition-colors cursor-pointer w-fit"
+            >
+              <span>Explore Overview</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4 animate-bounce"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </div>
