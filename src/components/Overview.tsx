@@ -2,6 +2,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import LiquidButton from "./LiquidButton";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -214,38 +215,43 @@ export default function Overview() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              {/* Direct Resume Download Link */}
-              <a
+              {/* Direct Resume Download Liquid Button */}
+              <LiquidButton
                 href="/Resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="overview-btn inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-brand-orange text-white font-medium text-xs sm:text-sm shadow-md shadow-brand-orange/20 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                variant="primary"
+                className="overview-btn"
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                }
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <span>View Full Resume (PDF)</span>
-              </a>
+                View Full Resume (PDF)
+              </LiquidButton>
 
-              {/* Email Contact Link */}
-              <a
+              {/* Email Contact Liquid Button */}
+              <LiquidButton
                 href="mailto:shahidumair622@gmail.com"
-                className="overview-btn inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.04] text-xs sm:text-sm text-[var(--text-color)] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all cursor-pointer"
+                variant="secondary"
+                className="overview-btn"
+                iconPosition="right"
+                icon={<span className="text-brand-orange group-hover:text-white transition-colors duration-300 font-bold">→</span>}
               >
-                <span>Get in touch</span>
-                <span className="text-brand-orange">→</span>
-              </a>
+                Get in touch
+              </LiquidButton>
             </div>
 
             {/* Quick Context Badges */}
