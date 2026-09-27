@@ -2,4 +2,61 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Heading Font */
+@theme {
+  /*
+   * ==========================================================================
+   * Earthy Color Palette:
+   * #606c38 - Olive / Moss Green
+   * #283618 - Dark Moss / Deep Forest Green
+   * #fefae0 - Cornsilk / Warm Cream
+   * #dda15e - Earth Yellow / Warm Sand
+   * #bc6c25 - Tiger's Eye / Terracotta / Copper
+   * ==========================================================================
+   */
+
+  /* Natural / Descriptive names */
+  --color-moss: #606c38;
+  --color-olive: #606c38;
+  --color-forest: #283618;
+  --color-cream: #fefae0;
+  --color-cornsilk: #fefae0;
+  --color-sand: #dda15e;
+  --color-earth-yellow: #dda15e;
+  --color-terracotta: #bc6c25;
+  --color-copper: #bc6c25;
+  --color-tigers-eye: #bc6c25;
+
+  /* Earth namespace: `bg-earth-moss`, `text-earth-cream`, etc. */
+  --color-earth-moss: #606c38;
+  --color-earth-olive: #606c38;
+  --color-earth-forest: #283618;
+  --color-earth-dark: #283618;
+  --color-earth-cream: #fefae0;
+  --color-earth-cornsilk: #fefae0;
+  --color-earth-light: #fefae0;
+  --color-earth-sand: #dda15e;
+  --color-earth-yellow: #dda15e;
+  --color-earth-terracotta: #bc6c25;
+  --color-earth-copper: #bc6c25;
+  --color-earth-rust: #bc6c25;
+
+  /* Numbered palette tokens: `bg-palette-1` to `bg-palette-5` */
+  --color-palette-1: #606c38;
+  --color-palette-2: #283618;
+  --color-palette-3: #fefae0;
+  --color-palette-4: #dda15e;
+  --color-palette-5: #bc6c25;
+
+  /* Hex-coded tokens: `bg-palette-606c38`, `text-palette-fefae0`, etc. */
+  --color-palette-606c38: #606c38;
+  --color-palette-283618: #283618;
+  --color-palette-fefae0: #fefae0;
+  --color-palette-dda15e: #dda15e;
+  --color-palette-bc6c25: #bc6c25;
+}
+
+@media (pointer: fine) {
+  body, a, button, input, textarea, select, [role="button"] {
+    cursor: none !important;
+  }
+}
