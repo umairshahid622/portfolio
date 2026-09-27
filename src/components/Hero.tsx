@@ -223,7 +223,7 @@ export default function Hero() {
     const tween = gsap.to(animTarget.current, {
       frame: targetFrame,
       duration,
-      ease: "power2.inOut",
+      ease: "sine.inOut",
       onUpdate: () => {
         renderFrame(animTarget.current.frame);
       },
