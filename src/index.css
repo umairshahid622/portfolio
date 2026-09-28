@@ -2,7 +2,26 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/Archivo-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+}
+
 @theme {
+  --font-heading: "Clash Display", system-ui, -apple-system, sans-serif;
+  --font-sans: "Archivo", system-ui, -apple-system, sans-serif;
+
   /*
    * ==========================================================================
    * Earthy Color Palette:
@@ -53,6 +72,15 @@
   --color-palette-fefae0: #fefae0;
   --color-palette-dda15e: #dda15e;
   --color-palette-bc6c25: #bc6c25;
+}
+
+body {
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .font-heading {
+  font-family: var(--font-heading);
 }
 
 @media (pointer: fine) {
