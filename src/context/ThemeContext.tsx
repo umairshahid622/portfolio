@@ -2,9 +2,39 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 export type Theme = "dark" | "light";
 
+export const THEME_PALETTE = {
+  moss: "#606c38",       // Olive / Moss Green
+  forest: "#283618",     // Dark Moss / Deep Forest Green
+  cream: "#fefae0",      // Cornsilk / Warm Cream
+  sand: "#dda15e",       // Earth Yellow / Warm Sand
+  terracotta: "#bc6c25", // Tiger's Eye / Terracotta / Copper
+} as const;
+
+export const THEME_COLORS = {
+  dark: {
+    background: "#283618", // Dark Moss / Deep Forest Green
+    surface: "#1f2a13",
+    text: "#fefae0",       // Cornsilk / Warm Cream
+    textMuted: "#dda15e",  // Warm Sand
+    accent: "#bc6c25",     // Terracotta
+    primary: "#606c38",    // Olive / Moss Green
+    ...THEME_PALETTE,
+  },
+  light: {
+    background: "#fefae0", // Cornsilk / Warm Cream
+    surface: "#f5f0d0",
+    text: "#283618",       // Dark Moss / Deep Forest Green
+    textMuted: "#606c38",  // Olive / Moss Green
+    accent: "#bc6c25",     // Terracotta
+    primary: "#dda15e",    // Warm Sand
+    ...THEME_PALETTE,
+  },
+} as const;
+
 interface ThemeContextType {
   theme: Theme;
   isDark: boolean;
+  colors: (typeof THEME_COLORS)[Theme];
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 }
@@ -35,14 +65,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
+    const currentColors = THEME_COLORS[theme];
     if (theme === "dark") {
       root.classList.add("dark");
       root.style.colorScheme = "dark";
-      root.style.backgroundColor = "#11001c";
+      root.style.backgroundColor = currentColors.background;
+      root.style.color = currentColors.text;
     } else {
       root.classList.remove("dark");
       root.style.colorScheme = "light";
-      root.style.backgroundColor = "#f8f3ea";
+      root.style.backgroundColor = currentColors.background;
+      root.style.color = currentColors.text;
     }
     try {
       localStorage.setItem(STORAGE_KEY, theme);
@@ -86,6 +119,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       value={{
         theme,
         isDark: theme === "dark",
+        colors: THEME_COLORS[theme],
         setTheme,
         toggleTheme,
       }}

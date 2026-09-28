@@ -56,6 +56,12 @@ export default function SmoothCursor() {
       const trailContainer = trailContainerRef.current;
       if (!dot || !ring || !trailContainer) return;
 
+      // Set initial centering transform on both elements so GSAP manages xPercent & yPercent
+      gsap.set([dot, ring], {
+        xPercent: -50,
+        yPercent: -50,
+      });
+
       // Position helpers using gsap.quickTo for maximum 60/120fps performance
       const xToDot = gsap.quickTo(dot, "x", { duration: 0.1, ease: "power2.out" });
       const yToDot = gsap.quickTo(dot, "y", { duration: 0.1, ease: "power2.out" });
@@ -166,6 +172,8 @@ export default function SmoothCursor() {
           gsap.set([dot, ring], {
             x: clientX,
             y: clientY,
+            xPercent: -50,
+            yPercent: -50,
             opacity: 1,
             scale: 1,
           });
@@ -314,9 +322,9 @@ export default function SmoothCursor() {
       {/* Smooth Cursor Sign </> */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[10000] opacity-0 will-change-transform flex items-center justify-center select-none"
+        className="fixed top-0 left-0 w-10 h-10 pointer-events-none z-[10000] opacity-0 will-change-transform flex items-center justify-center select-none"
       >
-        <span className="font-mono font-extrabold text-[12px] sm:text-[13px] tracking-tight text-terracotta dark:text-sand drop-shadow-[0_0_8px_rgba(188,108,37,0.5)] dark:drop-shadow-[0_0_8px_rgba(221,161,94,0.5)] leading-none select-none">
+        <span className="font-mono font-extrabold text-[12px] sm:text-[13px] tracking-tight text-terracotta dark:text-sand drop-shadow-[0_0_8px_rgba(188,108,37,0.5)] dark:drop-shadow-[0_0_8px_rgba(221,161,94,0.5)] leading-none select-none text-center">
           {"</>"}
         </span>
       </div>
@@ -324,7 +332,7 @@ export default function SmoothCursor() {
       {/* Smooth Cursor Follower Ring */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-terracotta/40 dark:border-sand/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
+        className="fixed top-0 left-0 w-10 h-10 rounded-full border border-terracotta/40 dark:border-sand/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
       />
     </div>
   );

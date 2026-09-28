@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark" style="color-scheme: dark; background-color: #11001c;">
+<html lang="en" class="dark" style="color-scheme: dark; background-color: #283618;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,11 +13,11 @@
           if (isDark) {
             root.classList.add('dark');
             root.style.colorScheme = 'dark';
-            root.style.backgroundColor = '#11001c';
+            root.style.backgroundColor = '#283618';
           } else {
             root.classList.remove('dark');
             root.style.colorScheme = 'light';
-            root.style.backgroundColor = '#f8f3ea';
+            root.style.backgroundColor = '#fefae0';
           }
         } catch (e) {}
       })();
@@ -25,12 +25,12 @@
     <style>
       /* Critical inline styles to prevent FOUC / flash before CSS loads */
       html {
-        background-color: #11001c;
-        color: #f3f4f6;
+        background-color: #283618;
+        color: #fefae0;
       }
       html:not(.dark) {
-        background-color: #f8f3ea;
-        color: #1c1814;
+        background-color: #fefae0;
+        color: #283618;
       }
       body {
         margin: 0;
