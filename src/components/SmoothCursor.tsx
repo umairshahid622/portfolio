@@ -1,42 +1,9 @@
 import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import reactLogo from "../assets/icons/react.svg";
-import nextjsLogo from "../assets/icons/nextjs.svg";
-import flutterLogo from "../assets/icons/flutter.svg";
-import nodejsLogo from "../assets/icons/nodejs.svg";
-import expressLogo from "../assets/icons/express.svg";
-import nestjsLogo from "../assets/icons/nestjs.svg";
-import postgresLogo from "../assets/icons/postgresql.svg";
-import mongodbLogo from "../assets/icons/mongodb.svg";
-import githubLogo from "../assets/icons/github.svg";
-import tailwindLogo from "../assets/icons/tailwindcss.svg";
-import gsapLogo from "../assets/icons/gsap.svg";
-import framerLogo from "../assets/icons/framermotion.svg";
+import { LOGOS, CURSOR_CONFIG } from "../constants";
 
 gsap.registerPlugin(useGSAP);
-
-interface LogoItem {
-  name: string;
-  src: string;
-  isMonochrome: boolean;
-  accentColor: string;
-}
-
-const LOGOS: LogoItem[] = [
-  { name: "React", src: reactLogo, isMonochrome: false, accentColor: "#61DAFB" },
-  { name: "Next.js", src: nextjsLogo, isMonochrome: true, accentColor: "#000000" },
-  { name: "Flutter", src: flutterLogo, isMonochrome: false, accentColor: "#02569B" },
-  { name: "Node.js", src: nodejsLogo, isMonochrome: false, accentColor: "#5FA04E" },
-  { name: "Express", src: expressLogo, isMonochrome: true, accentColor: "#000000" },
-  { name: "NestJS", src: nestjsLogo, isMonochrome: false, accentColor: "#E0234E" },
-  { name: "PostgreSQL", src: postgresLogo, isMonochrome: false, accentColor: "#336791" },
-  { name: "MongoDB", src: mongodbLogo, isMonochrome: false, accentColor: "#47A248" },
-  { name: "GitHub", src: githubLogo, isMonochrome: true, accentColor: "#000000" },
-  { name: "Tailwind CSS", src: tailwindLogo, isMonochrome: false, accentColor: "#06B6D4" },
-  { name: "GSAP", src: gsapLogo, isMonochrome: false, accentColor: "#0ae448" },
-  { name: "Framer Motion", src: framerLogo, isMonochrome: false, accentColor: "#0055FF" },
-];
 
 export default function SmoothCursor() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,9 +44,7 @@ export default function SmoothCursor() {
       let isMoving = false;
       let stopTimer: ReturnType<typeof setTimeout> | null = null;
 
-      const DISTANCE_THRESHOLD = 50; // pixels moved before next logo pop
-      const MIN_SPAWN_INTERVAL = 60; // ms minimum delay to prevent stacking
-      const STOP_DELAY = 220; // ms of no mousemove considered as cursor stopped
+      const { DISTANCE_THRESHOLD, MIN_SPAWN_INTERVAL, STOP_DELAY } = CURSOR_CONFIG;
       const activeElements: HTMLDivElement[] = [];
 
       // Spawn next logo in synchronized order so every icon spawns
