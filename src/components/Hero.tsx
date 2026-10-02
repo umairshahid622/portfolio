@@ -132,23 +132,10 @@ export default function Hero() {
       <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-14 my-auto">
         {/* Left Column: Typography, Narrative, and Calls-to-Action */}
         <div className="w-full lg:w-1/2 flex flex-col items-start z-10">
-          {/* Status badge */}
-          <div className="hero-status-pill inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-earth-forest/10 dark:border-earth-cream/15 bg-earth-forest/5 dark:bg-earth-surface/50 backdrop-blur-md mb-6 shadow-sm">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-earth-terracotta dark:bg-earth-sand opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-earth-terracotta dark:bg-earth-sand" />
-            </span>
-            <span className="text-xs font-mono font-medium tracking-wide text-earth-moss dark:text-earth-sand uppercase">
-              Available for Full-Time &amp; Projects
-            </span>
-          </div>
 
-          {/* Intro line */}
-          <div className="overflow-hidden mb-2">
-            <p className="hero-heading-line text-sm sm:text-base font-mono uppercase tracking-[0.25em] text-earth-moss dark:text-earth-sand font-semibold">
-              Hi! I am
-            </p>
-          </div>
+
+
+
 
           {/* Main Name Heading */}
           <div className="overflow-hidden mb-4">
@@ -159,87 +146,15 @@ export default function Hero() {
               </span>
             </h1>
           </div>
-
           {/* Subheading / Title */}
           <div className="overflow-hidden mb-6">
             <h2 className="hero-heading-line text-xl sm:text-2xl md:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight">
-              Full-Stack Engineer &amp; Creative Technologist
+              Full-Stack Engineer
             </h2>
           </div>
-
-          {/* Narrative description */}
-          <p className="hero-description text-base sm:text-lg text-earth-forest/80 dark:text-earth-cream/75 max-w-xl leading-relaxed mb-8">
-            Engineering scalable web applications with clean architectures, intuitive user
-            interfaces, and interactive 3D digital experiences that engage and inspire.
-          </p>
-
-          {/* Primary & Secondary Call to Actions */}
-          <div className="hero-cta-group flex flex-wrap items-center gap-4 mb-8">
-            <AppButton
-              href="#projects"
-              variant="primary"
-              size="lg"
-              icon="arrow-right"
-              iconPosition="right"
-            >
-              Explore Projects
-            </AppButton>
-
-            <AppButton
-              href="/Resume.pdf"
-              target="_blank"
-              download="Umair_Shahid_Resume.pdf"
-              variant="secondary"
-              size="lg"
-              icon="download"
-              iconPosition="left"
-            >
-              Download CV
-            </AppButton>
-          </div>
-
-          {/* Tech Stack Pills */}
-          <div className="w-full pt-4 border-t border-earth-forest/10 dark:border-earth-cream/10">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-earth-moss dark:text-earth-sand/80 block mb-3">
-              Core Technologies &amp; Tools
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {TECH_BADGES.map((tech) => (
-                <span
-                  key={tech}
-                  className="hero-tech-badge px-3 py-1 rounded-lg text-xs font-mono font-medium bg-earth-forest/5 dark:bg-earth-surface/60 border border-earth-forest/10 dark:border-earth-cream/10 text-earth-forest/80 dark:text-earth-cream/85 hover:border-earth-terracotta/40 hover:text-earth-terracotta dark:hover:text-earth-sand transition-colors"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
+          
         </div>
-
-        {/* Right Column: Seamless 3D Avatar (No box/frame) */}
-        <div className="hero-avatar-box w-full lg:w-1/2 h-[480px] sm:h-[560px] lg:h-[640px] xl:h-[700px] relative flex items-center justify-center">
-          {/* Subtle ambient organic glow behind the character */}
-          <div className="absolute w-[300px] sm:w-[420px] h-[300px] sm:h-[420px] rounded-full bg-gradient-to-tr from-earth-moss/25 via-earth-terracotta/15 to-earth-sand/20 blur-3xl -z-10 pointer-events-none" />
-
-          {/* Borderless 3D Canvas */}
-          <AvatarCanvas isDark={isDark} />
-        </div>
-      </div>
-
-      {/* Bottom Scroll Down Hint */}
-      <div className="hero-scroll-indicator w-full flex flex-col items-center justify-center pt-8 pb-2 z-10 pointer-events-none">
-        <a
-          href="#about"
-          className="pointer-events-auto flex flex-col items-center gap-2 text-earth-moss/80 dark:text-earth-sand/80 hover:text-earth-forest dark:hover:text-earth-cream transition-colors group cursor-pointer"
-        >
-          <span className="text-[10px] font-mono uppercase tracking-[0.25em]">
-            Scroll Down
-          </span>
-          <div className="w-5 h-8 rounded-full border border-earth-moss/40 dark:border-earth-sand/40 group-hover:border-earth-terracotta dark:group-hover:border-earth-sand flex items-start justify-center p-1 transition-colors">
-            <div className="w-1 h-2 rounded-full bg-earth-terracotta dark:bg-earth-sand animate-bounce" />
-          </div>
-        </a>
-      </div>
+      </div>      
     </section>
   );
 }
