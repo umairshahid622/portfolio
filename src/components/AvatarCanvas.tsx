@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { useGLTF, useAnimations, Center, Float, Html, useProgress, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
@@ -27,89 +27,19 @@ function Loader() {
 }
 
 function AvatarModel() {
-  const { scene, animations } = useGLTF("/my3DAvatarWithBones.glb");
-
-  // Modify animation tracks so the arms hang naturally and very close to the pants
-  const adjustedAnimations = useMemo(() => {
-    // Upper arm: Rotate inwards down against the ribcage and pants
-    const offsetUpperArmL = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(0, (-3 * Math.PI) / 180, (-19 * Math.PI) / 180, "YXZ")
-    );
-    const offsetUpperArmR = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(0, (3 * Math.PI) / 180, (19 * Math.PI) / 180, "YXZ")
-    );
-
-    // Forearm: Keep forearms hanging flush right beside the pants
-    const offsetForearmL = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(0, 0, (-17.5 * Math.PI) / 180, "XYZ")
-    );
-    const offsetForearmR = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(0, 0, (17.5 * Math.PI) / 180, "XYZ")
-    );
-
-    // Hands aligned right along the outer seam of the pants
-    const offsetHandL = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(0, 0, (-6 * Math.PI) / 180, "XYZ")
-    );
-    const offsetHandR = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(0, 0, (6 * Math.PI) / 180, "XYZ")
-    );
-
-    const qTemp = new THREE.Quaternion();
-
-    return animations.map((clip) => {
-      const cloned = clip.clone();
-      cloned.tracks = cloned.tracks.map((track) => {
-        const clonedTrack = track.clone();
-        if (clonedTrack.name === "DEF-upper_armL.quaternion") {
-          for (let i = 0; i < clonedTrack.values.length; i += 4) {
-            qTemp.fromArray(clonedTrack.values, i);
-            qTemp.premultiply(offsetUpperArmL);
-            qTemp.toArray(clonedTrack.values, i);
-          }
-        } else if (clonedTrack.name === "DEF-upper_armR.quaternion") {
-          for (let i = 0; i < clonedTrack.values.length; i += 4) {
-            qTemp.fromArray(clonedTrack.values, i);
-            qTemp.premultiply(offsetUpperArmR);
-            qTemp.toArray(clonedTrack.values, i);
-          }
-        } else if (clonedTrack.name === "DEF-forearmL.quaternion") {
-          for (let i = 0; i < clonedTrack.values.length; i += 4) {
-            qTemp.fromArray(clonedTrack.values, i);
-            qTemp.premultiply(offsetForearmL);
-            qTemp.toArray(clonedTrack.values, i);
-          }
-        } else if (clonedTrack.name === "DEF-forearmR.quaternion") {
-          for (let i = 0; i < clonedTrack.values.length; i += 4) {
-            qTemp.fromArray(clonedTrack.values, i);
-            qTemp.premultiply(offsetForearmR);
-            qTemp.toArray(clonedTrack.values, i);
-          }
-        } else if (clonedTrack.name === "DEF-handL.quaternion") {
-          for (let i = 0; i < clonedTrack.values.length; i += 4) {
-            qTemp.fromArray(clonedTrack.values, i);
-            qTemp.premultiply(offsetHandL);
-            qTemp.toArray(clonedTrack.values, i);
-          }
-        } else if (clonedTrack.name === "DEF-handR.quaternion") {
-          for (let i = 0; i < clonedTrack.values.length; i += 4) {
-            qTemp.fromArray(clonedTrack.values, i);
-            qTemp.premultiply(offsetHandR);
-            qTemp.toArray(clonedTrack.values, i);
-          }
-        }
-        return clonedTrack;
-      });
-      return cloned;
-    });
-  }, [animations]);
+  const { scene, animations } = useGLTF("/Animated3dModel.glb");
 
   // Pass scene directly to useAnimations so clips bind directly to scene bones
-  const { actions } = useAnimations(adjustedAnimations, scene);
+  const { actions } = useAnimations(animations, scene);
 
-  // Play 'Idle' animation on mount
+  // Play '00_Idle' (or fallback) animation on mount
   useEffect(() => {
-    const idleAction = actions["Idle"];
+    const idleAction =
+      actions["00_Idle"] ||
+      actions["Idle"] ||
+      actions["01_Hands_To_Pockets"] ||
+      Object.values(actions)[0];
+
     if (idleAction) {
       idleAction.reset().fadeIn(0.6).play();
     }
@@ -138,7 +68,7 @@ function AvatarModel() {
   );
 }
 
-useGLTF.preload("/my3DAvatarWithBones.glb");
+useGLTF.preload("/Animated3dModel.glb");
 
 interface AvatarCanvasProps {
   isDark?: boolean;

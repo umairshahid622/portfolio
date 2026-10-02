@@ -1,16 +1,16 @@
 import type { LogoItem } from "../interfaces/cursor";
-import reactLogo from "../assets/icons/react.svg";
-import nextjsLogo from "../assets/icons/nextjs.svg";
-import flutterLogo from "../assets/icons/flutter.svg";
-import nodejsLogo from "../assets/icons/nodejs.svg";
-import expressLogo from "../assets/icons/express.svg";
-import nestjsLogo from "../assets/icons/nestjs.svg";
-import postgresLogo from "../assets/icons/postgresql.svg";
-import mongodbLogo from "../assets/icons/mongodb.svg";
-import githubLogo from "../assets/icons/github.svg";
-import tailwindLogo from "../assets/icons/tailwindcss.svg";
-import gsapLogo from "../assets/icons/gsap.svg";
-import framerLogo from "../assets/icons/framermotion.svg";
+import reactLogo from "../assets/CursorIcons/react.svg";
+import nextjsLogo from "../assets/CursorIcons/nextjs.svg";
+import flutterLogo from "../assets/CursorIcons/flutter.svg";
+import nodejsLogo from "../assets/CursorIcons/nodejs.svg";
+import expressLogo from "../assets/CursorIcons/express.svg";
+import nestjsLogo from "../assets/CursorIcons/nestjs.svg";
+import postgresLogo from "../assets/CursorIcons/postgresql.svg";
+import mongodbLogo from "../assets/CursorIcons/mongodb.svg";
+import githubLogo from "../assets/CursorIcons/github.svg";
+import tailwindLogo from "../assets/CursorIcons/tailwindcss.svg";
+import gsapLogo from "../assets/CursorIcons/gsap.svg";
+import framerLogo from "../assets/CursorIcons/framermotion.svg";
 
 export const LOGOS: LogoItem[] = [
   { name: "React", src: reactLogo, isMonochrome: false, accentColor: "#61DAFB" },

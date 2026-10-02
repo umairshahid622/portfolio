@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useTheme } from "../context/ThemeContext";
 import AvatarCanvas from "./AvatarCanvas";
+import AppButton from "./AppButton";
 
 gsap.registerPlugin(useGSAP);
 
@@ -174,33 +175,27 @@ export default function Hero() {
 
           {/* Primary & Secondary Call to Actions */}
           <div className="hero-cta-group flex flex-wrap items-center gap-4 mb-8">
-            <a
+            <AppButton
               href="#projects"
-              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-earth-terracotta to-earth-sand hover:from-earth-sand hover:to-earth-terracotta text-earth-cream dark:text-earth-forest font-bold text-sm tracking-wide shadow-lg shadow-earth-terracotta/25 hover:shadow-earth-terracotta/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2 group cursor-pointer"
+              variant="primary"
+              size="lg"
+              icon="arrow-right"
+              iconPosition="right"
             >
-              <span>Explore Projects</span>
-              <svg
-                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </a>
+              Explore Projects
+            </AppButton>
 
-            <a
+            <AppButton
               href="/Resume.pdf"
               target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3.5 rounded-xl border border-earth-forest/20 dark:border-earth-cream/20 hover:border-earth-terracotta text-earth-forest dark:text-earth-cream bg-earth-forest/5 dark:bg-earth-forest/40 hover:bg-earth-terracotta/10 backdrop-blur-md font-semibold text-sm tracking-wide transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm"
+              download="Umair_Shahid_Resume.pdf"
+              variant="secondary"
+              size="lg"
+              icon="download"
+              iconPosition="left"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              <span>Download CV</span>
-            </a>
+              Download CV
+            </AppButton>
           </div>
 
           {/* Tech Stack Pills */}

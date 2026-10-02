@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import AppButton from "./AppButton";
 
 export default function Header() {
   const { isDark, toggleTheme } = useTheme();
@@ -56,57 +57,26 @@ export default function Header() {
             >
               Projects
             </a>
-            <a
+            <AppButton
               href="/Resume.pdf"
               target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-lg border border-earth-moss/30 dark:border-earth-sand/30 hover:border-earth-terracotta text-earth-forest dark:text-earth-sand hover:text-earth-terracotta dark:hover:text-earth-cream bg-earth-moss/10 dark:bg-earth-sand/10 transition-all cursor-pointer flex items-center gap-1.5"
+              variant="outline"
+              size="sm"
+              icon="external-link"
+              iconPosition="right"
             >
-              <span>Resume</span>
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
+              Resume
+            </AppButton>
           </nav>
 
           {/* Theme Toggle Button */}
-          <button
+          <AppButton
+            variant="icon"
             onClick={toggleTheme}
             aria-label="Toggle Theme"
-            className="p-2.5 rounded-xl border border-earth-forest/15 dark:border-earth-cream/15 bg-earth-forest/10 dark:bg-earth-forest/60 backdrop-blur-md hover:border-earth-terracotta transition-all shadow-sm active:scale-95 cursor-pointer text-earth-forest dark:text-earth-cream"
-          >
-            {isDark ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4 text-earth-sand"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4 text-earth-terracotta"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                />
-              </svg>
-            )}
-          </button>
+            icon={isDark ? "sun" : "moon"}
+            iconClassName={isDark ? "text-earth-sand" : "text-earth-terracotta"}
+          />
         </div>
       </div>
     </header>

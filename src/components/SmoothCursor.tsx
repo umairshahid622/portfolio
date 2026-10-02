@@ -201,10 +201,32 @@ export default function SmoothCursor() {
         if (stopTimer) clearTimeout(stopTimer);
       };
 
-      // Hover expansion on interactive elements
+      // Hover expansion on interactive elements & splash on AppButton
       const onMouseOver = (e: MouseEvent) => {
         const target = e.target as HTMLElement | null;
         if (!target) return;
+
+        // Custom cursor splash effect for AppButton
+        const splashTarget = target.closest<HTMLElement>('[data-cursor-splash="true"]');
+        if (splashTarget) {
+          const from = e.relatedTarget as HTMLElement | null;
+          if (from && from.closest('[data-cursor-splash="true"]') === splashTarget) {
+            return;
+          }
+
+          gsap.to(ring, {
+            scale: 0.5,
+            opacity: 0,
+            duration: 0.2,
+            ease: "power2.out",
+          });
+          gsap.to(dot, {
+            scale: 1.15,
+            duration: 0.2,
+            ease: "back.out(2)",
+          });
+          return;
+        }
 
         const isInteractive = target.closest(
           'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
@@ -213,6 +235,7 @@ export default function SmoothCursor() {
         if (isInteractive) {
           gsap.to(ring, {
             scale: 1.5,
+            opacity: 1,
             borderColor: "var(--color-terracotta, #bc6c25)",
             backgroundColor: "rgba(188, 108, 37, 0.12)",
             duration: 0.25,
@@ -230,6 +253,31 @@ export default function SmoothCursor() {
         const target = e.target as HTMLElement | null;
         if (!target) return;
 
+        // If moving to another element inside the same splash button, do not exit
+        const to = e.relatedTarget as HTMLElement | null;
+        if (to && to.closest('[data-cursor-splash="true"]')) {
+          return;
+        }
+
+        // Re-emerge cursor ring from button splash
+        const isSplashButton = target.closest<HTMLElement>('[data-cursor-splash="true"]');
+        if (isSplashButton) {
+          gsap.to(ring, {
+            scale: 1,
+            opacity: 1,
+            borderColor: "rgba(188, 108, 37, 0.4)",
+            backgroundColor: "transparent",
+            duration: 0.35,
+            ease: "back.out(2)",
+          });
+          gsap.to(dot, {
+            scale: 1,
+            duration: 0.25,
+            ease: "power2.out",
+          });
+          return;
+        }
+
         const isInteractive = target.closest(
           'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
         );
@@ -237,6 +285,7 @@ export default function SmoothCursor() {
         if (isInteractive) {
           gsap.to(ring, {
             scale: 1,
+            opacity: 1,
             borderColor: "rgba(188, 108, 37, 0.4)",
             backgroundColor: "transparent",
             duration: 0.25,
