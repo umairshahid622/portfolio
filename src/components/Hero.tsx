@@ -3,19 +3,8 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useTheme } from "../context/ThemeContext";
 import AvatarCanvas from "./AvatarCanvas";
-import AppButton from "./AppButton";
 
 gsap.registerPlugin(useGSAP);
-
-const TECH_BADGES = [
-  "React",
-  "Next.js",
-  "TypeScript",
-  "Node.js",
-  "Three.js",
-  "Tailwind CSS",
-  "PostgreSQL",
-];
 
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null);
@@ -35,68 +24,12 @@ export default function Hero() {
         delay: 0.2,
       });
 
-      tl.from(".hero-status-pill", {
-        y: -20,
+      tl.from(".hero-heading-line", {
+        y: 40,
         opacity: 0,
-        duration: 0.7,
-      })
-        .from(
-          ".hero-heading-line",
-          {
-            y: 40,
-            opacity: 0,
-            stagger: 0.12,
-            duration: 0.9,
-          },
-          "-=0.4"
-        )
-        .from(
-          ".hero-description",
-          {
-            y: 25,
-            opacity: 0,
-            duration: 0.8,
-          },
-          "-=0.6"
-        )
-        .from(
-          ".hero-cta-group",
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.7,
-          },
-          "-=0.5"
-        )
-        .from(
-          ".hero-tech-badge",
-          {
-            scale: 0.85,
-            opacity: 0,
-            stagger: 0.05,
-            duration: 0.5,
-          },
-          "-=0.4"
-        )
-        .from(
-          ".hero-avatar-box",
-          {
-            scale: 0.92,
-            opacity: 0,
-            duration: 1.1,
-            ease: "expo.out",
-          },
-          "-=0.9"
-        )
-        .from(
-          ".hero-scroll-indicator",
-          {
-            y: 15,
-            opacity: 0,
-            duration: 0.6,
-          },
-          "-=0.3"
-        );
+        stagger: 0.15,
+        duration: 0.9,
+      });
     },
     { scope: containerRef }
   );
@@ -128,33 +61,32 @@ export default function Hero() {
         />
       </div>
 
-      {/* Main Hero Content: Two-column layout on desktop, stacked on mobile */}
-      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-14 my-auto">
-        {/* Left Column: Typography, Narrative, and Calls-to-Action */}
-        <div className="w-full lg:w-1/2 flex flex-col items-start z-10">
+      {/* 3D Walking Character Layer */}
+      <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
+        <AvatarCanvas isDark={isDark} />
+      </div>
 
-
-
-
-
+      {/* Main Hero Content */}
+      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col items-center justify-center my-auto">
+        <div className="w-full flex flex-col items-center justify-center text-center z-10">
           {/* Main Name Heading */}
-          <div className="overflow-hidden mb-4">
-            <h1 className="hero-heading-line text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-[1.05]">
+          <div className="overflow-hidden mb-4 flex items-center justify-center">
+            <h1 className="hero-heading-line text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-[1.05] text-center">
               Umair{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-earth-terracotta via-earth-moss to-earth-terracotta dark:from-earth-sand dark:via-earth-terracotta dark:to-earth-sand">
                 Shahid
               </span>
             </h1>
           </div>
-          {/* Subheading / Title */}
-          <div className="overflow-hidden mb-6">
-            <h2 className="hero-heading-line text-xl sm:text-2xl md:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight">
-              Full-Stack Engineer
-            </h2>
-          </div>
-          
         </div>
-      </div>      
+      </div>
+
+      {/* Bottom Middle: Full-Stack Engineer */}
+      <div className="w-full flex items-center justify-center z-10 overflow-hidden pb-4">
+        <h2 className="hero-heading-line text-xl sm:text-2xl md:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight text-center">
+          Full-Stack Engineer
+        </h2>
+      </div>
     </section>
   );
 }

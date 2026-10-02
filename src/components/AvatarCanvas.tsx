@@ -1,7 +1,9 @@
-import { Suspense, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
-import { useGLTF, useAnimations, Center, Float, Html, useProgress, ContactShadows } from "@react-three/drei";
+import { Suspense, useEffect, useRef } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { useGLTF, useAnimations, ContactShadows, Html, useProgress } from "@react-three/drei";
 import * as THREE from "three";
+import gsap from "gsap";
+import { prefersReducedMotion } from "../utils/motion";
 
 function Loader() {
   const { progress } = useProgress();
@@ -19,7 +21,7 @@ function Loader() {
           <span className="text-xs font-semibold tracking-wider uppercase text-earth-cream">
             Loading Avatar
           </span>
-          <span className="text-[10px] text-earth-sand/80">3D Avatar</span>
+          <span className="text-[10px] text-earth-sand/80">3D Experience</span>
         </div>
       </div>
     </Html>
@@ -27,26 +29,12 @@ function Loader() {
 }
 
 function AvatarModel() {
-  const { scene, animations } = useGLTF("/Animated3dModel.glb");
-
-  // Pass scene directly to useAnimations so clips bind directly to scene bones
+  const { scene, animations } = useGLTF("/my3DAvatar.glb");
   const { actions } = useAnimations(animations, scene);
+  const { viewport } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
 
-  // Play '00_Idle' (or fallback) animation on mount
-  useEffect(() => {
-    const idleAction =
-      actions["00_Idle"] ||
-      actions["Idle"] ||
-      actions["01_Hands_To_Pockets"] ||
-      Object.values(actions)[0];
-
-    if (idleAction) {
-      idleAction.reset().fadeIn(0.6).play();
-    }
-    return () => {
-      idleAction?.fadeOut(0.4);
-    };
-  }, [actions]);
+  const hasArrivedRef = useRef(false);
 
   // Enable shadows on avatar meshes
   useEffect(() => {
@@ -59,16 +47,120 @@ function AvatarModel() {
     });
   }, [scene]);
 
+  useEffect(() => {
+    if (!groupRef.current) return;
+
+    const walkAction = actions["02_Walk_InPlace"] || actions["02_Natural_Walk"];
+    const idleAction = actions["00_Idle"] || actions["01_Hands_To_Pockets"];
+
+    // If user prefers reduced motion or already arrived, stay in idle pose
+    if (prefersReducedMotion() || hasArrivedRef.current) {
+      groupRef.current.position.set(0, -0.88, 0);
+      groupRef.current.rotation.set(0, -0.06, 0);
+      idleAction?.reset().fadeIn(0.4).play();
+      return;
+    }
+
+    // Mathematical stride speed:
+    // The natural walk cycle in 02_Natural_Walk moves the spine 0.880 model units per 2.50s cycle.
+    // Model scale in scene is 1.68.
+    // Natural linear walk speed = (0.880 * 1.68) / 2.50 = 0.59136 world units / second.
+    const TIME_SCALE = 1.0;
+    const strideSpeed = ((0.880 * 1.68) / 2.50) * TIME_SCALE; // ~0.5914 units/s
+    const walkHeadingAngle = Math.PI / 2 - 0.08; // Facing right with a subtle 4.5° camera angle for 3D depth
+    const walkSpeedX = strideSpeed * Math.cos(0.08); // Exact speed along X axis (~0.5895 units/s)
+
+    // Start completely beyond the left visible edge
+    // Half width of character is ~0.65 units
+    const startX = -(viewport.width / 2 + 0.65);
+    const targetX = 0;
+    const totalDistance = Math.abs(targetX - startX);
+
+    // Stop deceleration phase:
+    // Seamless transition from steady walk (walkSpeedX) to 0 with quadratic ease-out (power1.out):
+    // Matching v0 = walkSpeedX gives: stopDistance = walkSpeedX * stopDuration / 2.
+    const stopDuration = 0.85;
+    const stopDistance = Math.min((walkSpeedX * stopDuration) / 2, totalDistance * 0.25);
+    const steadyDistance = totalDistance - stopDistance;
+    const steadyDuration = steadyDistance / walkSpeedX;
+
+    // Initialize position and orientation
+    groupRef.current.position.set(startX, -0.88, 0);
+    groupRef.current.rotation.set(0, walkHeadingAngle, 0);
+
+    // Play walk animation matching time scale
+    if (walkAction) {
+      walkAction.timeScale = TIME_SCALE;
+      walkAction.reset().fadeIn(0.2).play();
+    }
+
+    const tl = gsap.timeline({
+      delay: 0.15,
+      onComplete: () => {
+        hasArrivedRef.current = true;
+      },
+    });
+
+    // Phase 1: Steady linear walk across screen matching the exact foot cadence (ZERO foot slip)
+    tl.to(groupRef.current.position, {
+      x: -stopDistance,
+      duration: steadyDuration,
+      ease: "none",
+    });
+
+    // Phase 2: Smooth deceleration to center x = 0
+    tl.to(groupRef.current.position, {
+      x: 0,
+      duration: stopDuration,
+      ease: "power1.out",
+    });
+
+    // Turn to face front during the deceleration / settling step
+    tl.to(
+      groupRef.current.rotation,
+      {
+        y: -0.06,
+        duration: stopDuration,
+        ease: "power2.out",
+      },
+      `-=${stopDuration}`
+    );
+
+    // Crossfade smoothly from walking to idle as the character comes to a halt
+    tl.call(
+      () => {
+        if (walkAction && idleAction) {
+          idleAction.reset().play();
+          walkAction.crossFadeTo(idleAction, 0.75, true);
+        }
+      },
+      undefined,
+      steadyDuration + 0.05
+    );
+
+    return () => {
+      tl.kill();
+      walkAction?.stop();
+      idleAction?.stop();
+    };
+  }, [actions, viewport.width]);
+
   return (
-    <group rotation={[0, -0.12, 0]}>
-      <Center position={[0, -0.08, 0]}>
-        <primitive object={scene} scale={0.95} />
-      </Center>
+    <group ref={groupRef}>
+      <primitive object={scene} scale={1.68} position={[0, 0, 0]} />
+      <ContactShadows
+        position={[0, 0.01, 0]}
+        opacity={0.65}
+        scale={2.4}
+        blur={2.0}
+        far={2.5}
+        color="#15200c"
+      />
     </group>
   );
 }
 
-useGLTF.preload("/Animated3dModel.glb");
+useGLTF.preload("/my3DAvatar.glb");
 
 interface AvatarCanvasProps {
   isDark?: boolean;
@@ -77,9 +169,11 @@ interface AvatarCanvasProps {
 
 export default function AvatarCanvas({ isDark = true, className = "" }: AvatarCanvasProps) {
   return (
-    <div className={`w-full h-full relative flex items-center justify-center select-none pointer-events-none ${className}`}>
+    <div
+      className={`w-full h-full relative flex items-center justify-center select-none pointer-events-none ${className}`}
+    >
       <Canvas
-        camera={{ position: [0, 0.05, 3.8], fov: 38 }}
+        camera={{ position: [0, 0.05, 4.2], fov: 38 }}
         dpr={[1, Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 2, 2)]}
         gl={{
           antialias: true,
@@ -89,12 +183,12 @@ export default function AvatarCanvas({ isDark = true, className = "" }: AvatarCa
         shadows
         className="w-full h-full"
       >
-        {/* Soft hemispheric light for rich ambient gradients */}
+        {/* Soft hemispheric light for rich ambient atmosphere */}
         <hemisphereLight
           args={[
             isDark ? "#fefae0" : "#ffffff",
             isDark ? "#283618" : "#dda15e",
-            isDark ? 0.9 : 0.7,
+            isDark ? 0.95 : 0.75,
           ]}
         />
 
@@ -139,22 +233,8 @@ export default function AvatarCanvas({ isDark = true, className = "" }: AvatarCa
         />
 
         <Suspense fallback={<Loader />}>
-          <Float speed={1.5} rotationIntensity={0.05} floatIntensity={0.08} floatingRange={[-0.03, 0.03]}>
-            <AvatarModel />
-          </Float>
-
-          {/* Soft grounding contact shadow underneath */}
-          <ContactShadows
-            position={[0, -1.02, 0]}
-            opacity={isDark ? 0.6 : 0.45}
-            scale={3.4}
-            blur={2.2}
-            far={3.2}
-            color={isDark ? "#121a0a" : "#455026"}
-          />
+          <AvatarModel />
         </Suspense>
-
-
       </Canvas>
     </div>
   );

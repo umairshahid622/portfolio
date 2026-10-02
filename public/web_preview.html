@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Character Web Viewer & Animation Controller</title>
+  <!-- Google model-viewer for high-fidelity WebGL PBR rendering -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card-bg: rgba(22, 27, 34, 0.85);
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 1rem 2rem;
+      background: rgba(15, 17, 23, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    main {
+      flex: 1;
+      position: relative;
+      display: flex;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: calc(100vh - 70px);
+      background: radial-gradient(circle at 50% 40%, #1f2937 0%, #111827 60%, #0b0f19 100%);
+      --poster-color: transparent;
+    }
+
+    .controls-panel {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      width: 340px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .panel-section h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .anim-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .slider-group input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+
+    .info-box {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+
+    .code-snippet {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #93c5fd;
+      overflow-x: auto;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      <span>🧑‍🦱 3D Web Asset Viewer</span>
+      <span class="badge">Production GLB Ready</span>
+    </h1>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">
+      File: <code>my3DAvatar.glb</code> (Clean Mesh + Armature)
+    </div>
+  </header>
+
+  <main>
+    <model-viewer
+      id="charViewer"
+      src="./my3DAvatar.glb"
+      alt="Animated 3D Character Model"
+      camera-controls
+      touch-action="pan-y"
+      autoplay
+      animation-name="Walk"
+      shadow-intensity="1.2"
+      shadow-softness="0.8"
+      exposure="1.0"
+      camera-orbit="25deg 80deg 2.4m"
+      min-camera-orbit="auto auto 1.0m"
+      max-camera-orbit="auto auto 5.0m"
+      field-of-view="35deg">
+    </model-viewer>
+
+    <div class="controls-panel">
+      <div class="panel-section">
+        <h3>Animations</h3>
+        <div class="anim-buttons" id="animButtonsContainer">
+          <button class="btn" id="btnIdle" onclick="setAnim('00_Idle')">
+            <span>🧍 00_Idle (Resting / Breathing)</span>
+            <span style="font-size: 0.75rem; opacity: 0.8;">Initial Pose</span>
+          </button>
+          <button class="btn" id="btnPockets" onclick="setAnim('01_Hands_To_Pockets')">
+            <span>🧥 01_Hands_To_Pockets</span>
+            <span style="font-size: 0.75rem; opacity: 0.8;">Action 1</span>
+          </button>
+          <button class="btn active" id="btnWalk" onclick="setAnim('02_Walk_InPlace')">
+            <span>🚶 02_Walk_InPlace (Sneaker Bend)</span>
+            <span style="font-size: 0.75rem; opacity: 0.8;">Stationary</span>
+          </button>
+          <button class="btn" id="btnWalkFwd" onclick="setAnim('02_Natural_Walk')">
+            <span>🏃 02_Natural_Walk (Sneaker Bend)</span>
+            <span style="font-size: 0.75rem; opacity: 0.8;">Forward Motion</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Playback Controls</h3>
+        <div class="btn-row">
+          <button class="btn" id="btnPlayPause" onclick="togglePlay()">⏸️ Pause</button>
+          <button class="btn" id="btnResetCam" onclick="resetCamera()">🎯 Reset View</button>
+        </div>
+        <div class="slider-group" style="margin-top: 0.4rem;">
+          <label style="font-size: 0.8rem; color: var(--text-muted);">Speed:</label>
+          <input type="range" id="speedSlider" min="0.25" max="2.0" step="0.25" value="1.0" oninput="setSpeed(this.value)">
+          <span id="speedVal" style="font-size: 0.8rem; min-width: 32px;">1.0x</span>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>View Options</h3>
+        <button class="btn" id="btnAutoRotate" onclick="toggleAutoRotate()">🔄 Turntable Auto-Rotate: Off</button>
+      </div>
+
+      <div class="info-box">
+        ✨ <strong>Web Ready</strong>: This file contains zero studio floor geometry and zero fixed lights, allowing your web framework (Three.js, React Three Fiber, or &lt;model-viewer&gt;) to handle dynamic lighting, shadows, and environment maps seamlessly.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const viewer = document.getElementById('charViewer');
+    let isPlaying = true;
+    let autoRotate = false;
+
+    function setAnim(name) {
+      viewer.animationName = name;
+      viewer.play();
+      isPlaying = true;
+      document.getElementById('btnPlayPause').innerText = '⏸️ Pause';
+
+      document.querySelectorAll('.anim-buttons .btn').forEach(b => b.classList.remove('active'));
+      if (name.includes('Idle')) document.getElementById('btnIdle').classList.add('active');
+      else if (name.includes('Hands')) document.getElementById('btnPockets').classList.add('active');
+      else if (name.includes('Walk_InPlace')) document.getElementById('btnWalk').classList.add('active');
+      else if (name.includes('Natural_Walk')) document.getElementById('btnWalkFwd').classList.add('active');
+    }
+
+    function togglePlay() {
+      if (isPlaying) {
+        viewer.pause();
+        document.getElementById('btnPlayPause').innerText = '▶️ Play';
+      } else {
+        viewer.play();
+        document.getElementById('btnPlayPause').innerText = '⏸️ Pause';
+      }
+      isPlaying = !isPlaying;
+    }
+
+    function setSpeed(val) {
+      viewer.timeScale = parseFloat(val);
+      document.getElementById('speedVal').innerText = parseFloat(val).toFixed(2) + 'x';
+    }
+
+    function toggleAutoRotate() {
+      autoRotate = !autoRotate;
+      viewer.autoRotate = autoRotate;
+      document.getElementById('btnAutoRotate').innerText = autoRotate ? '🔄 Turntable Auto-Rotate: ON' : '🔄 Turntable Auto-Rotate: Off';
+      if (autoRotate) document.getElementById('btnAutoRotate').classList.add('active');
+      else document.getElementById('btnAutoRotate').classList.remove('active');
+    }
+
+    function resetCamera() {
+      viewer.cameraOrbit = '25deg 80deg 2.4m';
+      viewer.cameraTarget = 'auto auto auto';
+    }
+
+    viewer.addEventListener('load', () => {
+      console.log('Model loaded! Available animations:', viewer.availableAnimations);
+    });
+  </script>
+</body>
+</html>
