@@ -88,3 +88,116 @@ h1, h2, h3, .font-heading {
     cursor: none !important;
   }
 }
+
+/*
+ * ==========================================================================
+ * Directional Ripple Button Architecture & Earthy Palette Tokens
+ * ==========================================================================
+ */
+
+.app-btn {
+  --accent: #bc6c25;
+  --accent-contrast: #fefae0;
+  --btn-ring: var(--accent);
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.app-btn-fill {
+  background-color: var(--accent-contrast);
+}
+
+/* Primary Variant */
+.app-btn-primary {
+  --accent: #bc6c25;
+  --accent-contrast: #fefae0;
+  --btn-ring: #bc6c25;
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+}
+:where(.dark, .dark *) .app-btn-primary {
+  --accent: #dda15e;
+  --accent-contrast: #283618;
+  --btn-ring: #dda15e;
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+}
+.app-btn-primary .app-btn-fill {
+  background-color: var(--accent-contrast);
+}
+
+/* Secondary Variant */
+.app-btn-secondary {
+  --accent: #fefae0;
+  --accent-contrast: #283618;
+  --btn-ring: rgba(40, 54, 24, 0.25);
+  background-color: rgba(40, 54, 24, 0.05);
+  color: #283618;
+}
+:where(.dark, .dark *) .app-btn-secondary {
+  --accent: #283618;
+  --accent-contrast: #dda15e;
+  --btn-ring: rgba(221, 161, 94, 0.35);
+  background-color: rgba(221, 161, 94, 0.08);
+  color: #dda15e;
+}
+.app-btn-secondary .app-btn-fill {
+  background-color: var(--accent-contrast);
+}
+
+/* Outline Variant */
+.app-btn-outline {
+  --accent: #fefae0;
+  --accent-contrast: #bc6c25;
+  --btn-ring: rgba(96, 108, 56, 0.4);
+  background-color: rgba(96, 108, 56, 0.08);
+  color: #283618;
+}
+:where(.dark, .dark *) .app-btn-outline {
+  --accent: #283618;
+  --accent-contrast: #dda15e;
+  --btn-ring: rgba(221, 161, 94, 0.4);
+  background-color: rgba(221, 161, 94, 0.08);
+  color: #dda15e;
+}
+.app-btn-outline .app-btn-fill {
+  background-color: var(--accent-contrast);
+}
+
+/* Ghost Variant */
+.app-btn-ghost {
+  --accent: #bc6c25;
+  --accent-contrast: rgba(40, 54, 24, 0.08);
+  --btn-ring: transparent;
+  background-color: transparent;
+  color: #283618;
+}
+:where(.dark, .dark *) .app-btn-ghost {
+  --accent: #dda15e;
+  --accent-contrast: rgba(254, 250, 224, 0.1);
+  --btn-ring: transparent;
+  background-color: transparent;
+  color: #fefae0;
+}
+.app-btn-ghost .app-btn-fill {
+  background-color: var(--accent-contrast);
+}
+
+/* Icon Variant */
+.app-btn-icon {
+  --accent: #fefae0;
+  --accent-contrast: #bc6c25;
+  --btn-ring: rgba(40, 54, 24, 0.18);
+  background-color: rgba(40, 54, 24, 0.06);
+  color: #bc6c25;
+}
+:where(.dark, .dark *) .app-btn-icon {
+  --accent: #283618;
+  --accent-contrast: #dda15e;
+  --btn-ring: rgba(254, 250, 224, 0.18);
+  background-color: rgba(254, 250, 224, 0.08);
+  color: #dda15e;
+}
+.app-btn-icon .app-btn-fill {
+  background-color: var(--accent-contrast);
+}

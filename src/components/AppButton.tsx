@@ -1,21 +1,24 @@
-import React, { useRef } from "react";
+"use client";
+
+import React, { useRef, type ReactNode } from "react";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { cn } from "../utils/cn";
+import { prefersReducedMotion } from "../utils/motion";
 import { AppIcon } from "./AppIcon";
 import type { IconName } from "../assets/Icons";
-import { cn } from "../utils/cn";
-
-gsap.registerPlugin(useGSAP);
 
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "icon";
 export type ButtonSize = "sm" | "md" | "lg";
 export type IconPosition = "left" | "right";
 
-export interface AppButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface AppButtonProps {
+  children?: ReactNode;
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  type?: "button" | "submit" | "reset";
+  className?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
-  icon?: IconName | string | React.ReactNode;
+  icon?: IconName | string | ReactNode;
   iconPosition?: IconPosition;
   iconClassName?: string;
   animateIcon?: boolean;
@@ -23,43 +26,59 @@ export interface AppButtonProps
   target?: string;
   rel?: string;
   download?: boolean | string;
-  children?: React.ReactNode;
+  /** Opt out of any audio cues */
+  silent?: boolean;
+  id?: string;
+  disabled?: boolean;
+  "aria-label"?: string;
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
+  onMouseDown?: (event: React.MouseEvent<HTMLElement>) => void;
+  onMouseUp?: (event: React.MouseEvent<HTMLElement>) => void;
+  tabIndex?: number;
+  style?: React.CSSProperties;
 }
 
+export type RippleButtonProps = AppButtonProps;
+
+const EXPAND_DURATION = 0.55;
+const COLLAPSE_DURATION = 0.4;
+const LABEL_DURATION = 0.22;
+
+/**
+ * The label waits for the fill to reach it rather than flipping with it: entering
+ * at an edge, the circle needs about a fifth of its expansion to cover the
+ * centre, and a label that changes colour before then spends a moment in the
+ * fill's colour on top of the fill's colour.
+ */
+const LABEL_DELAY = 0.12;
+
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-gradient-to-r from-earth-terracotta to-earth-sand text-earth-cream dark:text-earth-forest group-hover:text-earth-cream dark:group-hover:text-earth-forest font-bold shadow-lg shadow-earth-terracotta/25 hover:shadow-earth-terracotta/40",
-  secondary:
-    "border border-earth-forest/20 dark:border-earth-cream/20 text-earth-forest dark:text-earth-cream group-hover:text-earth-cream dark:group-hover:text-earth-cream bg-earth-forest/5 dark:bg-earth-forest/40 backdrop-blur-md font-semibold shadow-sm hover:border-earth-terracotta/60",
-  outline:
-    "border border-earth-moss/30 dark:border-earth-sand/30 text-earth-forest dark:text-earth-sand group-hover:text-earth-cream dark:group-hover:text-earth-cream bg-earth-moss/10 dark:bg-earth-sand/10 hover:border-earth-terracotta font-medium",
-  ghost:
-    "text-earth-forest/80 dark:text-earth-cream/80 hover:text-earth-forest dark:hover:text-earth-cream font-medium",
-  icon:
-    "p-2.5 rounded-xl border border-earth-forest/15 dark:border-earth-cream/15 bg-earth-forest/10 dark:bg-earth-forest/60 backdrop-blur-md text-earth-forest dark:text-earth-cream shadow-sm hover:border-earth-terracotta",
+  primary: "app-btn-primary shadow-lg shadow-earth-terracotta/25 dark:shadow-earth-sand/20",
+  secondary: "app-btn-secondary shadow-sm",
+  outline: "app-btn-outline shadow-sm",
+  ghost: "app-btn-ghost",
+  icon: "app-btn-icon shadow-sm",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3.5 py-1.5 text-xs rounded-lg gap-1.5",
-  md: "px-5 py-2.5 text-sm rounded-xl gap-2",
-  lg: "px-6 py-3.5 text-sm sm:text-base rounded-xl gap-2.5 tracking-wide",
+  sm: "px-4 py-2 text-xs font-semibold uppercase tracking-wider gap-1.5",
+  md: "px-6 py-2.5 text-xs sm:text-[0.8rem] font-semibold uppercase tracking-widest gap-2",
+  lg: "px-7 md:px-9 py-3.5 md:py-4 text-xs sm:text-[0.8rem] font-semibold uppercase tracking-widest gap-2.5",
 };
 
-// The rounded border element that expands inside the button to fully fill it
-const splashStyles: Record<ButtonVariant, string> = {
-  primary:
-    "border-2 border-earth-sand dark:border-earth-terracotta bg-earth-forest dark:bg-earth-cream shadow-[0_0_30px_rgba(221,161,94,0.45)]",
-  secondary:
-    "border-2 border-earth-sand dark:border-earth-sand bg-earth-terracotta dark:bg-earth-terracotta shadow-[0_0_25px_rgba(188,108,37,0.5)]",
-  outline:
-    "border-2 border-earth-sand dark:border-earth-sand bg-earth-terracotta dark:bg-earth-terracotta shadow-[0_0_20px_rgba(188,108,37,0.4)]",
-  ghost:
-    "border-2 border-earth-forest/40 dark:border-earth-cream/40 bg-earth-forest/15 dark:bg-earth-cream/15",
-  icon:
-    "border-2 border-earth-terracotta dark:border-earth-sand bg-earth-terracotta/30 dark:bg-earth-sand/30 backdrop-blur-md shadow-[0_0_20px_rgba(188,108,37,0.5)]",
-};
-
+/**
+ * Directional Ripple Button:
+ * Solid accent fill at rest with contrasting text. On hover, the contrast colour expands
+ * as a circle from wherever the cursor entered, and the label inverts to the accent colour
+ * as the circle reaches it — animated with GSAP — then collapses back toward wherever the
+ * cursor left.
+ */
 export function AppButton({
+  children,
+  onClick,
+  type = "button",
+  className,
   variant = "primary",
   size = "md",
   icon,
@@ -70,112 +89,124 @@ export function AppButton({
   target,
   rel,
   download,
-  className,
-  children,
-  onClick,
+  silent = false,
+  disabled = false,
   onMouseEnter,
   onMouseLeave,
-  onMouseMove,
   onMouseDown,
   onMouseUp,
-  disabled,
-  ...props
+  ...rest
 }: AppButtonProps) {
-  const buttonRef = useRef<HTMLButtonElement | HTMLAnchorElement | null>(null);
+  const ref = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
+  const fillRef = useRef<HTMLSpanElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
   const iconRef = useRef<HTMLSpanElement>(null);
-  const splashRef = useRef<HTMLDivElement>(null);
+  const restingColor = useRef("");
 
-  // GSAP cleanups on unmount
-  useGSAP(
-    () => {
-      return () => {
-        if (buttonRef.current) gsap.killTweensOf(buttonRef.current);
-        if (iconRef.current) gsap.killTweensOf(iconRef.current);
-        if (splashRef.current) gsap.killTweensOf(splashRef.current);
-      };
-    },
-    { scope: buttonRef }
-  );
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (disabled) return;
+    onClick?.(event);
+  };
 
-  const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
-    if (disabled || !buttonRef.current || !splashRef.current) return;
+  const handleEnter = (event: React.MouseEvent<HTMLElement>) => {
+    const el = ref.current;
+    const fill = fillRef.current;
+    const label = labelRef.current;
+    if (!el || !fill || !label || disabled || prefersReducedMotion()) return;
 
-    const rect = buttonRef.current.getBoundingClientRect();
-    const clientX = e.clientX || rect.left + rect.width / 2;
-    const clientY = e.clientY || rect.top + rect.height / 2;
-    const relX = Math.max(0, Math.min(rect.width, clientX - rect.left));
-    const relY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+    // Take the resting label colour from the element's own computed `color`,
+    // with any inline colour a previous leave left behind cleared first
+    gsap.set(label, { clearProps: "color" });
+    restingColor.current = getComputedStyle(label).color;
 
-    // Calculate distance to the farthest corner from entry point
-    const maxDist = Math.hypot(
-      Math.max(relX, rect.width - relX),
-      Math.max(relY, rect.height - relY)
-    );
+    const rect = el.getBoundingClientRect();
 
-    // Initial 40px circle has radius 20px. Multiply by 2.8 to guarantee 100% full coverage
-    const targetScale = Math.max(3, (maxDist * 2.8) / 20);
-
-    // Start circle right at the cursor entry position matching the cursor's rounded border
-    gsap.killTweensOf(splashRef.current);
-    gsap.set(splashRef.current, {
-      x: relX,
-      y: relY,
-      scale: 0.5,
-      opacity: 1,
+    gsap.set(fill, {
+      // Radius = the button's diagonal, so the circle reaches every corner from
+      // any point inside it. That is also what lets the leave handler re-centre
+      // it on the exit point without a visible jump: at full scale it still
+      // covers the button from there.
+      width: Math.hypot(rect.width, rect.height) * 2,
+      height: Math.hypot(rect.width, rect.height) * 2,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      xPercent: -50,
+      yPercent: -50,
+      scale: 0,
     });
 
-    // Animate the rounded border expanding across the entire button until fully expanded
-    gsap.to(splashRef.current, {
-      scale: targetScale,
-      opacity: 1,
-      duration: 0.45,
+    gsap.to(fill, {
+      scale: 1,
+      duration: EXPAND_DURATION,
       ease: "power2.out",
+      overwrite: true,
     });
 
-    // Animate icon on hover
+    const targetColor = getComputedStyle(el).getPropertyValue("--accent").trim();
+
+    gsap.to(label, {
+      color: targetColor,
+      duration: LABEL_DURATION,
+      delay: LABEL_DELAY,
+      ease: "power2.out",
+      overwrite: true,
+    });
+
+    // Subtle micro-motion for icon on hover
     if (iconRef.current && animateIcon) {
       if (variant === "icon") {
         gsap.to(iconRef.current, {
-          scale: 1.2,
+          scale: 1.18,
           rotation: 15,
           duration: 0.25,
           ease: "back.out(2)",
+          overwrite: "auto",
         });
       } else if (iconPosition === "right") {
         gsap.to(iconRef.current, {
-          x: 4,
+          x: 3.5,
           duration: 0.25,
           ease: "power2.out",
+          overwrite: "auto",
         });
       } else {
         gsap.to(iconRef.current, {
           y: 2,
           duration: 0.25,
           ease: "power2.out",
+          overwrite: "auto",
         });
       }
     }
 
-    onMouseEnter?.(e as React.MouseEvent<HTMLButtonElement>);
+    onMouseEnter?.(event);
   };
 
-  const handleMouseLeave = (e: React.MouseEvent<HTMLElement>) => {
-    if (disabled || !buttonRef.current || !splashRef.current) return;
+  const handleLeave = (event: React.MouseEvent<HTMLElement>) => {
+    const el = ref.current;
+    const fill = fillRef.current;
+    const label = labelRef.current;
+    if (!el || !fill || !label || disabled || prefersReducedMotion()) return;
 
-    const rect = buttonRef.current.getBoundingClientRect();
-    const clientX = e.clientX || rect.left + rect.width / 2;
-    const clientY = e.clientY || rect.top + rect.height / 2;
-    const relX = Math.max(0, Math.min(rect.width, clientX - rect.left));
-    const relY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+    const rect = el.getBoundingClientRect();
+    gsap.set(fill, {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    });
 
-    // Shrink the rounded border back toward the cursor exit position
-    gsap.to(splashRef.current, {
-      x: relX,
-      y: relY,
+    gsap.to(fill, {
       scale: 0,
-      opacity: 0,
-      duration: 0.4,
-      ease: "power2.inOut",
+      duration: COLLAPSE_DURATION,
+      ease: "power2.in",
+      overwrite: true,
+    });
+
+    gsap.to(label, {
+      color: restingColor.current,
+      duration: LABEL_DURATION,
+      ease: "power2.out",
+      overwrite: true,
+      onComplete: () => gsap.set(label, { clearProps: "color" }),
     });
 
     // Reset icon animation
@@ -187,39 +218,36 @@ export function AppButton({
         rotation: 0,
         duration: 0.25,
         ease: "power2.out",
+        overwrite: "auto",
       });
     }
 
-    onMouseLeave?.(e as React.MouseEvent<HTMLButtonElement>);
+    onMouseLeave?.(event);
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLElement>) => {
-    if (disabled || !buttonRef.current) return;
-
-    gsap.to(buttonRef.current, {
-      scale: 0.96,
-      duration: 0.1,
+  const handleMouseDown = (event: React.MouseEvent<HTMLElement>) => {
+    if (disabled || !ref.current) return;
+    gsap.to(ref.current, {
+      scale: 0.97,
+      duration: 0.12,
       ease: "power2.out",
     });
-
-    onMouseDown?.(e as React.MouseEvent<HTMLButtonElement>);
+    onMouseDown?.(event);
   };
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLElement>) => {
-    if (disabled || !buttonRef.current) return;
-
-    gsap.to(buttonRef.current, {
+  const handleMouseUp = (event: React.MouseEvent<HTMLElement>) => {
+    if (disabled || !ref.current) return;
+    gsap.to(ref.current, {
       scale: 1,
       duration: 0.2,
       ease: "back.out(2)",
     });
-
-    onMouseUp?.(e as React.MouseEvent<HTMLButtonElement>);
+    onMouseUp?.(event);
   };
 
-  // Default icon sizing per button size
+  // Icon sizing
   const defaultIconSize =
-    size === "sm" ? "w-3.5 h-3.5" : size === "lg" ? "w-4.5 h-4.5" : "w-4 h-4";
+    size === "sm" ? "w-3.5 h-3.5" : size === "lg" ? "w-4 h-4" : "w-4 h-4";
 
   const renderedIcon = icon ? (
     <span
@@ -230,79 +258,74 @@ export function AppButton({
     </span>
   ) : null;
 
-  const baseStyles =
-    "group relative inline-flex items-center justify-center font-medium cursor-pointer select-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-earth-terracotta focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed transition-colors duration-200";
-
-  const sizeClass = variant === "icon" ? "" : sizeStyles[size];
   const combinedClasses = cn(
-    baseStyles,
+    "relative inline-flex items-center justify-center overflow-hidden rounded-full ring-1 ring-[var(--btn-ring,var(--accent))]",
+    "select-none transition-shadow duration-200 outline-none focus-visible:ring-2 focus-visible:ring-earth-terracotta focus-visible:ring-offset-2",
+    variant === "icon" ? sizeStyles.sm + " p-2.5 w-10 h-10 rounded-full" : sizeStyles[size],
     variantStyles[variant],
-    sizeClass,
+    disabled ? "cursor-not-allowed opacity-45 pointer-events-none" : "cursor-pointer",
     className
   );
 
-  const internalSplash = (
-    <div
-      ref={splashRef}
-      aria-hidden="true"
-      className={cn(
-        "absolute w-10 h-10 -ml-5 -mt-5 rounded-full pointer-events-none opacity-0 will-change-transform z-0",
-        splashStyles[variant]
-      )}
-    />
+  const innerContent = (
+    <>
+      {/* Sized and positioned per hover, so it starts life 0×0 and nothing is
+          painted before the first cursor enters — including in the SSR HTML. */}
+      <span
+        ref={fillRef}
+        aria-hidden="true"
+        className="app-btn-fill pointer-events-none absolute top-0 left-0 rounded-full will-change-transform"
+      />
+      <span
+        ref={labelRef}
+        className="relative z-10 inline-flex items-center justify-center gap-2 pointer-events-none"
+      >
+        {iconPosition === "left" && renderedIcon}
+        {children && <span>{children}</span>}
+        {iconPosition === "right" && renderedIcon}
+      </span>
+    </>
   );
 
-  const content = (
-    <span className="relative z-10 inline-flex items-center justify-center gap-inherit transition-colors duration-200 pointer-events-none select-none">
-      {iconPosition === "left" && renderedIcon}
-      {children && <span>{children}</span>}
-      {iconPosition === "right" && renderedIcon}
-    </span>
-  );
-
-  // If href is provided, render as <a>
+  // If href is provided, render polymorphic <a> tag
   if (href) {
     return (
       <a
-        ref={buttonRef as React.Ref<HTMLAnchorElement>}
+        ref={ref}
         href={href}
         target={target}
         rel={target === "_blank" && !rel ? "noopener noreferrer" : rel}
         download={download}
-        data-cursor-splash="true"
         className={combinedClasses}
-        onClick={onClick as unknown as React.MouseEventHandler<HTMLAnchorElement>}
-        onMouseEnter={handleMouseEnter}
-        onMouseMove={onMouseMove as unknown as React.MouseEventHandler<HTMLAnchorElement>}
-        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
+        {...(rest as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
       >
-        {internalSplash}
-        {content}
+        {innerContent}
       </a>
     );
   }
 
-  // Otherwise render as <button>
   return (
     <button
-      ref={buttonRef as React.Ref<HTMLButtonElement>}
+      ref={ref}
+      type={type}
       disabled={disabled}
-      data-cursor-splash="true"
       className={combinedClasses}
-      onClick={onClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseMove={onMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      {...props}
+      {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
     >
-      {internalSplash}
-      {content}
+      {innerContent}
     </button>
   );
 }
 
+export const RippleButton = AppButton;
 export default AppButton;

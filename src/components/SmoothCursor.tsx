@@ -7,7 +7,6 @@ gsap.registerPlugin(useGSAP);
 
 export default function SmoothCursor() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const trailContainerRef = useRef<HTMLDivElement>(null);
 
@@ -18,23 +17,19 @@ export default function SmoothCursor() {
         return;
       }
 
-      const dot = dotRef.current;
       const ring = ringRef.current;
       const trailContainer = trailContainerRef.current;
-      if (!dot || !ring || !trailContainer) return;
+      if (!ring || !trailContainer) return;
 
-      // Set initial centering transform on both elements so GSAP manages xPercent & yPercent
-      gsap.set([dot, ring], {
+      // Set initial centering transform on ring so GSAP manages xPercent & yPercent
+      gsap.set(ring, {
         xPercent: -50,
         yPercent: -50,
       });
 
-      // Position helpers using gsap.quickTo for maximum 60/120fps performance
-      const xToDot = gsap.quickTo(dot, "x", { duration: 0.1, ease: "power2.out" });
-      const yToDot = gsap.quickTo(dot, "y", { duration: 0.1, ease: "power2.out" });
-
-      const xToRing = gsap.quickTo(ring, "x", { duration: 0.35, ease: "power3.out" });
-      const yToRing = gsap.quickTo(ring, "y", { duration: 0.35, ease: "power3.out" });
+      // Position helpers using gsap.quickTo for smooth, responsive 60/120fps tracking
+      const xToRing = gsap.quickTo(ring, "x", { duration: 0.22, ease: "power2.out" });
+      const yToRing = gsap.quickTo(ring, "y", { duration: 0.22, ease: "power2.out" });
 
       let isInitialized = false;
       let lastX = -1;
@@ -134,7 +129,7 @@ export default function SmoothCursor() {
           lastY = clientY;
           lastSpawnTime = Date.now();
           isMoving = true;
-          gsap.set([dot, ring], {
+          gsap.set(ring, {
             x: clientX,
             y: clientY,
             xPercent: -50,
@@ -145,9 +140,7 @@ export default function SmoothCursor() {
           return;
         }
 
-        // Update smooth cursor positions
-        xToDot(clientX);
-        yToDot(clientY);
+        // Update smooth cursor position
         xToRing(clientX);
         yToRing(clientY);
 
@@ -181,52 +174,28 @@ export default function SmoothCursor() {
       };
 
       const onMouseDown = () => {
-        gsap.to(dot, { scale: 0.8, duration: 0.15, ease: "power2.out" });
         gsap.to(ring, { scale: 0.85, duration: 0.15, ease: "power2.out" });
       };
 
       const onMouseUp = () => {
-        gsap.to(dot, { scale: 1, duration: 0.2, ease: "back.out(2)" });
         gsap.to(ring, { scale: 1, duration: 0.2, ease: "back.out(2)" });
       };
 
       const onMouseEnter = () => {
-        gsap.to([dot, ring], { opacity: 1, duration: 0.25 });
+        gsap.to(ring, { opacity: 1, duration: 0.25 });
         isMoving = false;
       };
 
       const onMouseLeave = () => {
-        gsap.to([dot, ring], { opacity: 0, duration: 0.25 });
+        gsap.to(ring, { opacity: 0, duration: 0.25 });
         isMoving = false;
         if (stopTimer) clearTimeout(stopTimer);
       };
 
-      // Hover expansion on interactive elements & splash on AppButton
+      // Hover expansion on interactive elements (buttons, links, inputs)
       const onMouseOver = (e: MouseEvent) => {
         const target = e.target as HTMLElement | null;
         if (!target) return;
-
-        // Custom cursor splash effect for AppButton
-        const splashTarget = target.closest<HTMLElement>('[data-cursor-splash="true"]');
-        if (splashTarget) {
-          const from = e.relatedTarget as HTMLElement | null;
-          if (from && from.closest('[data-cursor-splash="true"]') === splashTarget) {
-            return;
-          }
-
-          gsap.to(ring, {
-            scale: 0.5,
-            opacity: 0,
-            duration: 0.2,
-            ease: "power2.out",
-          });
-          gsap.to(dot, {
-            scale: 1.15,
-            duration: 0.2,
-            ease: "back.out(2)",
-          });
-          return;
-        }
 
         const isInteractive = target.closest(
           'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
@@ -234,15 +203,10 @@ export default function SmoothCursor() {
 
         if (isInteractive) {
           gsap.to(ring, {
-            scale: 1.5,
+            scale: 1.45,
             opacity: 1,
             borderColor: "var(--color-terracotta, #bc6c25)",
             backgroundColor: "rgba(188, 108, 37, 0.12)",
-            duration: 0.25,
-            ease: "power2.out",
-          });
-          gsap.to(dot, {
-            scale: 1.15,
             duration: 0.25,
             ease: "power2.out",
           });
@@ -253,48 +217,22 @@ export default function SmoothCursor() {
         const target = e.target as HTMLElement | null;
         if (!target) return;
 
-        // If moving to another element inside the same splash button, do not exit
-        const to = e.relatedTarget as HTMLElement | null;
-        if (to && to.closest('[data-cursor-splash="true"]')) {
-          return;
-        }
-
-        // Re-emerge cursor ring from button splash
-        const isSplashButton = target.closest<HTMLElement>('[data-cursor-splash="true"]');
-        if (isSplashButton) {
-          gsap.to(ring, {
-            scale: 1,
-            opacity: 1,
-            borderColor: "rgba(188, 108, 37, 0.4)",
-            backgroundColor: "transparent",
-            duration: 0.35,
-            ease: "back.out(2)",
-          });
-          gsap.to(dot, {
-            scale: 1,
-            duration: 0.25,
-            ease: "power2.out",
-          });
-          return;
-        }
-
         const isInteractive = target.closest(
           'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
         );
+        const to = e.relatedTarget as HTMLElement | null;
+        const stayingInInteractive = to && to.closest(
+          'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
+        );
 
-        if (isInteractive) {
+        if (isInteractive && !stayingInInteractive) {
           gsap.to(ring, {
             scale: 1,
             opacity: 1,
             borderColor: "rgba(188, 108, 37, 0.4)",
             backgroundColor: "transparent",
-            duration: 0.25,
-            ease: "power2.out",
-          });
-          gsap.to(dot, {
-            scale: 1,
-            duration: 0.25,
-            ease: "power2.out",
+            duration: 0.3,
+            ease: "back.out(2)",
           });
         }
       };
@@ -333,20 +271,10 @@ export default function SmoothCursor() {
         className="pointer-events-none fixed inset-0 z-[9998] overflow-hidden"
       />
 
-      {/* Smooth Cursor Sign </> */}
-      <div
-        ref={dotRef}
-        className="fixed top-0 left-0 w-10 h-10 pointer-events-none z-[10000] opacity-0 will-change-transform flex items-center justify-center select-none"
-      >
-        <span className="font-mono font-extrabold text-[12px] sm:text-[13px] tracking-tight text-terracotta dark:text-sand drop-shadow-[0_0_8px_rgba(188,108,37,0.5)] dark:drop-shadow-[0_0_8px_rgba(221,161,94,0.5)] leading-none select-none text-center">
-          {"</>"}
-        </span>
-      </div>
-
       {/* Smooth Cursor Follower Ring */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 w-10 h-10 rounded-full border border-terracotta/40 dark:border-sand/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
+        className="fixed top-0 left-0 size-8 rounded-full border-2 border-terracotta/40 dark:border-sand/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
       />
     </div>
   );
