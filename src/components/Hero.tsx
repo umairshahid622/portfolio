@@ -81,19 +81,29 @@ export default function Hero() {
         <AvatarCanvas isDark={isDark} />
       </div>
 
-      {/* Main Hero Content */}
-      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col items-center justify-center my-auto">
-        <div className="w-full flex flex-col items-center justify-center text-center z-10">
-          {/* Main Name Heading */}
-          <div className="overflow-hidden mb-4 flex items-center justify-center">
-            <h1 className="hero-heading-line text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-[1.05] text-center">
-              Umair{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-earth-terracotta via-earth-moss to-earth-terracotta dark:from-earth-sand dark:via-earth-terracotta dark:to-earth-sand">
-                Shahid
-              </span>
-            </h1>
+      {/* Main Hero Content - Flanking the 3D Character */}
+      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col items-center justify-center my-auto z-10 px-4 sm:px-6 md:px-8">
+        <h1 className="w-full flex items-center justify-between select-none">
+          {/* Left Wing: Umair */}
+          <div className="flex-1 flex justify-end overflow-hidden pr-2 sm:pr-4 md:pr-8 lg:pr-10">
+            <span className="hero-heading-line block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-none text-right">
+              Umair
+            </span>
           </div>
-        </div>
+
+          {/* Central Corridor for 3D Character */}
+          <div
+            className="w-36 shrink-0 pointer-events-none"
+            aria-hidden="true"
+          />
+
+          {/* Right Wing: Shahid */}
+          <div className="flex-1 flex justify-start overflow-hidden pl-2 sm:pl-4 md:pl-8 lg:pl-10">
+            <span className="hero-heading-line block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-earth-terracotta via-earth-moss to-earth-terracotta dark:from-earth-sand dark:via-earth-terracotta dark:to-earth-sand leading-none text-left">
+              Shahid
+            </span>
+          </div>
+        </h1>
       </div>
 
       {/* Bottom Middle: Full-Stack Engineer */}
