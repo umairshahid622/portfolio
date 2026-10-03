@@ -1,40 +1,26 @@
 import { Suspense, useEffect, useRef } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { useGLTF, useAnimations, ContactShadows, Html, useProgress } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { useGLTF, useAnimations, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
-import gsap from "gsap";
-import { prefersReducedMotion } from "../utils/motion";
+import { useLoading } from "../context/LoadingContext";
 
-function Loader() {
-  const { progress } = useProgress();
-  return (
-    <Html center>
-      <div className="flex flex-col items-center gap-3 bg-earth-forest/85 dark:bg-earth-forest/90 px-5 py-3 rounded-2xl border border-earth-cream/15 backdrop-blur-xl shadow-2xl text-center pointer-events-none min-w-[170px]">
-        <div className="relative w-8 h-8 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border-2 border-earth-sand/20" />
-          <div className="absolute inset-0 rounded-full border-2 border-earth-terracotta border-t-transparent animate-spin" />
-          <span className="text-[10px] font-mono font-bold text-earth-sand">
-            {progress.toFixed(0)}%
-          </span>
-        </div>
-        <div className="flex flex-col items-center">
-          <span className="text-xs font-semibold tracking-wider uppercase text-earth-cream">
-            Loading Avatar
-          </span>
-          <span className="text-[10px] text-earth-sand/80">3D Experience</span>
-        </div>
-      </div>
-    </Html>
-  );
+interface AvatarModelProps {
+  animation?: "idle" | "handsToPockets";
+  onReady?: () => void;
 }
 
-function AvatarModel() {
+function AvatarModel({ animation = "idle", onReady }: AvatarModelProps) {
   const { scene, animations } = useGLTF("/my3DAvatar.glb");
   const { actions } = useAnimations(animations, scene);
-  const { viewport } = useThree();
   const groupRef = useRef<THREE.Group>(null);
-
-  const hasArrivedRef = useRef(false);
+  
+  let setAvatarReady: (val: boolean) => void = () => {};
+  try {
+    const loading = useLoading();
+    setAvatarReady = loading.setAvatarReady;
+  } catch {
+    // Graceful fallback when outside LoadingProvider
+  }
 
   // Enable shadows on avatar meshes
   useEffect(() => {
@@ -47,106 +33,50 @@ function AvatarModel() {
     });
   }, [scene]);
 
+  // Activate the selected animation pose and notify readiness
   useEffect(() => {
-    if (!groupRef.current) return;
+    if (animation === "handsToPockets") {
+      const pocketsAction = actions["01_Hands_To_Pockets"] || actions["00_Idle"];
+      if (pocketsAction) {
+        pocketsAction.reset();
+        pocketsAction.clampWhenFinished = true;
+        pocketsAction.setLoop(THREE.LoopOnce, 1);
+        pocketsAction.fadeIn(0.3).play();
+      }
 
-    const walkAction = actions["02_Walk_InPlace"] || actions["02_Natural_Walk"];
-    const idleAction = actions["00_Idle"] || actions["01_Hands_To_Pockets"];
+      const timer = setTimeout(() => {
+        setAvatarReady(true);
+        onReady?.();
+      }, 100);
 
-    // If user prefers reduced motion or already arrived, stay in idle pose
-    if (prefersReducedMotion() || hasArrivedRef.current) {
-      groupRef.current.position.set(0, -0.88, 0);
-      groupRef.current.rotation.set(0, -0.06, 0);
-      idleAction?.reset().fadeIn(0.4).play();
-      return;
+      return () => {
+        clearTimeout(timer);
+        pocketsAction?.fadeOut(0.3);
+      };
+    } else {
+      const idleAction = actions["00_Idle"] || actions["01_Hands_To_Pockets"];
+      if (idleAction) {
+        idleAction.reset();
+        idleAction.clampWhenFinished = false;
+        idleAction.setLoop(THREE.LoopRepeat, Infinity);
+        idleAction.fadeIn(0.3).play();
+      }
+
+      // Small delay to ensure WebGL pipeline compiles materials & paints idle pose
+      const timer = setTimeout(() => {
+        setAvatarReady(true);
+        onReady?.();
+      }, 100);
+
+      return () => {
+        clearTimeout(timer);
+        idleAction?.fadeOut(0.3);
+      };
     }
-
-    // Mathematical stride speed:
-    // The natural walk cycle in 02_Natural_Walk moves the spine 0.880 model units per 2.50s cycle.
-    // Model scale in scene is 1.68.
-    // Natural linear walk speed = (0.880 * 1.68) / 2.50 = 0.59136 world units / second.
-    const TIME_SCALE = 1.0;
-    const strideSpeed = ((0.880 * 1.68) / 2.50) * TIME_SCALE; // ~0.5914 units/s
-    const walkHeadingAngle = Math.PI / 2 - 0.08; // Facing right with a subtle 4.5° camera angle for 3D depth
-    const walkSpeedX = strideSpeed * Math.cos(0.08); // Exact speed along X axis (~0.5895 units/s)
-
-    // Start completely beyond the left visible edge
-    // Half width of character is ~0.65 units
-    const startX = -(viewport.width / 2 + 0.65);
-    const targetX = 0;
-    const totalDistance = Math.abs(targetX - startX);
-
-    // Stop deceleration phase:
-    // Seamless transition from steady walk (walkSpeedX) to 0 with quadratic ease-out (power1.out):
-    // Matching v0 = walkSpeedX gives: stopDistance = walkSpeedX * stopDuration / 2.
-    const stopDuration = 0.85;
-    const stopDistance = Math.min((walkSpeedX * stopDuration) / 2, totalDistance * 0.25);
-    const steadyDistance = totalDistance - stopDistance;
-    const steadyDuration = steadyDistance / walkSpeedX;
-
-    // Initialize position and orientation
-    groupRef.current.position.set(startX, -0.88, 0);
-    groupRef.current.rotation.set(0, walkHeadingAngle, 0);
-
-    // Play walk animation matching time scale
-    if (walkAction) {
-      walkAction.timeScale = TIME_SCALE;
-      walkAction.reset().fadeIn(0.2).play();
-    }
-
-    const tl = gsap.timeline({
-      delay: 0.15,
-      onComplete: () => {
-        hasArrivedRef.current = true;
-      },
-    });
-
-    // Phase 1: Steady linear walk across screen matching the exact foot cadence (ZERO foot slip)
-    tl.to(groupRef.current.position, {
-      x: -stopDistance,
-      duration: steadyDuration,
-      ease: "none",
-    });
-
-    // Phase 2: Smooth deceleration to center x = 0
-    tl.to(groupRef.current.position, {
-      x: 0,
-      duration: stopDuration,
-      ease: "power1.out",
-    });
-
-    // Turn to face front during the deceleration / settling step
-    tl.to(
-      groupRef.current.rotation,
-      {
-        y: -0.06,
-        duration: stopDuration,
-        ease: "power2.out",
-      },
-      `-=${stopDuration}`
-    );
-
-    // Crossfade smoothly from walking to idle as the character comes to a halt
-    tl.call(
-      () => {
-        if (walkAction && idleAction) {
-          idleAction.reset().play();
-          walkAction.crossFadeTo(idleAction, 0.75, true);
-        }
-      },
-      undefined,
-      steadyDuration + 0.05
-    );
-
-    return () => {
-      tl.kill();
-      walkAction?.stop();
-      idleAction?.stop();
-    };
-  }, [actions, viewport.width]);
+  }, [actions, animation, onReady, setAvatarReady]);
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} position={[0, -0.88, 0]} rotation={[0, -0.06, 0]}>
       <primitive object={scene} scale={1.68} position={[0, 0, 0]} />
       <ContactShadows
         position={[0, 0.01, 0]}
@@ -165,9 +95,16 @@ useGLTF.preload("/my3DAvatar.glb");
 interface AvatarCanvasProps {
   isDark?: boolean;
   className?: string;
+  animation?: "idle" | "handsToPockets";
+  onReady?: () => void;
 }
 
-export default function AvatarCanvas({ isDark = true, className = "" }: AvatarCanvasProps) {
+export default function AvatarCanvas({
+  isDark = true,
+  className = "",
+  animation = "idle",
+  onReady,
+}: AvatarCanvasProps) {
   return (
     <div
       className={`w-full h-full relative flex items-center justify-center select-none pointer-events-none ${className}`}
@@ -232,8 +169,8 @@ export default function AvatarCanvas({ isDark = true, className = "" }: AvatarCa
           color={isDark ? "#606c38" : "#fefae0"}
         />
 
-        <Suspense fallback={<Loader />}>
-          <AvatarModel />
+        <Suspense fallback={null}>
+          <AvatarModel animation={animation} onReady={onReady} />
         </Suspense>
       </Canvas>
     </div>

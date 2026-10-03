@@ -2,6 +2,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useTheme } from "../context/ThemeContext";
+import { useLoading } from "../context/LoadingContext";
 import AvatarCanvas from "./AvatarCanvas";
 
 gsap.registerPlugin(useGSAP);
@@ -10,7 +11,15 @@ export default function Hero() {
   const containerRef = useRef<HTMLElement>(null);
   const { isDark } = useTheme();
 
-  // Entrance animations using GSAP
+  let curtainParting = true;
+  try {
+    const loading = useLoading();
+    curtainParting = loading.curtainParting;
+  } catch {
+    // Graceful fallback when outside LoadingProvider
+  }
+
+  // Entrance animations using GSAP, synchronized with CurtainLoader reveal
   useGSAP(
     () => {
       const prefersReducedMotion =
@@ -19,19 +28,25 @@ export default function Hero() {
 
       if (prefersReducedMotion) return;
 
+      // Keep hidden until curtain begins parting
+      if (!curtainParting) {
+        gsap.set(".hero-heading-line", { opacity: 0, y: 40 });
+        return;
+      }
+
       const tl = gsap.timeline({
         defaults: { ease: "power3.out" },
-        delay: 0.2,
+        delay: 0.25, // Synchronized with curtain parting reveal
       });
 
-      tl.from(".hero-heading-line", {
-        y: 40,
-        opacity: 0,
+      tl.to(".hero-heading-line", {
+        y: 0,
+        opacity: 1,
         stagger: 0.15,
         duration: 0.9,
       });
     },
-    { scope: containerRef }
+    { scope: containerRef, dependencies: [curtainParting] }
   );
 
   return (
@@ -61,7 +76,7 @@ export default function Hero() {
         />
       </div>
 
-      {/* 3D Walking Character Layer */}
+      {/* 3D Avatar Character Layer */}
       <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
         <AvatarCanvas isDark={isDark} />
       </div>

@@ -207,14 +207,14 @@
       <span class="badge">Production GLB Ready</span>
     </h1>
     <div style="font-size: 0.85rem; color: var(--text-muted);">
-      File: <code>my3DAvatar.glb</code> (Clean Mesh + Armature)
+      File: <code>Desktop/Animated3dModel.glb</code> (Clean Mesh + Armature)
     </div>
   </header>
 
   <main>
     <model-viewer
       id="charViewer"
-      src="./my3DAvatar.glb"
+      src="./Animated3dModel.glb"
       alt="Animated 3D Character Model"
       camera-controls
       touch-action="pan-y"
@@ -292,6 +292,7 @@
       else if (name.includes('Hands')) document.getElementById('btnPockets').classList.add('active');
       else if (name.includes('Walk_InPlace')) document.getElementById('btnWalk').classList.add('active');
       else if (name.includes('Natural_Walk')) document.getElementById('btnWalkFwd').classList.add('active');
+      else if (name.includes('Cross')) document.getElementById('btnCrossArms').classList.add('active');
     }
 
     function togglePlay() {
