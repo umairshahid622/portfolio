@@ -219,7 +219,7 @@
       camera-controls
       touch-action="pan-y"
       autoplay
-      animation-name="Walk"
+      animation-name="00_Idle"
       shadow-intensity="1.2"
       shadow-softness="0.8"
       exposure="1.0"
@@ -233,21 +233,13 @@
       <div class="panel-section">
         <h3>Animations</h3>
         <div class="anim-buttons" id="animButtonsContainer">
-          <button class="btn" id="btnIdle" onclick="setAnim('00_Idle')">
+          <button class="btn active" id="btnIdle" onclick="setAnim('00_Idle')">
             <span>🧍 00_Idle (Resting / Breathing)</span>
             <span style="font-size: 0.75rem; opacity: 0.8;">Initial Pose</span>
           </button>
-          <button class="btn" id="btnPockets" onclick="setAnim('01_Hands_To_Pockets')">
-            <span>🧥 01_Hands_To_Pockets</span>
-            <span style="font-size: 0.75rem; opacity: 0.8;">Action 1</span>
-          </button>
-          <button class="btn active" id="btnWalk" onclick="setAnim('02_Walk_InPlace')">
-            <span>🚶 02_Walk_InPlace (Sneaker Bend)</span>
-            <span style="font-size: 0.75rem; opacity: 0.8;">Stationary</span>
-          </button>
           <button class="btn" id="btnWalkFwd" onclick="setAnim('02_Natural_Walk')">
             <span>🏃 02_Natural_Walk (Sneaker Bend)</span>
-            <span style="font-size: 0.75rem; opacity: 0.8;">Forward Motion</span>
+            <span style="font-size: 0.75rem; opacity: 0.8;">Natural Walk Motion</span>
           </button>
         </div>
       </div>

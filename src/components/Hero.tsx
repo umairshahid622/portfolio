@@ -5,6 +5,8 @@ import { useTheme } from "../context/ThemeContext";
 import { useLoading } from "../context/LoadingContext";
 import AvatarCanvas from "./AvatarCanvas";
 import TextSpiralWrap from "./TextSpiralWrap";
+import BackgroundParticles from "./BackgroundParticles";
+import AtmosphericVeils from "./AtmosphericVeils";
 
 gsap.registerPlugin(useGSAP);
 
@@ -192,6 +194,12 @@ export default function Hero() {
           }}
         />
       </div>
+
+      {/* Atmospheric Moving Particles (Glowing rings, bokeh orbs & golden motes) */}
+      <BackgroundParticles className="absolute inset-0 pointer-events-none z-0" count={20} />
+
+      {/* Atmospheric SVG Veils, Self-Drawing Bubble Spirals & Randomly Popping GSAP Bubbles */}
+      <AtmosphericVeils className="absolute inset-0 pointer-events-none z-0" />
 
       {/* 3D Avatar Character Layer - z-20 so inner letters are behind the character during popout */}
       <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
