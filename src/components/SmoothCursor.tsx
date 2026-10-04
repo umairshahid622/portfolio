@@ -120,6 +120,8 @@ export default function SmoothCursor() {
         );
       };
 
+      let isHoveringInteractive = false;
+
       const onMouseMove = (e: MouseEvent) => {
         const { clientX, clientY } = e;
 
@@ -158,13 +160,26 @@ export default function SmoothCursor() {
           isMoving = false;
         }, STOP_DELAY);
 
+        // Check if currently hovering an interactive or hoverable element
+        const target = e.target instanceof Element ? e.target : null;
+        const isHovering =
+          isHoveringInteractive ||
+          !!target?.closest(
+            'a, button, input, textarea, select, [role="button"], [data-cursor-hover], [role="link"], label, .cursor-pointer'
+          );
+
         // Calculate travel distance
         const dx = clientX - lastX;
         const dy = clientY - lastY;
         const dist = Math.hypot(dx, dy);
         const now = Date.now();
 
-        if (dist >= DISTANCE_THRESHOLD && now - lastSpawnTime >= MIN_SPAWN_INTERVAL) {
+        // Stop spawning icons while hovering something
+        if (isHovering) {
+          lastX = clientX;
+          lastY = clientY;
+          lastSpawnTime = now;
+        } else if (dist >= DISTANCE_THRESHOLD && now - lastSpawnTime >= MIN_SPAWN_INTERVAL) {
           const moveAngle = Math.atan2(dy, dx);
           spawnLogo(clientX, clientY, moveAngle);
           lastX = clientX;
@@ -194,14 +209,15 @@ export default function SmoothCursor() {
 
       // Hover expansion on interactive elements (buttons, links, inputs)
       const onMouseOver = (e: MouseEvent) => {
-        const target = e.target as HTMLElement | null;
+        const target = e.target instanceof Element ? e.target : null;
         if (!target) return;
 
         const isInteractive = target.closest(
-          'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
+          'a, button, input, textarea, select, [role="button"], [data-cursor-hover], [role="link"], label, .cursor-pointer'
         );
 
         if (isInteractive) {
+          isHoveringInteractive = true;
           gsap.to(ring, {
             scale: 1.45,
             opacity: 1,
@@ -214,18 +230,19 @@ export default function SmoothCursor() {
       };
 
       const onMouseOut = (e: MouseEvent) => {
-        const target = e.target as HTMLElement | null;
+        const target = e.target instanceof Element ? e.target : null;
         if (!target) return;
 
         const isInteractive = target.closest(
-          'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
+          'a, button, input, textarea, select, [role="button"], [data-cursor-hover], [role="link"], label, .cursor-pointer'
         );
-        const to = e.relatedTarget as HTMLElement | null;
+        const to = e.relatedTarget instanceof Element ? e.relatedTarget : null;
         const stayingInInteractive = to && to.closest(
-          'a, button, input, textarea, select, [role="button"], [data-cursor-hover]'
+          'a, button, input, textarea, select, [role="button"], [data-cursor-hover], [role="link"], label, .cursor-pointer'
         );
 
         if (isInteractive && !stayingInInteractive) {
+          isHoveringInteractive = false;
           gsap.to(ring, {
             scale: 1,
             opacity: 1,

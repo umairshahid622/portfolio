@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import { useTheme } from "../context/ThemeContext";
 import { useLoading } from "../context/LoadingContext";
 import AvatarCanvas from "./AvatarCanvas";
+import TextSpiralWrap from "./TextSpiralWrap";
 
 gsap.registerPlugin(useGSAP);
 
@@ -206,7 +207,7 @@ export default function Hero() {
               style={{ opacity: 0 }}
               className="hero-popout-umair block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-none text-right will-change-transform"
             >
-              Umair
+              <TextSpiralWrap>Umair</TextSpiralWrap>
             </span>
           </div>
 
@@ -222,7 +223,7 @@ export default function Hero() {
               style={{ opacity: 0 }}
               className="hero-popout-shahid block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-earth-terracotta via-earth-moss to-earth-terracotta dark:from-earth-sand dark:via-earth-terracotta dark:to-earth-sand leading-none text-left will-change-transform"
             >
-              Shahid
+              <TextSpiralWrap>Shahid</TextSpiralWrap>
             </span>
           </div>
         </h1>
@@ -234,7 +235,7 @@ export default function Hero() {
           style={{ opacity: 0 }}
           className="hero-popout-role text-xl sm:text-2xl md:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight text-center will-change-transform"
         >
-          Full-Stack Engineer
+          <TextSpiralWrap strokeWidth={2}>Full-Stack Engineer</TextSpiralWrap>
         </h2>
       </div>
     </section>

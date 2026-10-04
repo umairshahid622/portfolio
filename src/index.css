@@ -84,7 +84,11 @@ h1, h2, h3, .font-heading {
 }
 
 @media (pointer: fine) {
-  body, a, button, input, textarea, select, [role="button"] {
+  html,
+  body,
+  *,
+  *::before,
+  *::after {
     cursor: none !important;
   }
 }

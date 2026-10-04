@@ -118,7 +118,8 @@ export default function AvatarCanvas({
           powerPreference: "high-performance",
         }}
         shadows
-        className="w-full h-full"
+        className="w-full h-full pointer-events-none"
+        style={{ pointerEvents: "none" }}
       >
         {/* Soft hemispheric light for rich ambient atmosphere */}
         <hemisphereLight
