@@ -13,7 +13,8 @@ export default function CurtainLoader() {
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const centerContentRef = useRef<HTMLDivElement>(null);
-  const seamRef = useRef<HTMLDivElement>(null);
+  const leftBorderRef = useRef<HTMLDivElement>(null);
+  const rightBorderRef = useRef<HTMLDivElement>(null);
   const isOpeningRef = useRef(false);
 
   // Smoothly increment displayProgress towards target progress
@@ -84,6 +85,10 @@ export default function CurtainLoader() {
           },
         });
 
+        if (typeof window !== "undefined") {
+          (window as any).__curtainTimeline = tl;
+        }
+
         // 1. Fade out and scale down center loading content
         tl.to(centerContentRef.current, {
           scale: 0.9,
@@ -94,19 +99,18 @@ export default function CurtainLoader() {
           ease: "power2.inOut",
         });
 
-        // 2. Brighten seam line right before split
+        // 2. Brighten and intensify borders right before parting
         tl.to(
-          seamRef.current,
+          [leftBorderRef.current, rightBorderRef.current],
           {
-            scaleY: 1.15,
-            opacity: 1,
-            boxShadow: "0 0 25px rgba(221, 161, 94, 0.9)",
+            boxShadow:
+              "0 0 12px rgba(221, 161, 94, 0.75), 0 0 3px rgba(255, 255, 255, 0.6)",
             duration: 0.25,
           },
           "-=0.2"
         );
 
-        // 3. Part the curtain doors smoothly
+        // 3. Part the curtain doors smoothly - borders travel with them all the way to screen edges
         tl.to(
           leftPanelRef.current,
           {
@@ -126,30 +130,20 @@ export default function CurtainLoader() {
           },
           "<" // Start at same time as left panel
         );
-
-        // 4. Fade out seam line as panels slide away
-        tl.to(
-          seamRef.current,
-          {
-            opacity: 0,
-            duration: 0.35,
-          },
-          "<"
-        );
       }, 350);
 
       return () => clearTimeout(delayTimer);
     }
   }, [displayProgress, avatarReady, setCurtainParting, setIsCurtainComplete]);
 
-  if (isCurtainComplete) {
-    return null;
-  }
-
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[9990] overflow-hidden select-none pointer-events-auto"
+      className={`fixed inset-0 z-[9990] overflow-hidden select-none transition-[visibility] duration-0 ${
+        isCurtainComplete
+          ? "pointer-events-none opacity-0 invisible"
+          : "pointer-events-auto opacity-100 visible"
+      }`}
       aria-label="Loading Screen"
       role="dialog"
       aria-modal="true"
@@ -157,41 +151,58 @@ export default function CurtainLoader() {
       {/* Left Curtain Panel */}
       <div
         ref={leftPanelRef}
-        className="absolute top-0 left-0 w-1/2 h-full bg-[#1b2511] border-r border-earth-sand/20 flex items-center justify-end overflow-hidden will-change-transform"
+        className="absolute top-0 left-0 w-1/2 h-full bg-[#1b2511] will-change-transform"
         style={{
           background:
             "radial-gradient(circle at 100% 50%, #293817 0%, #1e2a12 60%, #141c0c 100%)",
         }}
       >
-        {/* Soft atmospheric ambient glow */}
-        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-earth-terracotta/15 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-0 w-72 h-72 rounded-full bg-earth-moss/20 blur-[100px] pointer-events-none" />
+        {/* Soft atmospheric ambient glow container */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-earth-terracotta/15 blur-[120px]" />
+          <div className="absolute bottom-1/4 right-0 w-72 h-72 rounded-full bg-earth-moss/20 blur-[100px]" />
+        </div>
+
+        {/* Luminous Right Border - attached to and travels with Left Door */}
+        <div
+          ref={leftBorderRef}
+          className="absolute top-0 right-0 w-[1px] h-full pointer-events-none z-10 will-change-transform"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent 0%, #bc6c25 20%, #dda15e 50%, #bc6c25 80%, transparent 100%)",
+            boxShadow:
+              "0 0 8px rgba(188, 108, 37, 0.5), -1px 0 2px rgba(221, 161, 94, 0.5)",
+          }}
+        />
       </div>
 
       {/* Right Curtain Panel */}
       <div
         ref={rightPanelRef}
-        className="absolute top-0 right-0 w-1/2 h-full bg-[#1b2511] border-l border-earth-sand/20 flex items-center justify-start overflow-hidden will-change-transform"
+        className="absolute top-0 right-0 w-1/2 h-full bg-[#1b2511] will-change-transform"
         style={{
           background:
             "radial-gradient(circle at 0% 50%, #293817 0%, #1e2a12 60%, #141c0c 100%)",
         }}
       >
-        {/* Soft atmospheric ambient glow */}
-        <div className="absolute top-1/3 -right-20 w-96 h-96 rounded-full bg-earth-sand/15 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full bg-earth-terracotta/15 blur-[100px] pointer-events-none" />
-      </div>
+        {/* Soft atmospheric ambient glow container */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/3 -right-20 w-96 h-96 rounded-full bg-earth-sand/15 blur-[120px]" />
+          <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full bg-earth-terracotta/15 blur-[100px]" />
+        </div>
 
-      {/* Luminous Center Seam Line */}
-      <div
-        ref={seamRef}
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-full pointer-events-none z-15 will-change-transform"
-        style={{
-          background:
-            "linear-gradient(to bottom, transparent 0%, #bc6c25 25%, #dda15e 50%, #bc6c25 75%, transparent 100%)",
-          boxShadow: "0 0 16px rgba(188, 108, 37, 0.6)",
-        }}
-      />
+        {/* Luminous Left Border - attached to and travels with Right Door */}
+        <div
+          ref={rightBorderRef}
+          className="absolute top-0 left-0 w-[1px] h-full pointer-events-none z-10 will-change-transform"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent 0%, #bc6c25 20%, #dda15e 50%, #bc6c25 80%, transparent 100%)",
+            boxShadow:
+              "0 0 8px rgba(188, 108, 37, 0.5), 1px 0 2px rgba(221, 161, 94, 0.5)",
+          }}
+        />
+      </div>
 
       {/* Center Loader Content - Loading Progress Only */}
       <div
