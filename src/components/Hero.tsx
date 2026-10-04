@@ -174,26 +174,14 @@ export default function Hero() {
       id="hero"
       className="relative w-full min-h-screen flex flex-col justify-between pt-24 pb-12 px-5 sm:px-8 md:px-12 overflow-hidden bg-earth-cream dark:bg-earth-forest text-earth-forest dark:text-earth-cream transition-colors duration-300"
     >
-      {/* Ambient background lighting and subtle gradients */}
-      <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
-        {/* Top-right terracotta warm glow */}
-        <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-earth-terracotta/15 to-earth-sand/20 dark:from-earth-terracotta/20 dark:to-earth-sand/10 blur-[130px]" />
-
-        {/* Center-left moss green organic glow */}
-        <div className="absolute top-1/3 -left-32 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-earth-moss/15 dark:from-earth-moss/30 to-transparent blur-[140px]" />
-
-        {/* Bottom subtle glow */}
-        <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full bg-earth-terracotta/10 blur-[150px]" />
-
-        {/* Subtle grid pattern overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.04]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-            backgroundSize: "32px 32px",
-          }}
-        />
-      </div>
+      {/* Subtle grid pattern overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none -z-10 opacity-[0.03] dark:opacity-[0.03]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+          backgroundSize: "32px 32px",
+        }}
+      />
 
       {/* Atmospheric Moving Particles (Glowing rings, bokeh orbs & golden motes) */}
       <BackgroundParticles className="absolute inset-0 pointer-events-none z-0" count={20} />

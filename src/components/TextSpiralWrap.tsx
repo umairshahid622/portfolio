@@ -26,7 +26,6 @@ export default function TextSpiralWrap({
 }: TextSpiralWrapProps) {
   const containerRef = useRef<HTMLSpanElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
-  const textRef = useRef<HTMLSpanElement>(null);
   const pathLengthRef = useRef(0);
   const uniqueId = useId().replace(/:/g, "");
 
@@ -64,15 +63,6 @@ export default function TextSpiralWrap({
       duration: 0.85,
       ease: "power2.out",
     });
-
-    // Subtle gentle hover highlight on text
-    if (textRef.current) {
-      gsap.to(textRef.current, {
-        scale: 1.025,
-        duration: 0.35,
-        ease: "power1.out",
-      });
-    }
   });
 
   const handleMouseLeave = contextSafe(() => {
@@ -93,14 +83,6 @@ export default function TextSpiralWrap({
         }
       },
     });
-
-    if (textRef.current) {
-      gsap.to(textRef.current, {
-        scale: 1,
-        duration: 0.35,
-        ease: "power1.inOut",
-      });
-    }
   });
 
   const gradientId = `spiral-gradient-${uniqueId}`;
@@ -159,7 +141,7 @@ export default function TextSpiralWrap({
       </svg>
 
       {/* Text element */}
-      <span ref={textRef} className="relative z-10 block transition-transform">
+      <span className="relative z-10 block">
         {children}
       </span>
     </span>

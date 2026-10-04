@@ -237,6 +237,10 @@
             <span>🧍 00_Idle (Resting / Breathing)</span>
             <span style="font-size: 0.75rem; opacity: 0.8;">Initial Pose</span>
           </button>
+          <button class="btn" id="btnWave" onclick="setAnim('01_Wave')">
+            <span>👋 01_Wave (Wrist Joint Flexion)</span>
+            <span style="font-size: 0.75rem; opacity: 0.8;">Organic Hand Wave</span>
+          </button>
           <button class="btn" id="btnWalkFwd" onclick="setAnim('02_Natural_Walk')">
             <span>🏃 02_Natural_Walk (Sneaker Bend)</span>
             <span style="font-size: 0.75rem; opacity: 0.8;">Natural Walk Motion</span>
@@ -280,11 +284,9 @@
       document.getElementById('btnPlayPause').innerText = '⏸️ Pause';
 
       document.querySelectorAll('.anim-buttons .btn').forEach(b => b.classList.remove('active'));
-      if (name.includes('Idle')) document.getElementById('btnIdle').classList.add('active');
-      else if (name.includes('Hands')) document.getElementById('btnPockets').classList.add('active');
-      else if (name.includes('Walk_InPlace')) document.getElementById('btnWalk').classList.add('active');
-      else if (name.includes('Natural_Walk')) document.getElementById('btnWalkFwd').classList.add('active');
-      else if (name.includes('Cross')) document.getElementById('btnCrossArms').classList.add('active');
+      if (name.includes('Idle')) document.getElementById('btnIdle')?.classList.add('active');
+      else if (name.includes('Wave')) document.getElementById('btnWave')?.classList.add('active');
+      else if (name.includes('Natural_Walk')) document.getElementById('btnWalkFwd')?.classList.add('active');
     }
 
     function togglePlay() {

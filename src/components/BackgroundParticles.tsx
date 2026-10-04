@@ -5,7 +5,6 @@ interface Particle {
   x: number;
   y: number;
   radius: number;
-  type: "ring" | "orb" | "mote";
   vx: number;
   vy: number;
   baseAlpha: number;
@@ -16,13 +15,7 @@ interface Particle {
   swayOffset: number;
   swayDistance: number;
   color: string;
-  lineWidth: number;
   depth: number; // 0.5 (far) to 1.5 (near) for parallax & speed
-  hasCompanion?: boolean;
-  companionOffsetX?: number;
-  companionOffsetY?: number;
-  companionRadius?: number;
-  highlightAngle?: number;
 }
 
 interface AmbientWisp {
@@ -147,50 +140,10 @@ export default function BackgroundParticles({
     const particles: Particle[] = [];
 
     const createParticle = (spawnY?: number): Particle => {
-      const typeRoll = Math.random();
-      let type: "ring" | "orb" | "mote";
-      let radius: number;
-      let baseAlpha: number;
-      let lineWidth = 1.1;
-      let hasCompanion = false;
-      let companionOffsetX = 0;
-      let companionOffsetY = 0;
-      let companionRadius = 0;
-      const highlightAngle = Math.random() * Math.PI * 2;
-
-      if (typeRoll < 0.16) {
-        // Hollow ring / bubble outline (greatly reduced amount for subtlety)
-        type = "ring";
-        radius = 9 + Math.random() * 20; // 9px to 29px
-        baseAlpha = isDark
-          ? 0.14 + Math.random() * 0.2
-          : 0.1 + Math.random() * 0.16;
-        lineWidth = 0.9 + Math.random() * 0.8;
-
-        // Rare twin companion bubble
-        if (Math.random() < 0.15) {
-          hasCompanion = true;
-          const offsetDist = radius * (1.1 + Math.random() * 0.6);
-          const angle = Math.random() * Math.PI * 2;
-          companionOffsetX = Math.cos(angle) * offsetDist;
-          companionOffsetY = Math.sin(angle) * offsetDist;
-          companionRadius = radius * (0.45 + Math.random() * 0.35);
-        }
-      } else if (typeRoll < 0.60) {
-        // Soft glowing bokeh orb
-        type = "orb";
-        radius = 16 + Math.random() * 34; // 16px to 50px
-        baseAlpha = isDark
-          ? 0.04 + Math.random() * 0.1
-          : 0.03 + Math.random() * 0.07;
-      } else {
-        // Luminous micro dust mote / glowing spark
-        type = "mote";
-        radius = 1.0 + Math.random() * 1.8;
-        baseAlpha = isDark
-          ? 0.35 + Math.random() * 0.45
-          : 0.25 + Math.random() * 0.35;
-      }
+      const radius = 1.0 + Math.random() * 1.5;
+      const baseAlpha = isDark
+        ? 0.35 + Math.random() * 0.45
+        : 0.25 + Math.random() * 0.35;
 
       const colorPrefix =
         activeColors[Math.floor(Math.random() * activeColors.length)];
@@ -200,7 +153,6 @@ export default function BackgroundParticles({
         x: Math.random() * width,
         y: spawnY !== undefined ? spawnY : Math.random() * height,
         radius,
-        type,
         vx: (Math.random() - 0.5) * 0.08,
         vy: -(0.05 + Math.random() * 0.09) * depth, // Calmed, very slow buoyant drift
         baseAlpha,
@@ -211,13 +163,7 @@ export default function BackgroundParticles({
         swayOffset: Math.random() * Math.PI * 2,
         swayDistance: 0.15 + Math.random() * 0.25,
         color: colorPrefix,
-        lineWidth,
         depth,
-        hasCompanion,
-        companionOffsetX,
-        companionOffsetY,
-        companionRadius,
-        highlightAngle,
       };
     };
 
@@ -297,77 +243,13 @@ export default function BackgroundParticles({
 
         ctx.save();
 
-        if (p.type === "ring") {
-          // Hollow ring outline with soft glowing rim
-          ctx.beginPath();
-          ctx.arc(drawX, drawY, p.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `${p.color} ${p.alpha})`;
-          ctx.lineWidth = p.lineWidth;
-          ctx.shadowColor = `${p.color} 0.45)`;
-          ctx.shadowBlur = 6;
-          ctx.stroke();
-
-          // Subtle inner bubble wash for glassy depth
-          ctx.fillStyle = `${p.color} ${p.alpha * 0.035})`;
-          ctx.fill();
-
-          // Highlight crescent arc on one edge for authentic bubble reflection
-          if (p.highlightAngle !== undefined) {
-            ctx.beginPath();
-            ctx.arc(
-              drawX,
-              drawY,
-              p.radius,
-              p.highlightAngle,
-              p.highlightAngle + 0.9
-            );
-            ctx.strokeStyle = `${p.color} ${Math.min(1, p.alpha * 1.6)})`;
-            ctx.lineWidth = p.lineWidth * 1.35;
-            ctx.shadowColor = `${p.color} 0.7)`;
-            ctx.shadowBlur = 8;
-            ctx.stroke();
-          }
-
-          // Companion bubble if present (twin bubble from reference)
-          if (p.hasCompanion && p.companionRadius) {
-            const compX = drawX + (p.companionOffsetX || 0);
-            const compY = drawY + (p.companionOffsetY || 0);
-            ctx.beginPath();
-            ctx.arc(compX, compY, p.companionRadius, 0, Math.PI * 2);
-            ctx.strokeStyle = `${p.color} ${p.alpha * 0.8})`;
-            ctx.lineWidth = p.lineWidth * 0.85;
-            ctx.shadowColor = `${p.color} 0.35)`;
-            ctx.shadowBlur = 5;
-            ctx.stroke();
-          }
-        } else if (p.type === "orb") {
-          // Soft radial bokeh disc
-          const grad = ctx.createRadialGradient(
-            drawX,
-            drawY,
-            0,
-            drawX,
-            drawY,
-            p.radius
-          );
-          grad.addColorStop(0, `${p.color} ${p.alpha * 0.8})`);
-          grad.addColorStop(0.5, `${p.color} ${p.alpha * 0.4})`);
-          grad.addColorStop(1, `${p.color} 0)`);
-
-          ctx.beginPath();
-          ctx.arc(drawX, drawY, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = grad;
-          ctx.fill();
-        } else {
-          // Tiny glowing speck/firefly mote
-          ctx.beginPath();
-          ctx.arc(drawX, drawY, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = `${p.color} ${p.alpha})`;
-          ctx.shadowColor = `${p.color} 0.95)`;
-          ctx.shadowBlur = 7;
-          ctx.fill();
-        }
-
+        // Tiny glowing speck/firefly mote (pure particle, no blobs)
+        ctx.beginPath();
+        ctx.arc(drawX, drawY, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color} ${p.alpha})`;
+        ctx.shadowColor = `${p.color} 0.95)`;
+        ctx.shadowBlur = 6;
+        ctx.fill();
         ctx.restore();
       }
 
