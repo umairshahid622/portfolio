@@ -56,7 +56,7 @@ export default function SmoothCursor() {
         const randomRot = gsap.utils.random(-14, 14);
 
         badge.innerHTML = `
-          <div class="relative flex items-center justify-center w-11 h-11 rounded-2xl  shadow-[0_8px_20px_rgba(0,0,0,0.18)] backdrop-blur-md">
+          <div class="relative flex items-center justify-center size-10">
             <img
               src="${logo.src}"
               alt="${logo.name}"
