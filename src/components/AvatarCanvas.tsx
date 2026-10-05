@@ -5,7 +5,6 @@ import * as THREE from "three";
 import { useLoading } from "../context/LoadingContext";
 
 interface AvatarModelProps {
-  isHovered?: boolean;
   baseAnimation?: "idle" | "walk";
   animation?: "idle" | "wave" | "walk";
   onWalkComplete?: () => void;
@@ -13,7 +12,6 @@ interface AvatarModelProps {
 }
 
 function AvatarModel({
-  isHovered = false,
   baseAnimation = "idle",
   animation,
   onWalkComplete,
@@ -25,15 +23,31 @@ function AvatarModel({
   const animations = useMemo(() => {
     const list = [...rawAnimations];
     const TARGET_RIGHT_X = 1.113657; // exact final spine X position of 02_Natural_Walk
+    // Exact spine quaternion at walk end frame (frame 140) facing camera
+    const TARGET_RIGHT_SPINE_ROT = [
+      0.04889841377735138,
+      -0.19057218730449677,
+      -0.009504875168204308,
+      0.9804085493087769,
+    ];
 
     const idleClip = rawAnimations.find((a) => a.name === "00_Idle");
     if (idleClip) {
       const idleRight = idleClip.clone();
       idleRight.name = "00_Idle_Right";
-      const spineTrack = idleRight.tracks.find((t) => t.name.includes("spine.position"));
-      if (spineTrack) {
-        for (let i = 0; i < spineTrack.values.length; i += 3) {
-          spineTrack.values[i] = TARGET_RIGHT_X;
+      const spinePosTrack = idleRight.tracks.find((t) => t.name.includes("spine.position"));
+      if (spinePosTrack) {
+        for (let i = 0; i < spinePosTrack.values.length; i += 3) {
+          spinePosTrack.values[i] = TARGET_RIGHT_X;
+        }
+      }
+      const spineRotTrack = idleRight.tracks.find((t) => t.name.includes("spine.quaternion"));
+      if (spineRotTrack) {
+        for (let i = 0; i < spineRotTrack.values.length; i += 4) {
+          spineRotTrack.values[i] = TARGET_RIGHT_SPINE_ROT[0];
+          spineRotTrack.values[i + 1] = TARGET_RIGHT_SPINE_ROT[1];
+          spineRotTrack.values[i + 2] = TARGET_RIGHT_SPINE_ROT[2];
+          spineRotTrack.values[i + 3] = TARGET_RIGHT_SPINE_ROT[3];
         }
       }
       list.push(idleRight);
@@ -43,10 +57,19 @@ function AvatarModel({
     if (waveClip) {
       const waveRight = waveClip.clone();
       waveRight.name = "01_Wave_Right";
-      const spineTrack = waveRight.tracks.find((t) => t.name.includes("spine.position"));
-      if (spineTrack) {
-        for (let i = 0; i < spineTrack.values.length; i += 3) {
-          spineTrack.values[i] = TARGET_RIGHT_X + spineTrack.values[i];
+      const spinePosTrack = waveRight.tracks.find((t) => t.name.includes("spine.position"));
+      if (spinePosTrack) {
+        for (let i = 0; i < spinePosTrack.values.length; i += 3) {
+          spinePosTrack.values[i] = TARGET_RIGHT_X + spinePosTrack.values[i];
+        }
+      }
+      const spineRotTrack = waveRight.tracks.find((t) => t.name.includes("spine.quaternion"));
+      if (spineRotTrack) {
+        for (let i = 0; i < spineRotTrack.values.length; i += 4) {
+          spineRotTrack.values[i] = TARGET_RIGHT_SPINE_ROT[0];
+          spineRotTrack.values[i + 1] = TARGET_RIGHT_SPINE_ROT[1];
+          spineRotTrack.values[i + 2] = TARGET_RIGHT_SPINE_ROT[2];
+          spineRotTrack.values[i + 3] = TARGET_RIGHT_SPINE_ROT[3];
         }
       }
       list.push(waveRight);
@@ -127,11 +150,11 @@ function AvatarModel({
     };
   }, [actions, onReady, setAvatarReady]);
 
-  // Determine active animation based on walk completion, hover, and requested animation
+  // Determine active animation based on walk completion and requested animation
   let targetActionName = "00_Idle";
   if (hasCompletedWalk) {
-    targetActionName = isHovered || animation === "wave" ? "01_Wave_Right" : "00_Idle_Right";
-  } else if (isHovered || animation === "wave") {
+    targetActionName = animation === "wave" ? "01_Wave_Right" : "00_Idle_Right";
+  } else if (animation === "wave") {
     targetActionName = "01_Wave";
   } else if (animation === "walk" || baseAnimation === "walk") {
     targetActionName = "02_Natural_Walk";
@@ -168,7 +191,7 @@ function AvatarModel({
   }, [actions, targetActionName]);
 
   return (
-    <group ref={groupRef} position={[0, -0.88, 0]} rotation={[0, -0.06, 0]}>
+    <group ref={groupRef} position={[0, -0.88, 0]} rotation={[0, 0, 0]}>
       <primitive object={scene} scale={1.68} position={[0, 0, 0]} />
       <group ref={shadowGroupRef}>
         <ContactShadows
@@ -191,8 +214,7 @@ interface AvatarCanvasProps {
   className?: string;
   baseAnimation?: "idle" | "walk";
   animation?: "idle" | "wave" | "walk";
-  isHovered?: boolean;
-  onHoverChange?: (hovered: boolean) => void;
+  onWalkComplete?: () => void;
   onReady?: () => void;
 }
 
@@ -201,24 +223,9 @@ export default function AvatarCanvas({
   className = "",
   baseAnimation = "idle",
   animation,
-  isHovered: externalHovered,
-  onHoverChange,
+  onWalkComplete,
   onReady,
 }: AvatarCanvasProps) {
-  const [internalHovered, setInternalHovered] = useState(false);
-  const [hasWalkedToRight, setHasWalkedToRight] = useState(false);
-  const isHovered = externalHovered !== undefined ? externalHovered : internalHovered;
-
-  const handleMouseEnter = () => {
-    setInternalHovered(true);
-    onHoverChange?.(true);
-  };
-
-  const handleMouseLeave = () => {
-    setInternalHovered(false);
-    onHoverChange?.(false);
-  };
-
   return (
     <div
       className={`w-full h-full relative flex items-center justify-center select-none pointer-events-none ${className}`}
@@ -286,29 +293,13 @@ export default function AvatarCanvas({
 
         <Suspense fallback={null}>
           <AvatarModel
-            isHovered={isHovered}
             baseAnimation={baseAnimation}
             animation={animation}
-            onWalkComplete={() => setHasWalkedToRight(true)}
+            onWalkComplete={onWalkComplete}
             onReady={onReady}
           />
         </Suspense>
       </Canvas>
-
-      {/* Interactive hover zone positioned dynamically over the character */}
-      <div
-        data-cursor-hover
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={() => {
-          setInternalHovered((prev) => !prev);
-          onHoverChange?.(!isHovered);
-        }}
-        className={`absolute w-36 sm:w-44 md:w-52 h-[72vh] max-h-[660px] min-h-[440px] pointer-events-auto z-20 cursor-pointer transition-all duration-700 ease-out ${
-          hasWalkedToRight ? "left-[82%] -translate-x-1/2" : "left-1/2 -translate-x-1/2"
-        }`}
-        aria-label="3D Avatar Character - Hover to wave"
-      />
     </div>
   );
 }
