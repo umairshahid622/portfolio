@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useTheme } from "../context/ThemeContext";
@@ -13,6 +13,7 @@ gsap.registerPlugin(useGSAP);
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null);
   const { isDark } = useTheme();
+  const [avatarAnimation, setAvatarAnimation] = useState<"idle" | "walk">("idle");
 
   let curtainParting = true;
   let isCurtainComplete = false;
@@ -41,6 +42,8 @@ export default function Hero() {
           scale: 1,
           x: 0,
         });
+        gsap.set(".hero-main-content", { zIndex: 30 });
+        setAvatarAnimation("walk");
         return;
       }
 
@@ -51,6 +54,8 @@ export default function Hero() {
           scale: 1,
           x: 0,
         });
+        gsap.set(".hero-main-content", { zIndex: 30 });
+        setAvatarAnimation("walk");
         return;
       }
 
@@ -161,9 +166,15 @@ export default function Hero() {
           opacity: 1,
           duration: 0.55,
           ease: "back.out(2)",
+          onComplete: () => {
+            setAvatarAnimation("walk");
+          },
         },
         "-=0.1" // Starts as Umair and Shahid settle into flanking positions
       );
+
+      // Once popout and separation completes, promote text layer above character layer
+      tl.set(".hero-main-content", { zIndex: 30 });
     },
     { scope: containerRef, dependencies: [curtainParting] }
   );
@@ -191,17 +202,17 @@ export default function Hero() {
 
       {/* 3D Avatar Character Layer - z-20 so inner letters are behind the character during popout */}
       <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
-        <AvatarCanvas isDark={isDark} />
+        <AvatarCanvas isDark={isDark} baseAnimation={avatarAnimation} />
       </div>
 
       {/* Main Hero Content - z-10 so it emerges from behind the 3D character */}
-      <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col items-center justify-center my-auto z-10 px-4 sm:px-6 md:px-8">
-        <h1 className="w-full flex items-center justify-between select-none">
+      <div className="hero-main-content w-full max-w-7xl mx-auto flex-1 flex flex-col items-center justify-center my-auto z-10 px-4 sm:px-6 md:px-8 pointer-events-none">
+        <h1 className="w-full flex items-center justify-between select-none pointer-events-none">
           {/* Left Wing: Umair */}
-          <div className="flex-1 flex justify-end overflow-visible pr-2 sm:pr-4 md:pr-8 lg:pr-10">
+          <div className="flex-1 flex justify-end overflow-visible pr-2 sm:pr-4 md:pr-8 lg:pr-10 pointer-events-none">
             <span
               style={{ opacity: 0 }}
-              className="hero-popout-umair block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-none text-right will-change-transform"
+              className="hero-popout-umair block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-none text-right will-change-transform pointer-events-auto"
             >
               <TextSpiralWrap>Umair</TextSpiralWrap>
             </span>
@@ -214,10 +225,10 @@ export default function Hero() {
           />
 
           {/* Right Wing: Shahid */}
-          <div className="flex-1 flex justify-start overflow-visible pl-2 sm:pl-4 md:pl-8 lg:pl-10">
+          <div className="flex-1 flex justify-start overflow-visible pl-2 sm:pl-4 md:pl-8 lg:pl-10 pointer-events-none">
             <span
               style={{ opacity: 0 }}
-              className="hero-popout-shahid block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-earth-terracotta via-earth-moss to-earth-terracotta dark:from-earth-sand dark:via-earth-terracotta dark:to-earth-sand leading-none text-left will-change-transform"
+              className="hero-popout-shahid block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-earth-terracotta via-earth-moss to-earth-terracotta dark:from-earth-sand dark:via-earth-terracotta dark:to-earth-sand leading-none text-left will-change-transform pointer-events-auto"
             >
               <TextSpiralWrap>Shahid</TextSpiralWrap>
             </span>
@@ -226,10 +237,10 @@ export default function Hero() {
       </div>
 
       {/* Bottom Middle: Full-Stack Engineer - z-30 in front of ground shadow */}
-      <div className="w-full flex items-center justify-center z-30 overflow-visible pb-4">
+      <div className="w-full flex items-center justify-center z-30 overflow-visible pb-4 pointer-events-none">
         <h2
           style={{ opacity: 0 }}
-          className="hero-popout-role text-xl sm:text-2xl md:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight text-center will-change-transform"
+          className="hero-popout-role text-xl sm:text-2xl md:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight text-center will-change-transform pointer-events-auto"
         >
           <TextSpiralWrap strokeWidth={2}>Full-Stack Engineer</TextSpiralWrap>
         </h2>
