@@ -127,8 +127,8 @@ export default function Overview() {
 
       // Start with the first 5 lines in the focal reading zone (lines 0-4 centered at line 2)
       const initialRotation = 2 * stepAngle;
-      // Allow the last line to roll fully into the white focal zone (reaches center and top of white band)
-      const totalRotation = (PARAGRAPH_LINES.length + 1) * stepAngle;
+      // Stop symmetrically when the last 5 lines settle in the focal reading zone (lines 15-19 centered at line 17)
+      const totalRotation = (PARAGRAPH_LINES.length - 3) * stepAngle;
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -149,8 +149,9 @@ export default function Overview() {
         {
           rotateX: totalRotation,
           ease: "none",
+          duration: 0.9,
         }
-      );
+      ).to({}, { duration: 0.1 }); // Hold resting state at the end before unpinning
     },
     { scope: sectionRef, dependencies: [stepAngle, radius] }
   );
@@ -194,9 +195,9 @@ export default function Overview() {
                 perspective: "900px",
                 perspectiveOrigin: "center center",
                 maskImage:
-                  "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 10%, rgba(0,0,0,0.22) calc(50% - 80px), rgba(0,0,0,1) calc(50% - 62px), rgba(0,0,0,1) calc(50% + 62px), rgba(0,0,0,0.22) calc(50% + 80px), rgba(0,0,0,0.22) 90%, transparent 100%)",
+                  "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
                 WebkitMaskImage:
-                  "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 10%, rgba(0,0,0,0.22) calc(50% - 80px), rgba(0,0,0,1) calc(50% - 62px), rgba(0,0,0,1) calc(50% + 62px), rgba(0,0,0,0.22) calc(50% + 80px), rgba(0,0,0,0.22) 90%, transparent 100%)",
+                  "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
               }}
             >
               {/* 3D Rotating Drum Container */}
