@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import CharacterPointsCanvas from "./CharacterPointsCanvas";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -14,84 +15,60 @@ const PARAGRAPH_LINES: ParagraphLine[] = [
   // --- Paragraph 1 ---
   {
     id: 1,
-    content: "Full-Stack Developer with hands-on experience",
+    content: "Full-Stack Developer with hands-on experience building and shipping modern web and cross-platform mobile apps",
   },
   {
     id: 2,
-    content: "building and shipping modern web and cross-platform",
+    content: "utilizing React, Next.js, Angular, Node.js, and Flutter across modern production environments.",
   },
   {
     id: 3,
-    content: "mobile applications using React, Next.js, Angular,",
+    content: "Proven expertise engineering scalable frontend architectures and resilient, secure backend systems",
   },
   {
     id: 4,
-    content: "Node.js, and Flutter. Proven expertise developing",
+    content: "powered by Node.js, Express.js, and NestJS to deliver high-performance RESTful APIs.",
   },
   {
     id: 5,
-    content: "scalable frontend architectures and secure backend",
+    content: "Dedicated to crafting seamless user experiences, responsive layouts, and interactive digital interfaces.",
   },
   {
     id: 6,
-    content: "systems using Node.js, Express.js, and NestJS,",
+    content: "Strong Dart programming skills with state management across GetX, Bloc, and Provider,",
   },
   {
     id: 7,
-    content: "delivering high-performance RESTful APIs and",
+    content: "experienced in multi-flavor builds, international localization, and multi-threaded Dart isolates.",
   },
   {
     id: 8,
-    content: "seamless user experiences. Strong Dart programming",
-  },
-  {
-    id: 9,
-    content: "skills with state management (GetX, Bloc, Provider),",
-  },
-  {
-    id: 10,
-    content: "multi-flavor builds, localization, and Dart isolates.",
-  },
-  {
-    id: 11,
     content: null, // subtle divider break between paragraphs
   },
   // --- Paragraph 2 ---
   {
+    id: 9,
+    content: "Experienced in seamless third-party API integration, cloud-based microservices, and modern tooling,",
+  },
+  {
+    id: 10,
+    content: "implementing fluid UI/UX designs, comprehensive unit testing, and rigorous performance optimization.",
+  },
+  {
+    id: 11,
+    content: "Thorough understanding of relational and NoSQL database management, authentication, and cloud solutions,",
+  },
+  {
     id: 12,
-    content: "Experienced in integrating third-party APIs,",
+    content: "with the proven ability to deliver end-to-end full-stack development from concept to launch.",
   },
   {
     id: 13,
-    content: "implementing responsive UI/UX designs, writing",
+    content: "Known for strong analytical problem solving, clean maintainable code, and proactive communication,",
   },
   {
     id: 14,
-    content: "test cases, and optimizing applications through",
-  },
-  {
-    id: 15,
-    content: "efficient state management and performance techniques.",
-  },
-  {
-    id: 16,
-    content: "Strong understanding of database management,",
-  },
-  {
-    id: 17,
-    content: "authentication systems, and cloud-based solutions,",
-  },
-  {
-    id: 18,
-    content: "with the ability to deliver end-to-end development.",
-  },
-  {
-    id: 19,
-    content: "Known for strong analytical thinking, clear",
-  },
-  {
-    id: 20,
-    content: "communication, and effective collaboration.",
+    content: "collaborating effectively with cross-functional teams to build impactful, scalable digital products.",
   },
 ];
 
@@ -99,6 +76,7 @@ export default function Overview() {
   const sectionRef = useRef<HTMLElement>(null);
   const drumRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [particleProgress, setParticleProgress] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -109,9 +87,9 @@ export default function Overview() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Radius and angular step tuned for natural body text paragraph line-height
-  const radius = isMobile ? 180 : 230;
-  const stepAngle = isMobile ? 8.5 : 7.2;
+  // Radius and angular step tuned for wide body text roller
+  const radius = isMobile ? 210 : 260;
+  const stepAngle = isMobile ? 8.2 : 7.2;
 
   useGSAP(
     () => {
@@ -127,7 +105,7 @@ export default function Overview() {
 
       // Start with the first 5 lines in the focal reading zone (lines 0-4 centered at line 2)
       const initialRotation = 2 * stepAngle;
-      // Stop symmetrically when the last 5 lines settle in the focal reading zone (lines 15-19 centered at line 17)
+      // Stop symmetrically when the last 5 lines settle in the focal reading zone (lines 9-13 centered at line 11)
       const totalRotation = (PARAGRAPH_LINES.length - 3) * stepAngle;
 
       const tl = gsap.timeline({
@@ -139,6 +117,9 @@ export default function Overview() {
           scrub: 0.8,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            setParticleProgress(self.progress);
+          },
         },
       });
 
@@ -160,8 +141,13 @@ export default function Overview() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative w-full min-h-screen py-20 sm:py-24 lg:py-28 px-5 sm:px-8 md:px-12 bg-earth-black text-earth-cream overflow-hidden transition-colors duration-300 flex items-center justify-center"
+      className="relative w-full min-h-screen py-20 sm:py-24 lg:py-28 px-4 sm:px-6 md:px-8 bg-earth-black text-earth-cream overflow-hidden transition-colors duration-300 flex items-center justify-center"
     >
+      {/* 3D Character Points Particle Nebula Canvas - Spans the entire section behind content */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <CharacterPointsCanvas progress={particleProgress} />
+      </div>
+
       {/* Ambient background glows */}
       <div
         className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-tr from-earth-moss/20 to-earth-sand/15 blur-[130px] pointer-events-none -z-10"
@@ -172,65 +158,57 @@ export default function Overview() {
         aria-hidden="true"
       />
 
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-        {/* Left Column (Reserved for future visual asset as requested) */}
-        <div className="lg:col-span-5 w-full min-h-[140px] sm:min-h-[200px] lg:min-h-[440px] flex items-center justify-center relative">
-          {/* Reserved for future visual asset */}
-        </div>
-
-        {/* Right Column: 3D Rolling Paragraph */}
-        <div className="lg:col-span-7 flex flex-col items-center lg:items-start justify-center space-y-5 w-full">
-          {/* 3D Rolling Drum Container */}
+      <div className="w-full max-w-[94vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4">
+        {/* 3D Rolling Drum Container - Positioned below the glowing OVERVIEW constellation header */}
+        <div
+          className="w-full relative select-none will-change-transform flex items-center justify-center mt-12 sm:mt-16 md:mt-20"
+          style={{
+            perspective: "1150px",
+            perspectiveOrigin: "center center",
+          }}
+        >
+          {/* Viewport: Wide roller spanning screen width with 5 lines pure white in center and dull lines above and below */}
           <div
-            className="w-full relative select-none will-change-transform"
+            className="relative w-full max-w-[92vw] lg:max-w-5xl xl:max-w-6xl h-[380px] sm:h-[420px] md:h-[460px] select-none"
             style={{
-              perspective: "950px",
+              perspective: "1100px",
               perspectiveOrigin: "center center",
+              maskImage:
+                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
             }}
           >
-            {/* Viewport: Increased height roller with 5 lines pure white in center and dull lines above and below */}
+            {/* 3D Rotating Drum Container */}
             <div
-              className="relative w-full h-[360px] sm:h-[400px] md:h-[450px] select-none"
+              ref={drumRef}
+              className="absolute inset-0 w-full h-full will-change-transform"
               style={{
-                perspective: "900px",
-                perspectiveOrigin: "center center",
-                maskImage:
-                  "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
+                transformStyle: "preserve-3d",
+                transformOrigin: "center center",
+                transform: `rotateX(${2 * stepAngle}deg)`,
               }}
             >
-              {/* 3D Rotating Drum Container */}
-              <div
-                ref={drumRef}
-                className="absolute inset-0 w-full h-full will-change-transform"
-                style={{
-                  transformStyle: "preserve-3d",
-                  transformOrigin: "center center",
-                  transform: `rotateX(${2 * stepAngle}deg)`,
-                }}
-              >
-                {PARAGRAPH_LINES.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="absolute top-1/2 left-0 right-0 -translate-y-1/2 flex items-center justify-center text-center px-2 sm:px-4 pointer-events-none select-none will-change-transform"
-                    style={{
-                      transform: `rotateX(${-index * stepAngle}deg) translateZ(${radius}px)`,
-                      transformStyle: "preserve-3d",
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                    }}
-                  >
-                    {item.content ? (
-                      <p className="text-[13.5px] xs:text-[14px] sm:text-[15px] md:text-[16px] font-sans font-normal text-white tracking-normal leading-relaxed max-w-lg mx-auto">
-                        {item.content}
-                      </p>
-                    ) : (
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/40 my-1" />
-                    )}
-                  </div>
-                ))}
-              </div>
+              {PARAGRAPH_LINES.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="absolute top-1/2 left-0 right-0 -translate-y-1/2 flex items-center justify-center text-center px-4 sm:px-6 pointer-events-none select-none will-change-transform"
+                  style={{
+                    transform: `rotateX(${-index * stepAngle}deg) translateZ(${radius}px)`,
+                    transformStyle: "preserve-3d",
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                  }}
+                >
+                  {item.content ? (
+                    <p className="text-[13.5px] xs:text-[14px] sm:text-[15px] md:text-[16px] font-sans font-normal text-white tracking-normal leading-relaxed w-full max-w-[90vw] lg:max-w-5xl xl:max-w-6xl mx-auto">
+                      {item.content}
+                    </p>
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/40 my-1" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
