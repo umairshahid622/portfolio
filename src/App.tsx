@@ -1,5 +1,6 @@
 import Header from "./components/Header";
 import Hero from "./components/Hero";
+import Overview from "./components/Overview";
 import SmoothCursor from "./components/SmoothCursor";
 import CurtainLoader from "./components/CurtainLoader";
 import { LoadingProvider } from "./context/LoadingContext";
@@ -12,6 +13,7 @@ export default function App() {
         <Header />
         <main className="w-full">
           <Hero />
+          <Overview />
         </main>
         <SmoothCursor />
       </div>

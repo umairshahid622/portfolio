@@ -1,100 +1,37 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, useAnimations, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { useLoading } from "../context/LoadingContext";
 
 interface AvatarModelProps {
-  baseAnimation?: "idle" | "walk";
-  animation?: "idle" | "wave" | "walk";
   onWalkComplete?: () => void;
+  onAnimationComplete?: () => void;
   onReady?: () => void;
 }
 
 function AvatarModel({
-  baseAnimation = "idle",
-  animation,
   onWalkComplete,
+  onAnimationComplete,
   onReady,
 }: AvatarModelProps) {
-  const { scene, animations: rawAnimations } = useGLTF("/my3DAvatar.glb");
-
-  // Create right-side variations of idle & wave matching the exact stop position of 02_Natural_Walk
-  const animations = useMemo(() => {
-    const list = [...rawAnimations];
-    const TARGET_RIGHT_X = 1.113657; // exact final spine X position of 02_Natural_Walk
-    // Exact spine quaternion at walk end frame (frame 140) facing camera
-    const TARGET_RIGHT_SPINE_ROT = [
-      0.04889841377735138,
-      -0.19057218730449677,
-      -0.009504875168204308,
-      0.9804085493087769,
-    ];
-
-    const idleClip = rawAnimations.find((a) => a.name === "00_Idle");
-    if (idleClip) {
-      const idleRight = idleClip.clone();
-      idleRight.name = "00_Idle_Right";
-      const spinePosTrack = idleRight.tracks.find((t) => t.name.includes("spine.position"));
-      if (spinePosTrack) {
-        for (let i = 0; i < spinePosTrack.values.length; i += 3) {
-          spinePosTrack.values[i] = TARGET_RIGHT_X;
-        }
-      }
-      const spineRotTrack = idleRight.tracks.find((t) => t.name.includes("spine.quaternion"));
-      if (spineRotTrack) {
-        for (let i = 0; i < spineRotTrack.values.length; i += 4) {
-          spineRotTrack.values[i] = TARGET_RIGHT_SPINE_ROT[0];
-          spineRotTrack.values[i + 1] = TARGET_RIGHT_SPINE_ROT[1];
-          spineRotTrack.values[i + 2] = TARGET_RIGHT_SPINE_ROT[2];
-          spineRotTrack.values[i + 3] = TARGET_RIGHT_SPINE_ROT[3];
-        }
-      }
-      list.push(idleRight);
-    }
-
-    const waveClip = rawAnimations.find((a) => a.name === "01_Wave");
-    if (waveClip) {
-      const waveRight = waveClip.clone();
-      waveRight.name = "01_Wave_Right";
-      const spinePosTrack = waveRight.tracks.find((t) => t.name.includes("spine.position"));
-      if (spinePosTrack) {
-        for (let i = 0; i < spinePosTrack.values.length; i += 3) {
-          spinePosTrack.values[i] = TARGET_RIGHT_X + spinePosTrack.values[i];
-        }
-      }
-      const spineRotTrack = waveRight.tracks.find((t) => t.name.includes("spine.quaternion"));
-      if (spineRotTrack) {
-        for (let i = 0; i < spineRotTrack.values.length; i += 4) {
-          spineRotTrack.values[i] = TARGET_RIGHT_SPINE_ROT[0];
-          spineRotTrack.values[i + 1] = TARGET_RIGHT_SPINE_ROT[1];
-          spineRotTrack.values[i + 2] = TARGET_RIGHT_SPINE_ROT[2];
-          spineRotTrack.values[i + 3] = TARGET_RIGHT_SPINE_ROT[3];
-        }
-      }
-      list.push(waveRight);
-    }
-
-    return list;
-  }, [rawAnimations]);
-
+  const { scene, animations } = useGLTF("/my3DAvatar.glb");
   const { actions, mixer } = useAnimations(animations, scene);
   const groupRef = useRef<THREE.Group>(null);
   const shadowGroupRef = useRef<THREE.Group>(null);
   const spineBoneRef = useRef<THREE.Object3D | null>(null);
-  const currentActionRef = useRef<THREE.AnimationAction | null>(null);
-  const isFirstRenderRef = useRef(true);
-  const [hasCompletedWalk, setHasCompletedWalk] = useState(false);
 
   let setAvatarReady: (val: boolean) => void = () => {};
+  let curtainParting = true;
   try {
     const loading = useLoading();
     setAvatarReady = loading.setAvatarReady;
+    curtainParting = loading.curtainParting;
   } catch {
     // Graceful fallback when outside LoadingProvider
   }
 
-  // Find spine bone for contact shadow tracking
+  // Find spine bone for contact shadow tracking beneath feet
   useEffect(() => {
     scene.traverse((child: THREE.Object3D) => {
       if (child.name === "spine") {
@@ -108,18 +45,55 @@ function AvatarModel({
     });
   }, [scene]);
 
-  // Keep contact shadow aligned directly beneath feet at all times
+  // Keep contact shadow aligned beneath feet as character moves
   useFrame(() => {
     if (spineBoneRef.current && shadowGroupRef.current) {
       shadowGroupRef.current.position.x = spineBoneRef.current.position.x * 1.68;
     }
   });
 
-  // Listen for the walk animation completion
+  // Play 02_Natural_Walk solely governed by keyframes from Blender
+  useEffect(() => {
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const action = actions["02_Natural_Walk"];
+    if (!action) return;
+
+    action.reset();
+    action.clampWhenFinished = true;
+    action.setLoop(THREE.LoopOnce, 1);
+
+    if (prefersReducedMotion) {
+      action.play();
+      action.time = action.getClip().duration;
+      onAnimationComplete?.();
+      onWalkComplete?.();
+      return;
+    }
+
+    if (curtainParting) {
+      action.play();
+    } else {
+      action.play();
+      action.paused = true;
+    }
+  }, [actions, curtainParting, onAnimationComplete, onWalkComplete]);
+
+  // Unpause when curtain starts parting
+  useEffect(() => {
+    const action = actions["02_Natural_Walk"];
+    if (action && curtainParting && action.paused) {
+      action.paused = false;
+    }
+  }, [curtainParting, actions]);
+
+  // Listen for the keyframe animation completion from mixer
   useEffect(() => {
     const onFinished = (e: any) => {
       if (e.action === actions["02_Natural_Walk"]) {
-        setHasCompletedWalk(true);
+        onAnimationComplete?.();
         onWalkComplete?.();
       }
     };
@@ -127,19 +101,10 @@ function AvatarModel({
     return () => {
       mixer.removeEventListener("finished", onFinished);
     };
-  }, [mixer, actions, onWalkComplete]);
+  }, [mixer, actions, onAnimationComplete, onWalkComplete]);
 
-  // Initial playback: start idle pose and notify readiness
+  // Initial readiness notification
   useEffect(() => {
-    const idleAction = actions["00_Idle"];
-    if (idleAction) {
-      idleAction.reset();
-      idleAction.clampWhenFinished = false;
-      idleAction.setLoop(THREE.LoopRepeat, Infinity);
-      idleAction.fadeIn(0.3).play();
-      currentActionRef.current = idleAction;
-    }
-
     const timer = setTimeout(() => {
       setAvatarReady(true);
       onReady?.();
@@ -148,47 +113,7 @@ function AvatarModel({
     return () => {
       clearTimeout(timer);
     };
-  }, [actions, onReady, setAvatarReady]);
-
-  // Determine active animation based on walk completion and requested animation
-  let targetActionName = "00_Idle";
-  if (hasCompletedWalk) {
-    targetActionName = animation === "wave" ? "01_Wave_Right" : "00_Idle_Right";
-  } else if (animation === "wave") {
-    targetActionName = "01_Wave";
-  } else if (animation === "walk" || baseAnimation === "walk") {
-    targetActionName = "02_Natural_Walk";
-  } else {
-    targetActionName = "00_Idle";
-  }
-
-  useEffect(() => {
-    // Skip on first render as initial idle is triggered above
-    if (isFirstRenderRef.current) {
-      isFirstRenderRef.current = false;
-      return;
-    }
-
-    const nextAction = actions[targetActionName];
-    const prevAction = currentActionRef.current;
-
-    if (!nextAction || prevAction === nextAction) return;
-
-    if (prevAction) {
-      prevAction.fadeOut(0.35);
-    }
-    nextAction.reset();
-    if (targetActionName === "02_Natural_Walk") {
-      nextAction.clampWhenFinished = true;
-      nextAction.setLoop(THREE.LoopOnce, 1);
-    } else {
-      nextAction.clampWhenFinished = false;
-      nextAction.setLoop(THREE.LoopRepeat, Infinity);
-    }
-    nextAction.fadeIn(0.35).play();
-
-    currentActionRef.current = nextAction;
-  }, [actions, targetActionName]);
+  }, [onReady, setAvatarReady]);
 
   return (
     <group ref={groupRef} position={[0, -0.88, 0]} rotation={[0, 0, 0]}>
@@ -212,18 +137,16 @@ useGLTF.preload("/my3DAvatar.glb");
 interface AvatarCanvasProps {
   isDark?: boolean;
   className?: string;
-  baseAnimation?: "idle" | "walk";
-  animation?: "idle" | "wave" | "walk";
   onWalkComplete?: () => void;
+  onAnimationComplete?: () => void;
   onReady?: () => void;
 }
 
 export default function AvatarCanvas({
   isDark = true,
   className = "",
-  baseAnimation = "idle",
-  animation,
   onWalkComplete,
+  onAnimationComplete,
   onReady,
 }: AvatarCanvasProps) {
   return (
@@ -293,9 +216,8 @@ export default function AvatarCanvas({
 
         <Suspense fallback={null}>
           <AvatarModel
-            baseAnimation={baseAnimation}
-            animation={animation}
             onWalkComplete={onWalkComplete}
+            onAnimationComplete={onAnimationComplete}
             onReady={onReady}
           />
         </Suspense>

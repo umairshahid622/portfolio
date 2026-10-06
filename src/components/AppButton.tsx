@@ -110,9 +110,25 @@ export function AppButton({
 
   const handleEnter = (event: React.MouseEvent<HTMLElement>) => {
     const el = ref.current;
+    if (!el || disabled || prefersReducedMotion()) return;
+
+    if (variant === "icon") {
+      // For icon buttons: smooth subtle rotation without scaling
+      if (iconRef.current && animateIcon) {
+        gsap.to(iconRef.current, {
+          rotation: 30,
+          duration: 0.35,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      }
+      onMouseEnter?.(event);
+      return;
+    }
+
     const fill = fillRef.current;
     const label = labelRef.current;
-    if (!el || !fill || !label || disabled || prefersReducedMotion()) return;
+    if (!fill || !label) return;
 
     // Take the resting label colour from the element's own computed `color`,
     // with any inline colour a previous leave left behind cleared first
@@ -154,15 +170,7 @@ export function AppButton({
 
     // Subtle micro-motion for icon on hover
     if (iconRef.current && animateIcon) {
-      if (variant === "icon") {
-        gsap.to(iconRef.current, {
-          scale: 1.18,
-          rotation: 15,
-          duration: 0.25,
-          ease: "back.out(2)",
-          overwrite: "auto",
-        });
-      } else if (iconPosition === "right") {
+      if (iconPosition === "right") {
         gsap.to(iconRef.current, {
           x: 3.5,
           duration: 0.25,
@@ -184,9 +192,24 @@ export function AppButton({
 
   const handleLeave = (event: React.MouseEvent<HTMLElement>) => {
     const el = ref.current;
+    if (!el || disabled || prefersReducedMotion()) return;
+
+    if (variant === "icon") {
+      if (iconRef.current && animateIcon) {
+        gsap.to(iconRef.current, {
+          rotation: 0,
+          duration: 0.25,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      }
+      onMouseLeave?.(event);
+      return;
+    }
+
     const fill = fillRef.current;
     const label = labelRef.current;
-    if (!el || !fill || !label || disabled || prefersReducedMotion()) return;
+    if (!fill || !label) return;
 
     const rect = el.getBoundingClientRect();
     gsap.set(fill, {
@@ -227,27 +250,31 @@ export function AppButton({
 
   const handleMouseDown = (event: React.MouseEvent<HTMLElement>) => {
     if (disabled || !ref.current) return;
-    gsap.to(ref.current, {
-      scale: 0.97,
-      duration: 0.12,
-      ease: "power2.out",
-    });
+    if (variant !== "icon") {
+      gsap.to(ref.current, {
+        scale: 0.97,
+        duration: 0.12,
+        ease: "power2.out",
+      });
+    }
     onMouseDown?.(event);
   };
 
   const handleMouseUp = (event: React.MouseEvent<HTMLElement>) => {
     if (disabled || !ref.current) return;
-    gsap.to(ref.current, {
-      scale: 1,
-      duration: 0.2,
-      ease: "back.out(2)",
-    });
+    if (variant !== "icon") {
+      gsap.to(ref.current, {
+        scale: 1,
+        duration: 0.2,
+        ease: "back.out(2)",
+      });
+    }
     onMouseUp?.(event);
   };
 
   // Icon sizing
   const defaultIconSize =
-    size === "sm" ? "w-3.5 h-3.5" : size === "lg" ? "w-4 h-4" : "w-4 h-4";
+    variant === "icon" ? "w-5 h-5" : size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
 
   const renderedIcon = icon ? (
     <span
@@ -261,7 +288,7 @@ export function AppButton({
   const combinedClasses = cn(
     "relative inline-flex items-center justify-center overflow-hidden rounded-full ring-1 ring-[var(--btn-ring,var(--accent))]",
     "select-none transition-shadow duration-200 outline-none focus-visible:ring-2 focus-visible:ring-earth-terracotta focus-visible:ring-offset-2",
-    variant === "icon" ? sizeStyles.sm + " p-2.5 w-10 h-10 rounded-full" : sizeStyles[size],
+    variant === "icon" ? "w-10 h-10 p-0 rounded-full flex items-center justify-center" : sizeStyles[size],
     variantStyles[variant],
     disabled ? "cursor-not-allowed opacity-45 pointer-events-none" : "cursor-pointer",
     className
@@ -271,14 +298,19 @@ export function AppButton({
     <>
       {/* Sized and positioned per hover, so it starts life 0×0 and nothing is
           painted before the first cursor enters — including in the SSR HTML. */}
-      <span
-        ref={fillRef}
-        aria-hidden="true"
-        className="app-btn-fill pointer-events-none absolute top-0 left-0 rounded-full will-change-transform"
-      />
+      {variant !== "icon" && (
+        <span
+          ref={fillRef}
+          aria-hidden="true"
+          className="app-btn-fill pointer-events-none absolute top-0 left-0 rounded-full will-change-transform"
+        />
+      )}
       <span
         ref={labelRef}
-        className="relative z-10 inline-flex items-center justify-center gap-2 pointer-events-none"
+        className={cn(
+          "relative z-10 inline-flex items-center justify-center pointer-events-none",
+          variant === "icon" ? "w-full h-full" : "gap-2"
+        )}
       >
         {iconPosition === "left" && renderedIcon}
         {children && <span>{children}</span>}
