@@ -15,11 +15,11 @@ export default function Skills() {
       const section = sectionRef.current;
       if (!section) return;
 
-      // ScrollTrigger that converges particles into "SKILLS" (left) and 3D Gear (right)
+      // ScrollTrigger that converges particles into "SKILLS" (left) and 3D Code Symbol "</>" (right)
       ScrollTrigger.create({
         trigger: section,
         start: "top 85%", // initiates convergence as section approaches viewport
-        end: "top 12%",   // solidifies completely into "SKILLS" and Gear as section settles
+        end: "top 12%",   // solidifies completely into "SKILLS" and "</>" as section settles
         scrub: 0.8,
         invalidateOnRefresh: true,
         onUpdate: (self) => {

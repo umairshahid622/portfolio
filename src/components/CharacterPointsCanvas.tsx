@@ -301,146 +301,109 @@ function generateFallbackPoints(
 }
 
 // =========================================================================
-// 3D MECHANICAL GEAR GENERATOR
-// Parametrically constructs an authentic 8-tooth mechanical gear with
-// outer involute teeth, pitch rim, 6 radial spokes, center hub, axle bore,
-// keyway notch, and mechanical fastener nodes.
+// 3D CODE SYMBOL "</>" GENERATOR
+// Parametrically constructs a sharp, proportional "</>" code tag symbol with:
+// - Left angle bracket "<"
+// - Centered diagonal forward slash "/"
+// - Right angle bracket ">" (tip touching targetRightX)
+// Distributed across exactly 1,250 particles with multi-strand thickness,
+// 3D depth, and glowing vertex nodes.
 // =========================================================================
-function generateMechanicalGearPoints(
+function generateCodeSymbolPoints(
   count: number,
-  centerX: number,
+  targetRightX: number,
   centerY: number,
-  radius: number
+  targetHeight: number
 ): RawPoint[] {
   const points: RawPoint[] = [];
-  const teeth = 8;
-  const outerR = radius;
-  const rootR = radius * 0.76;
-  const rimR = radius * 0.60;
-  const hubR = radius * 0.30;
-  const axleR = radius * 0.14;
+  const h = targetHeight;
+  const bracketH = h * 0.90;
+  const slashH = h * 1.08;
+  const strokeW = h * 0.082;
+  const bracketW = h * 0.44;
+  const slashW = h * 0.36;
+  const gap = h * 0.18;
 
-  // 1. Involute Teeth & Outer Rim Land (approx 36% of points = 450)
-  const teethCount = Math.floor(count * 0.36);
-  for (let i = 0; i < teethCount; i++) {
-    const angle = (i / teethCount) * Math.PI * 2;
-    const toothPhase = ((angle * teeth) / (Math.PI * 2)) % 1.0;
-    // Trapezoidal tooth profile with beveled slopes
-    let toothHeight = 0;
-    if (toothPhase < 0.22) {
-      toothHeight = toothPhase / 0.22; // slope up
-    } else if (toothPhase < 0.50) {
-      toothHeight = 1.0; // crest top land
-    } else if (toothPhase < 0.72) {
-      toothHeight = 1.0 - (toothPhase - 0.50) / 0.22; // slope down
-    } else {
-      toothHeight = 0.0; // root bottom land
-    }
+  const totalW = bracketW * 2 + slashW + gap * 2;
+  const startX = targetRightX - totalW;
 
-    const r = rootR + (outerR - rootR) * toothHeight;
-    // Dual-face 3D depth for solid mechanical appearance
-    const zFace = i % 2 === 0 ? 0.016 : -0.016;
-    const isToothTip = toothPhase >= 0.22 && toothPhase <= 0.50 && i % 4 === 0;
+  // Bracket 1: "<"
+  const b1TopX = startX + bracketW;
+  const b1TopY = centerY + bracketH * 0.5;
+  const b1TipX = startX;
+  const b1TipY = centerY;
+  const b1BotX = startX + bracketW;
+  const b1BotY = centerY - bracketH * 0.5;
 
-    points.push({
-      x: centerX + Math.cos(angle) * r,
-      y: centerY + Math.sin(angle) * r,
-      z: zFace,
-      isNode: isToothTip,
-    });
-  }
+  // Slash: "/"
+  const slashCenterX = startX + bracketW + gap + slashW * 0.5;
+  const sStartX = slashCenterX - slashW * 0.5;
+  const sStartY = centerY - slashH * 0.5;
+  const sEndX = slashCenterX + slashW * 0.5;
+  const sEndY = centerY + slashH * 0.5;
 
-  // 2. Pitch Circle / Tooth Root Ring (approx 14% of points = 175)
-  const pitchCount = Math.floor(count * 0.14);
-  for (let i = 0; i < pitchCount; i++) {
-    const angle = (i / pitchCount) * Math.PI * 2;
-    const z = i % 2 === 0 ? 0.012 : -0.012;
-    points.push({
-      x: centerX + Math.cos(angle) * rootR,
-      y: centerY + Math.sin(angle) * rootR,
-      z,
-      isNode: i % 18 === 0,
-    });
-  }
+  // Bracket 2: ">" - tip aligns to targetRightX
+  const b2TopX = targetRightX - bracketW;
+  const b2TopY = centerY + bracketH * 0.5;
+  const b2TipX = targetRightX;
+  const b2TipY = centerY;
+  const b2BotX = targetRightX - bracketW;
+  const b2BotY = centerY - bracketH * 0.5;
 
-  // 3. Inner Rim Ring (approx 14% of points = 175)
-  const rimCount = Math.floor(count * 0.14);
-  for (let i = 0; i < rimCount; i++) {
-    const angle = (i / rimCount) * Math.PI * 2;
-    const z = i % 2 === 0 ? 0.014 : -0.014;
-    points.push({
-      x: centerX + Math.cos(angle) * rimR,
-      y: centerY + Math.sin(angle) * rimR,
-      z,
-      isNode: i % 20 === 0,
-    });
-  }
+  function sampleLine(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    numPts: number,
+    isArm = false
+  ) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy) || 1e-4;
+    const nx = -dy / len;
+    const ny = dx / len;
 
-  // 4. 6 Radial Mechanical Spokes (approx 20% of points = 250)
-  const numSpokes = 6;
-  const spokeTotalCount = Math.floor(count * 0.20);
-  const ptsPerSpoke = Math.floor(spokeTotalCount / numSpokes);
-  for (let s = 0; s < numSpokes; s++) {
-    const baseAngle = (s / numSpokes) * Math.PI * 2;
-    for (let p = 0; p < ptsPerSpoke; p++) {
-      const t = ptsPerSpoke > 1 ? p / (ptsPerSpoke - 1) : 0.5;
-      const r = hubR + t * (rimR - hubR);
-      const spokeHalfW = 0.012;
-      const widthOffset = ((p % 2 === 0 ? 1 : -1) * spokeHalfW) / Math.max(r, 0.1);
-      const angle = baseAngle + widthOffset;
-      const z = p % 3 === 0 ? 0.012 : -0.012;
+    for (let i = 0; i < numPts; i++) {
+      const t = numPts > 1 ? i / (numPts - 1) : 0.5;
+      const baseX = x1 + dx * t;
+      const baseY = y1 + dy * t;
+
+      // Multi-strand thickness
+      const strand = (i % 3) - 1; // -1, 0, 1
+      const offsetX = nx * strand * (strokeW * 0.45);
+      const offsetY = ny * strand * (strokeW * 0.45);
+      const z = i % 2 === 0 ? 0.015 : -0.015;
+
+      const isCorner = i === 0 || i === numPts - 1;
+      const isTip = isArm && i === numPts - 1;
+
       points.push({
-        x: centerX + Math.cos(angle) * r,
-        y: centerY + Math.sin(angle) * r,
+        x: baseX + offsetX,
+        y: baseY + offsetY,
         z,
-        isNode: p === 0 || p === ptsPerSpoke - 1,
+        isNode: isCorner || isTip || i % 24 === 0,
       });
     }
   }
 
-  // 5. Center Hub Outer Ring (approx 9% of points = 112)
-  const hubCount = Math.floor(count * 0.09);
-  for (let i = 0; i < hubCount; i++) {
-    const angle = (i / hubCount) * Math.PI * 2;
-    const z = i % 2 === 0 ? 0.014 : -0.014;
-    points.push({
-      x: centerX + Math.cos(angle) * hubR,
-      y: centerY + Math.sin(angle) * hubR,
-      z,
-      isNode: i % 14 === 0,
-    });
-  }
+  // Exact 1,250 points distribution:
+  // 4 bracket arms: 200 pts each = 800 pts
+  // 1 slash: 450 pts
+  // Total = 1,250 pts
+  const ptsPerArm = Math.floor(count * 0.16);
+  const ptsSlash = count - ptsPerArm * 4;
 
-  // 6. Axle Bore & Keyway Notch (approx 7% of points = 88)
-  const axleCount = Math.floor(count * 0.07);
-  for (let i = 0; i < axleCount; i++) {
-    const angle = (i / axleCount) * Math.PI * 2;
-    const z = i % 2 === 0 ? 0.008 : -0.008;
-    // Keyway slot notch on top
-    const isKeyway = Math.abs(angle - Math.PI / 2) < 0.28;
-    const r = isKeyway ? axleR * 1.45 : axleR;
-    points.push({
-      x: centerX + Math.cos(angle) * r,
-      y: centerY + Math.sin(angle) * r,
-      z,
-      isNode: isKeyway,
-    });
-  }
+  // 1. "<" top arm & bottom arm
+  sampleLine(b1TopX, b1TopY, b1TipX, b1TipY, ptsPerArm, true);
+  sampleLine(b1TipX, b1TipY, b1BotX, b1BotY, ptsPerArm, true);
 
-  // 7. Mechanical Fastener Rivets / Bolts on Spoke Shoulders (fill remaining)
-  let remaining = count - points.length;
-  for (let i = 0; i < remaining; i++) {
-    const s = i % numSpokes;
-    const baseAngle = (s / numSpokes) * Math.PI * 2;
-    const boltR = (hubR + rimR) * 0.52;
-    const jitter = (Math.random() - 0.5) * 0.015;
-    points.push({
-      x: centerX + Math.cos(baseAngle) * (boltR + jitter),
-      y: centerY + Math.sin(baseAngle) * (boltR + jitter),
-      z: 0.02,
-      isNode: true,
-    });
-  }
+  // 2. "/" slash
+  sampleLine(sStartX, sStartY, sEndX, sEndY, ptsSlash, false);
+
+  // 3. ">" top arm & bottom arm
+  sampleLine(b2TopX, b2TopY, b2TipX, b2TipY, ptsPerArm, true);
+  sampleLine(b2TipX, b2TipY, b2BotX, b2BotY, ptsPerArm, true);
 
   return points.slice(0, count);
 }
@@ -475,7 +438,6 @@ function UnifiedCelestialMesh({
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const { viewport, size } = useThree();
-  const gearCenterRef = useRef(new THREE.Vector2(0, 0));
   const [fontLoaded, setFontLoaded] = useState(false);
 
   useEffect(() => {
@@ -502,13 +464,13 @@ function UnifiedCelestialMesh({
   // 1. OVERVIEW (centered top, 2,500 particles)
   // 2. Dispersed Nebula (full screen, 2,500 particles)
   // 3. SKILLS (top-left, exactly 1,250 particles = 50%)
-  // 4. 3D Mechanical Gear Icon (top-right, exactly 1,250 particles = 50%)
+  // 4. 3D Code Symbol "</>" (top-right, exactly 1,250 particles = 50%)
   const pointsGeometry = useMemo(() => {
     const overviewPositions: number[] = [];
     const dispersedPositions: number[] = [];
     const skillsPositions: number[] = [];
     const objectPositions: number[] = [];
-    const isGears: number[] = [];
+    const isSymbols: number[] = [];
     const colors: number[] = [];
     const sizes: number[] = [];
     const phases: number[] = [];
@@ -544,7 +506,7 @@ function UnifiedCelestialMesh({
 
     const TOTAL_POINTS = 2500;
     const SKILLS_POINTS = 1250;
-    const GEAR_POINTS = 1250;
+    const SYMBOL_POINTS = 1250;
 
     // 1. Sample "OVERVIEW" (Centered Upper Area) - utilizes ALL 2,500 particles
     const overviewCenterY = viewport.height * (viewport.width < 3.2 ? 0.26 : 0.23);
@@ -582,17 +544,14 @@ function UnifiedCelestialMesh({
       "left"
     );
 
-    // 3. 3D Mechanical Gear Icon (Top-Right) - remaining 1,250 particles (50%)
-    // Outer tooth tips touch the theme toggle's right edge exactly
-    const gearRadius = viewport.width < 3.2 ? 0.30 : 0.40;
-    const gearCenterX = edges.right - gearRadius;
-    const gearCenterY = skillsCenterY;
-    gearCenterRef.current.set(gearCenterX, gearCenterY);
-    const rawGear = generateMechanicalGearPoints(
-      GEAR_POINTS,
-      gearCenterX,
-      gearCenterY,
-      gearRadius
+    // 3. 3D Code Tag Symbol "</>" (Top-Right) - remaining 1,250 particles (50%)
+    // The right tip of the ">" bracket touches the theme toggle's right edge exactly
+    const symbolH = viewport.height * (viewport.width < 3.2 ? 0.10 : 0.13);
+    const rawCodeSymbol = generateCodeSymbolPoints(
+      SYMBOL_POINTS,
+      edges.right,
+      skillsCenterY,
+      symbolH
     );
 
     // 4. Stratified grid for Dispersed Nebula
@@ -609,19 +568,19 @@ function UnifiedCelestialMesh({
     for (let idx = 0; idx < TOTAL_POINTS; idx++) {
       const ptOverview = rawOverview[idx];
       let ptPhase2: RawPoint;
-      let isGearVal = 0.0;
+      let isSymbolVal = 0.0;
 
       if (idx < SKILLS_POINTS) {
         ptPhase2 = rawSkills[idx];
-        isGearVal = 0.0;
+        isSymbolVal = 0.0;
       } else {
-        ptPhase2 = rawGear[idx - SKILLS_POINTS];
-        isGearVal = 1.0;
+        ptPhase2 = rawCodeSymbol[idx - SKILLS_POINTS];
+        isSymbolVal = 1.0;
       }
 
       overviewPositions.push(ptOverview.x, ptOverview.y, ptOverview.z);
       skillsPositions.push(ptPhase2.x, ptPhase2.y, ptPhase2.z);
-      isGears.push(isGearVal);
+      isSymbols.push(isSymbolVal);
 
       const cellIdx = cellIndices[idx];
       const col = cellIdx % numCols;
@@ -676,7 +635,7 @@ function UnifiedCelestialMesh({
     geo.setAttribute("aDispersedPosition", new THREE.Float32BufferAttribute(dispersedPositions, 3));
     geo.setAttribute("aSkillsPosition", new THREE.Float32BufferAttribute(skillsPositions, 3));
     geo.setAttribute("aObjectPosition", new THREE.Float32BufferAttribute(objectPositions, 3));
-    geo.setAttribute("aIsGear", new THREE.Float32BufferAttribute(isGears, 1));
+    geo.setAttribute("aIsSymbol", new THREE.Float32BufferAttribute(isSymbols, 1));
     // Default position attribute for bounding box
     geo.setAttribute("position", new THREE.Float32BufferAttribute(overviewPositions, 3));
 
@@ -696,7 +655,6 @@ function UnifiedCelestialMesh({
       uObjectProgress: { value: 0.0 },
       uOpacity: { value: 0.0 },
       uTime: { value: 0.0 },
-      uGearCenter: { value: new THREE.Vector2(0, 0) },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
       uPixelRatio: { value: 1.0 },
@@ -744,7 +702,6 @@ function UnifiedCelestialMesh({
       materialRef.current.uniforms.uSkillsProgress.value = smoothSkillsProgress.current;
       materialRef.current.uniforms.uObjectProgress.value = smoothObjectProgress.current;
       materialRef.current.uniforms.uOpacity.value = smoothOpacity.current;
-      materialRef.current.uniforms.uGearCenter.value.copy(gearCenterRef.current);
       materialRef.current.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       materialRef.current.uniforms.uMouseActive.value = smoothMouseActive.current;
     }
@@ -770,7 +727,6 @@ function UnifiedCelestialMesh({
           uniform float uObjectProgress;
           uniform float uOpacity;
           uniform float uTime;
-          uniform vec2 uGearCenter;
           uniform vec2 uMouseWorld;
           uniform float uMouseActive;
           uniform float uPixelRatio;
@@ -779,7 +735,7 @@ function UnifiedCelestialMesh({
           attribute vec3 aDispersedPosition;
           attribute vec3 aSkillsPosition;
           attribute vec3 aObjectPosition;
-          attribute float aIsGear;
+          attribute float aIsSymbol;
 
           attribute vec3 aColor;
           attribute float aSize;
@@ -810,7 +766,7 @@ function UnifiedCelestialMesh({
             );
             vec3 posPhase1 = mix(aOverviewPosition, aDispersedPosition, easeP1) + flightArc1;
 
-            // Phase 2: Dispersed Nebula to "SKILLS" (Left) & Mechanical Rotating Gear (Right)
+            // Phase 2: Dispersed Nebula to "SKILLS" (Left) & 3D Code Symbol "</>" (Right)
             float p2Offset = aRandom * 0.22;
             float p2 = clamp((uSkillsProgress - p2Offset) / (1.0 - p2Offset + 0.0001), 0.0, 1.0);
             float easeP2 = easeOutQuart(p2);
@@ -822,21 +778,18 @@ function UnifiedCelestialMesh({
               arc2 * (aRandom - 0.5) * 1.2
             );
 
-            // Compute rotating target position for the Gear Icon
+            // Target position for 3D Code Symbol "</>"
             vec3 targetPhase2 = aSkillsPosition;
-            if (aIsGear > 0.5) {
-              vec2 rel = targetPhase2.xy - uGearCenter;
-              // Smooth clockwise mechanical rotation
-              float gearAngle = -uTime * 0.70;
-              float cosG = cos(gearAngle);
-              float sinG = sin(gearAngle);
-              targetPhase2.xy = uGearCenter + mat2(cosG, -sinG, sinG, cosG) * rel;
+            if (aIsSymbol > 0.5) {
+              // Subtle floating breathing & starlight life (keeping </> upright and crisp)
+              targetPhase2.y += sin(uTime * 1.5 + aPhase * 0.5) * 0.005;
+              targetPhase2.x += cos(uTime * 1.1 + aPhase * 0.5) * 0.003;
             }
 
             vec3 posPhase2 = mix(aDispersedPosition, targetPhase2, easeP2) + flightArc2;
 
             // Seamless blending between Phase 1 and Phase 2:
-            // When uSkillsProgress > 0, smoothly transitions from dispersed field into SKILLS & Gear
+            // When uSkillsProgress > 0, smoothly transitions from dispersed field into SKILLS & "</>"
             vec3 posBase = mix(posPhase1, posPhase2, easeP2);
 
             // Phase 3: Morph into 3D Geometric / Mechanical Object
@@ -859,10 +812,10 @@ function UnifiedCelestialMesh({
             pos.z += sin(uTime * 1.0 + aPhase * 0.8) * 0.03 * flightActive;
 
             // Refined, localized interactive mouse repulsion:
-            // Active when hovering directly over assembled text or gear
+            // Active when hovering directly over assembled text or code symbol
             vec2 mouseOffset = pos.xy - uMouseWorld;
             float mouseDist = length(mouseOffset);
-            float mouseRadius = aIsGear > 0.5 ? 0.46 : 0.36;
+            float mouseRadius = aIsSymbol > 0.5 ? 0.44 : 0.36;
 
             float repelStrength = smoothstep(mouseRadius, 0.0, mouseDist);
             float isAssembled = max(1.0 - easeP1, easeP2);
@@ -876,8 +829,8 @@ function UnifiedCelestialMesh({
             // Crisp pinprick starlight size attenuation
             float twinkle = 0.88 + 0.22 * sin(uTime * 2.5 + aPhase);
             float baseSize = aSize * uPixelRatio * (28.0 / -mvPosition.z) * twinkle;
-            float gearBonus = aIsGear * 0.15;
-            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35 + gearBonus), 1.2, 5.2);
+            float symbolBonus = aIsSymbol * 0.15;
+            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35 + symbolBonus), 1.2, 5.2);
 
             vAlpha = (0.88 + flightActive * 0.12) * uOpacity;
           }
