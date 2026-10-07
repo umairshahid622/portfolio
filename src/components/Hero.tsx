@@ -281,7 +281,7 @@ export default function Hero() {
     <section
       ref={containerRef}
       id="hero"
-      className="relative w-full min-h-screen flex flex-col justify-center items-center py-16 px-5 sm:px-8 md:px-12 overflow-hidden bg-earth-cream dark:bg-earth-forest text-earth-forest dark:text-earth-cream transition-colors duration-300"
+      className="relative z-20 w-full min-h-screen flex flex-col justify-center items-center py-16 px-5 sm:px-8 md:px-12 overflow-hidden bg-earth-cream dark:bg-earth-forest text-earth-forest dark:text-earth-cream transition-colors duration-300"
     >
       {/* Subtle grid pattern overlay */}
       <div

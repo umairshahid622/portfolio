@@ -1,6 +1,7 @@
 import { useMemo, useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { particleBridge } from "../utils/particleBridge";
 
 interface RawPoint {
   x: number;
@@ -10,28 +11,29 @@ interface RawPoint {
 }
 
 // =========================================================================
-// CLASH DISPLAY FONT GLYPH SAMPLER (2,500 POINTS - ULTRA SHARP & CRISP)
-// Samples exactly 2,500 points directly from the vector glyphs of "Clash Display"
-// with 0.10em tracking and zero random jitter for razor-sharp legibility
+// CLASH DISPLAY FONT SAMPLER
+// Samples 2,500 points directly from Clash Display vector glyphs
 // =========================================================================
-function sampleClashDisplayPoints(
+function sampleClashDisplayText(
   text: string,
   totalPoints: number,
   viewportWidth: number,
   viewportHeight: number,
+  targetWidthRatio: number,
+  targetHeightRatio: number,
+  wordCenterX: number,
   wordCenterY: number
 ): RawPoint[] {
   if (typeof document === "undefined") {
-    return generateFallbackPoints(viewportWidth, viewportHeight, wordCenterY, totalPoints);
+    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterX, wordCenterY, totalPoints);
   }
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) {
-    return generateFallbackPoints(viewportWidth, viewportHeight, wordCenterY, totalPoints);
+    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterX, wordCenterY, totalPoints);
   }
 
-  // Render at high resolution (fontSize = 240px) with generous canvas bounds to prevent any clipping
   const fontSize = 240;
   ctx.font = `700 ${fontSize}px "Clash Display", sans-serif`;
   if ("letterSpacing" in ctx) {
@@ -72,7 +74,6 @@ function sampleClashDisplayPoints(
   const edgePixels: PixelCandidate[] = [];
   const bodyPixels: PixelCandidate[] = [];
 
-  // High-resolution scan for maximum outline and infill accuracy
   for (let y = 1; y < canvasH - 1; y++) {
     for (let x = 1; x < canvasW - 1; x++) {
       const idx = (y * canvasW + x) * 4;
@@ -94,7 +95,6 @@ function sampleClashDisplayPoints(
         if (isBoundary) {
           edgePixels.push({ x, y });
         } else if (x % 2 === 0 && y % 2 === 0) {
-          // Regular sub-grid lattice for interior body
           bodyPixels.push({ x, y });
         }
       }
@@ -102,31 +102,24 @@ function sampleClashDisplayPoints(
   }
 
   if (edgePixels.length === 0 && bodyPixels.length === 0) {
-    return generateFallbackPoints(viewportWidth, viewportHeight, wordCenterY, totalPoints);
+    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterX, wordCenterY, totalPoints);
   }
 
-  // Responsive scale in 3D camera viewport space with safe padding
-  const targetW = viewportWidth * (viewportWidth < 3.2 ? 0.88 : 0.68);
-  const targetH = viewportHeight * (viewportWidth < 3.2 ? 0.16 : 0.20);
+  const targetW = viewportWidth * targetWidthRatio;
+  const targetH = viewportHeight * targetHeightRatio;
   const fontBBoxH = fontSize * 0.82;
   const scale = Math.min(targetW / textWidth, targetH / fontBBoxH);
 
   const rawPoints: RawPoint[] = [];
-
-  // 65% edge outline points (1,625 points) for razor-sharp Clash Display contours
-  // 35% interior body points (875 points) for dense, solid starlight infill
   const targetEdgeCount = Math.min(Math.floor(totalPoints * 0.65), edgePixels.length);
   const targetBodyCount = totalPoints - targetEdgeCount;
 
-  // Evenly stride-sampled edges with ZERO random noise for pristine vector lines
   if (edgePixels.length > 0) {
     const edgeStep = edgePixels.length / targetEdgeCount;
     for (let i = 0; i < targetEdgeCount; i++) {
       const p = edgePixels[Math.floor(i * edgeStep)];
-      const nx = (p.x - centerX) * scale;
+      const nx = (p.x - centerX) * scale + wordCenterX;
       const ny = -(p.y - centerY) * scale + wordCenterY;
-
-      // Subtle planar depth
       const zProf = i % 2;
       const nz = zProf === 0 ? 0.012 : -0.012;
 
@@ -139,12 +132,11 @@ function sampleClashDisplayPoints(
     }
   }
 
-  // Evenly stride-sampled interior body lattice
   if (bodyPixels.length > 0) {
     const bodyStep = bodyPixels.length / targetBodyCount;
     for (let i = 0; i < targetBodyCount; i++) {
       const p = bodyPixels[Math.floor(i * bodyStep)];
-      const nx = (p.x - centerX) * scale;
+      const nx = (p.x - centerX) * scale + wordCenterX;
       const ny = -(p.y - centerY) * scale + wordCenterY;
       const nz = (i % 3 - 1) * 0.014;
 
@@ -157,7 +149,6 @@ function sampleClashDisplayPoints(
     }
   }
 
-  // Pad to exact totalPoints if needed
   while (rawPoints.length < totalPoints && rawPoints.length > 0) {
     const clone = rawPoints[Math.floor(Math.random() * rawPoints.length)];
     rawPoints.push({
@@ -171,16 +162,20 @@ function sampleClashDisplayPoints(
   return rawPoints.slice(0, totalPoints);
 }
 
-// Fallback points generator in case offscreen canvas is unavailable
+// Fallback points generator in case 2D offscreen canvas is unavailable
 function generateFallbackPoints(
+  text: string,
   viewportWidth: number,
   viewportHeight: number,
+  targetWidthRatio: number,
+  targetHeightRatio: number,
+  wordCenterX: number,
   wordCenterY: number,
   totalPoints: number = 2500
 ): RawPoint[] {
-  const targetW = viewportWidth * (viewportWidth < 3.2 ? 0.88 : 0.68);
-  const targetH = viewportHeight * (viewportWidth < 3.2 ? 0.16 : 0.20);
-  const scale = Math.min(targetW / 6.03, targetH / 1.10);
+  const targetW = viewportWidth * targetWidthRatio;
+  const targetH = viewportHeight * targetHeightRatio;
+  const scale = Math.min(targetW / 6.0, targetH / 1.0);
 
   const rawPoints: RawPoint[] = [];
 
@@ -201,7 +196,7 @@ function generateFallbackPoints(
 
     for (let i = 0; i < count; i++) {
       const t = count > 1 ? i / (count - 1) : 0.5;
-      const baseX = (start[0] + dx * t) * scale;
+      const baseX = (start[0] + dx * t) * scale + wordCenterX;
       const baseY = (start[1] + dy * t) * scale + wordCenterY;
       const profile = i % 2;
       const offsetX = profile === 0 ? nx * strokeHalfW : -nx * strokeHalfW;
@@ -229,36 +224,51 @@ function generateFallbackPoints(
     for (let i = 0; i < count; i++) {
       const t = count > 1 ? i / (count - 1) : 0.5;
       const angle = startAngle + t * (endAngle - startAngle);
-      const baseX = (centerX + rx * Math.cos(angle)) * scale;
+      const baseX = (centerX + rx * Math.cos(angle)) * scale + wordCenterX;
       const baseY = (centerY + ry * Math.sin(angle)) * scale + wordCenterY;
       rawPoints.push({ x: baseX, y: baseY, z: (i % 2 === 0 ? 0.012 : -0.012), isNode: i % 8 === 0 });
     }
   };
 
-  // 2,500 points fallback distribution
-  addArcPoints(-2.705, 0.0, 0.31, 0.54, 0, Math.PI * 2, 338);
-  addSegmentPoints([-2.175, 0.55], [-1.875, -0.55], 142, true, true);
-  addSegmentPoints([-1.875, -0.55], [-1.575, 0.55], 142, false, true);
-  addSegmentPoints([-1.355, -0.55], [-1.355, 0.55], 112, true, true);
-  addSegmentPoints([-1.355, 0.55], [-0.835, 0.55], 62, false, true);
-  addSegmentPoints([-1.355, 0.0], [-0.915, 0.0], 48, false, true);
-  addSegmentPoints([-1.355, -0.55], [-0.835, -0.55], 62, false, true);
-  addSegmentPoints([-0.605, -0.55], [-0.605, 0.55], 115, true, true);
-  addArcPoints(-0.605, 0.275, 0.31, 0.275, Math.PI / 2, -Math.PI / 2, 140);
-  addSegmentPoints([-0.605, 0.0], [-0.035, -0.55], 95, false, true);
-  addSegmentPoints([0.185, 0.55], [0.485, -0.55], 142, true, true);
-  addSegmentPoints([0.485, -0.55], [0.785, 0.55], 142, false, true);
-  addSegmentPoints([1.105, -0.55], [1.105, 0.55], 130, true, true);
-  addSegmentPoints([0.985, 0.55], [1.225, 0.55], 35, true, true);
-  addSegmentPoints([0.985, -0.55], [1.225, -0.55], 35, true, true);
-  addSegmentPoints([1.425, -0.55], [1.425, 0.55], 112, true, true);
-  addSegmentPoints([1.425, 0.55], [1.945, 0.55], 62, false, true);
-  addSegmentPoints([1.425, 0.0], [1.865, 0.0], 48, false, true);
-  addSegmentPoints([1.425, -0.55], [1.945, -0.55], 62, false, true);
-  addSegmentPoints([2.165, 0.55], [2.378, -0.55], 118, true, true);
-  addSegmentPoints([2.378, -0.55], [2.590, 0.20], 118, false, true);
-  addSegmentPoints([2.590, 0.20], [2.802, -0.55], 118, false, true);
-  addSegmentPoints([2.802, -0.55], [3.015, 0.55], 120, false, true);
+  if (text === "SKILLS") {
+    addArcPoints(-2.0, 0.25, 0.28, 0.25, 0.2, Math.PI, 180);
+    addArcPoints(-2.0, -0.25, 0.28, 0.25, Math.PI, 0.2, 180);
+    addSegmentPoints([-1.4, -0.5], [-1.4, 0.5], 130, true, true);
+    addSegmentPoints([-1.4, 0.0], [-0.85, 0.5], 120, false, true);
+    addSegmentPoints([-1.4, 0.0], [-0.85, -0.5], 120, false, true);
+    addSegmentPoints([-0.45, -0.5], [-0.45, 0.5], 140, true, true);
+    addSegmentPoints([0.0, -0.5], [0.0, 0.5], 130, true, true);
+    addSegmentPoints([0.0, -0.5], [0.45, -0.5], 110, true, true);
+    addSegmentPoints([0.8, -0.5], [0.8, 0.5], 130, true, true);
+    addSegmentPoints([0.8, -0.5], [1.25, -0.5], 110, true, true);
+    addArcPoints(1.8, 0.25, 0.28, 0.25, 0.2, Math.PI, 180);
+    addArcPoints(1.8, -0.25, 0.28, 0.25, Math.PI, 0.2, 180);
+  } else {
+    // "OVERVIEW"
+    addArcPoints(-2.705, 0.0, 0.31, 0.54, 0, Math.PI * 2, 338);
+    addSegmentPoints([-2.175, 0.55], [-1.875, -0.55], 142, true, true);
+    addSegmentPoints([-1.875, -0.55], [-1.575, 0.55], 142, false, true);
+    addSegmentPoints([-1.355, -0.55], [-1.355, 0.55], 112, true, true);
+    addSegmentPoints([-1.355, 0.55], [-0.835, 0.55], 62, false, true);
+    addSegmentPoints([-1.355, 0.0], [-0.915, 0.0], 48, false, true);
+    addSegmentPoints([-1.355, -0.55], [-0.835, -0.55], 62, false, true);
+    addSegmentPoints([-0.605, -0.55], [-0.605, 0.55], 115, true, true);
+    addArcPoints(-0.605, 0.275, 0.31, 0.275, Math.PI / 2, -Math.PI / 2, 140);
+    addSegmentPoints([-0.605, 0.0], [-0.035, -0.55], 95, false, true);
+    addSegmentPoints([0.185, 0.55], [0.485, -0.55], 142, true, true);
+    addSegmentPoints([0.485, -0.55], [0.785, 0.55], 142, false, true);
+    addSegmentPoints([1.105, -0.55], [1.105, 0.55], 130, true, true);
+    addSegmentPoints([0.985, 0.55], [1.225, 0.55], 35, true, true);
+    addSegmentPoints([0.985, -0.55], [1.225, -0.55], 35, true, true);
+    addSegmentPoints([1.425, -0.55], [1.425, 0.55], 112, true, true);
+    addSegmentPoints([1.425, 0.55], [1.945, 0.55], 62, false, true);
+    addSegmentPoints([1.425, 0.0], [1.865, 0.0], 48, false, true);
+    addSegmentPoints([1.425, -0.55], [1.945, -0.55], 62, false, true);
+    addSegmentPoints([2.165, 0.55], [2.378, -0.55], 118, true, true);
+    addSegmentPoints([2.378, -0.55], [2.590, 0.20], 118, false, true);
+    addSegmentPoints([2.590, 0.20], [2.802, -0.55], 118, false, true);
+    addSegmentPoints([2.802, -0.55], [3.015, 0.55], 120, false, true);
+  }
 
   while (rawPoints.length < totalPoints) {
     rawPoints.push({ ...rawPoints[rawPoints.length % 200] });
@@ -267,59 +277,57 @@ function generateFallbackPoints(
   return rawPoints.slice(0, totalPoints);
 }
 
-interface CelestialPointsProps {
-  progress: number;
+interface CelestialMeshProps {
   mouseWorld: { x: number; y: number };
   mouseActive: number;
-  isMobile: boolean;
 }
 
-function CelestialPointsMesh({
-  progress,
+function UnifiedCelestialMesh({
   mouseWorld,
   mouseActive,
-}: CelestialPointsProps) {
+}: CelestialMeshProps) {
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const { viewport } = useThree();
   const [fontLoaded, setFontLoaded] = useState(false);
 
-  // Ensure Clash Display is completely loaded before sampling points
   useEffect(() => {
     if (typeof document !== "undefined" && document.fonts) {
       Promise.all([
         document.fonts.load('700 240px "Clash Display"'),
         document.fonts.ready,
       ])
-        .then(() => {
-          setFontLoaded(true);
-        })
-        .catch(() => {
-          setFontLoaded(true);
-        });
+        .then(() => setFontLoaded(true))
+        .catch(() => setFontLoaded(true));
     } else {
       setFontLoaded(true);
     }
   }, []);
 
-  // Smooth lerped values for fluid animation
-  const smoothProgress = useRef(0);
+  const smoothOverviewProgress = useRef(0);
+  const smoothSkillsProgress = useRef(0);
+  const smoothObjectProgress = useRef(0);
+  const smoothOpacity = useRef(0);
   const smoothMouseWorld = useRef(new THREE.Vector2(0, 0));
   const smoothMouseActive = useRef(0.0);
 
-  // Build the particle geometry: Exactly 2,500 points sampled from Clash Display
-  // that breaks apart and spreads evenly across the screen on scroll
+  // Exact 2,500 particles with key target states:
+  // 1. OVERVIEW (centered top)
+  // 2. Dispersed Nebula (full screen)
+  // 3. SKILLS (top-left)
+  // 4. 3D Mechanical Cog / Celestial Object
   const pointsGeometry = useMemo(() => {
-    const startPositions: number[] = [];
-    const targetPositions: number[] = [];
+    const overviewPositions: number[] = [];
+    const dispersedPositions: number[] = [];
+    const skillsPositions: number[] = [];
+    const objectPositions: number[] = [];
     const colors: number[] = [];
     const sizes: number[] = [];
     const phases: number[] = [];
     const swirlSpeeds: number[] = [];
     const randoms: number[] = [];
 
-    // Curated Earthy Color Palette tokens (#dda15e, #bc6c25, #606c38, #fefae0)
-    // 1. Warm Sand / Earth Yellow (#dda15e)
+    // Earthy Color Palette tokens
     const sandPalette = [
       new THREE.Color("#dda15e"),
       new THREE.Color("#e6b172"),
@@ -327,8 +335,6 @@ function CelestialPointsMesh({
       new THREE.Color("#f4d29f"),
       new THREE.Color("#d4944d"),
     ];
-
-    // 2. Terracotta / Tiger's Eye / Copper (#bc6c25)
     const terracottaPalette = [
       new THREE.Color("#bc6c25"),
       new THREE.Color("#cd7629"),
@@ -336,70 +342,94 @@ function CelestialPointsMesh({
       new THREE.Color("#e4934b"),
       new THREE.Color("#b85d1e"),
     ];
-
-    // 3. Olive / Moss Green (#606c38)
     const mossPalette = [
       new THREE.Color("#606c38"),
       new THREE.Color("#788746"),
       new THREE.Color("#8f9f55"),
       new THREE.Color("#9cb05d"),
     ];
-
-    // 4. Cornsilk / Warm Cream (#fefae0)
     const creamPalette = [
       new THREE.Color("#fefae0"),
       new THREE.Color("#fffdf0"),
       new THREE.Color("#fbf5d5"),
     ];
 
-    // Positioned cleanly with generous vertical clearance above the roller drum
-    const wordCenterY = viewport.height * (viewport.width < 3.2 ? 0.26 : 0.23);
-
-    // Sample exactly 2,500 points from our display font: Clash Display
     const TOTAL_POINTS = 2500;
-    const rawPoints = sampleClashDisplayPoints(
+
+    // 1. Sample "OVERVIEW" (Centered Upper Area)
+    const overviewCenterY = viewport.height * (viewport.width < 3.2 ? 0.26 : 0.23);
+    const overviewWidthRatio = viewport.width < 3.2 ? 0.88 : 0.68;
+    const overviewHeightRatio = viewport.width < 3.2 ? 0.16 : 0.20;
+    const rawOverview = sampleClashDisplayText(
       "OVERVIEW",
       TOTAL_POINTS,
       viewport.width,
       viewport.height,
-      wordCenterY
+      overviewWidthRatio,
+      overviewHeightRatio,
+      0, // centered X
+      overviewCenterY
     );
 
-    const totalCount = rawPoints.length; // Exactly 2,500 points
+    // 2. Sample "SKILLS" (Top-Left Area)
+    const skillsCenterX = -viewport.width * (viewport.width < 3.2 ? 0.22 : 0.32);
+    const skillsCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
+    const skillsWidthRatio = viewport.width < 3.2 ? 0.48 : 0.30;
+    const skillsHeightRatio = viewport.width < 3.2 ? 0.10 : 0.13;
+    const rawSkills = sampleClashDisplayText(
+      "SKILLS",
+      TOTAL_POINTS,
+      viewport.width,
+      viewport.height,
+      skillsWidthRatio,
+      skillsHeightRatio,
+      skillsCenterX,
+      skillsCenterY
+    );
 
-    // Stratified grid for 2,500 points: 50 cols x 50 rows = 2,500 cells
+    // 3. Stratified grid for Dispersed Nebula
+    const totalCount = TOTAL_POINTS;
     const numCols = 50;
     const numRows = Math.ceil(totalCount / numCols);
 
-    // Shuffle grid cell assignments so all letters disperse uniformly across the screen
     const cellIndices = Array.from({ length: totalCount }, (_, i) => i);
     for (let i = cellIndices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [cellIndices[i], cellIndices[j]] = [cellIndices[j], cellIndices[i]];
     }
 
-    rawPoints.forEach((pt, idx) => {
-      // 1. Initial Position: 3D "OVERVIEW" written in Clash Display
-      startPositions.push(pt.x, pt.y, pt.z);
+    for (let idx = 0; idx < TOTAL_POINTS; idx++) {
+      const ptOverview = rawOverview[idx];
+      const ptSkills = rawSkills[idx];
 
-      // 2. Target Position: Dispersed Cosmic Nebula Across Entire Screen
+      overviewPositions.push(ptOverview.x, ptOverview.y, ptOverview.z);
+      skillsPositions.push(ptSkills.x, ptSkills.y, ptSkills.z);
+
       const cellIdx = cellIndices[idx];
       const col = cellIdx % numCols;
       const row = Math.floor(cellIdx / numCols);
 
-      // Normalized coordinates [0, 1] with organic jitter
       const u = (col + 0.15 + Math.random() * 0.7) / numCols;
       const v = (row + 0.15 + Math.random() * 0.7) / numRows;
 
-      // Full screen coverage in camera space (camera z=5.0, fov=42)
-      const targetX = (u - 0.5) * (viewport.width * 1.15);
-      const targetY = (v - 0.5) * (viewport.height * 1.15);
-      const targetZ = (Math.random() - 0.5) * 2.8;
+      const dispersedX = (u - 0.5) * (viewport.width * 1.15);
+      const dispersedY = (v - 0.5) * (viewport.height * 1.15);
+      const dispersedZ = (Math.random() - 0.5) * 2.8;
 
-      targetPositions.push(targetX, targetY, targetZ);
+      dispersedPositions.push(dispersedX, dispersedY, dispersedZ);
 
-      // Color assignment from Earthy Color Palette:
-      // ~36% Warm Sand, ~34% Terracotta/Copper, ~18% Olive/Moss, ~12% Cornsilk Cream
+      // 4. Parametric 3D Mechanical Cog / Celestial Torus Object
+      const loopU = (idx / TOTAL_POINTS) * Math.PI * 2 * 6;
+      const loopV = (idx / TOTAL_POINTS) * Math.PI * 2;
+      const majorR = 1.35;
+      const minorR = 0.42;
+      const cogTeeth = 1.0 + 0.15 * Math.sin(loopV * 12);
+      const ox = (majorR * cogTeeth + minorR * Math.cos(loopU)) * Math.cos(loopV);
+      const oy = (majorR * cogTeeth + minorR * Math.cos(loopU)) * Math.sin(loopV);
+      const oz = minorR * Math.sin(loopU);
+      objectPositions.push(ox, oy, oz);
+
+      // Earthy Color assignment
       const streamRand = Math.random();
       let colObj: THREE.Color;
       if (streamRand < 0.36) {
@@ -413,8 +443,7 @@ function CelestialPointsMesh({
       }
       colors.push(colObj.r, colObj.g, colObj.b);
 
-      // Crisp pinprick starlight nodes for high-definition legibility
-      const size = pt.isNode
+      const size = ptOverview.isNode || ptSkills.isNode
         ? 1.10 + Math.random() * 0.25
         : 0.75 + Math.random() * 0.25;
       sizes.push(size);
@@ -422,45 +451,31 @@ function CelestialPointsMesh({
       phases.push(Math.random() * Math.PI * 2);
       swirlSpeeds.push((Math.random() - 0.5) * 1.6);
       randoms.push(Math.random());
-    });
+    }
 
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(startPositions, 3)
-    );
-    geo.setAttribute(
-      "aTargetPosition",
-      new THREE.Float32BufferAttribute(targetPositions, 3)
-    );
-    geo.setAttribute(
-      "aColor",
-      new THREE.Float32BufferAttribute(colors, 3)
-    );
-    geo.setAttribute(
-      "aSize",
-      new THREE.Float32BufferAttribute(sizes, 1)
-    );
-    geo.setAttribute(
-      "aPhase",
-      new THREE.Float32BufferAttribute(phases, 1)
-    );
-    geo.setAttribute(
-      "aSwirlSpeed",
-      new THREE.Float32BufferAttribute(swirlSpeeds, 1)
-    );
-    geo.setAttribute(
-      "aRandom",
-      new THREE.Float32BufferAttribute(randoms, 1)
-    );
+    geo.setAttribute("aOverviewPosition", new THREE.Float32BufferAttribute(overviewPositions, 3));
+    geo.setAttribute("aDispersedPosition", new THREE.Float32BufferAttribute(dispersedPositions, 3));
+    geo.setAttribute("aSkillsPosition", new THREE.Float32BufferAttribute(skillsPositions, 3));
+    geo.setAttribute("aObjectPosition", new THREE.Float32BufferAttribute(objectPositions, 3));
+    // Default position attribute for bounding box
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(overviewPositions, 3));
+
+    geo.setAttribute("aColor", new THREE.Float32BufferAttribute(colors, 3));
+    geo.setAttribute("aSize", new THREE.Float32BufferAttribute(sizes, 1));
+    geo.setAttribute("aPhase", new THREE.Float32BufferAttribute(phases, 1));
+    geo.setAttribute("aSwirlSpeed", new THREE.Float32BufferAttribute(swirlSpeeds, 1));
+    geo.setAttribute("aRandom", new THREE.Float32BufferAttribute(randoms, 1));
 
     return geo;
   }, [viewport.width, viewport.height, fontLoaded]);
 
-  // Shader Material uniforms
   const uniforms = useMemo(
     () => ({
-      uProgress: { value: 0.0 },
+      uOverviewProgress: { value: 0.0 },
+      uSkillsProgress: { value: 0.0 },
+      uObjectProgress: { value: 0.0 },
+      uOpacity: { value: 0.0 },
       uTime: { value: 0.0 },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
@@ -475,36 +490,44 @@ function CelestialPointsMesh({
     }
   }, [uniforms]);
 
-  // Frame animation loop
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
 
-    // Smoothly interpolate progress toward target
-    smoothProgress.current = THREE.MathUtils.lerp(
-      smoothProgress.current,
-      progress,
+    // Lerp progress values directly from the global particleBridge
+    smoothOverviewProgress.current = THREE.MathUtils.lerp(
+      smoothOverviewProgress.current,
+      particleBridge.overviewProgress,
+      0.08
+    );
+    smoothSkillsProgress.current = THREE.MathUtils.lerp(
+      smoothSkillsProgress.current,
+      particleBridge.skillsProgress,
+      0.08
+    );
+    smoothObjectProgress.current = THREE.MathUtils.lerp(
+      smoothObjectProgress.current,
+      particleBridge.objectProgress,
+      0.08
+    );
+    smoothOpacity.current = THREE.MathUtils.lerp(
+      smoothOpacity.current,
+      particleBridge.isDarkActive ? 1.0 : 0.0,
       0.08
     );
 
-    // Smoothly interpolate true 3D world mouse position and active state
-    smoothMouseWorld.current.lerp(
-      new THREE.Vector2(mouseWorld.x, mouseWorld.y),
-      0.1
-    );
-    smoothMouseActive.current = THREE.MathUtils.lerp(
-      smoothMouseActive.current,
-      mouseActive,
-      0.12
-    );
+    smoothMouseWorld.current.lerp(new THREE.Vector2(mouseWorld.x, mouseWorld.y), 0.1);
+    smoothMouseActive.current = THREE.MathUtils.lerp(smoothMouseActive.current, mouseActive, 0.12);
 
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = time;
-      materialRef.current.uniforms.uProgress.value = smoothProgress.current;
+      materialRef.current.uniforms.uOverviewProgress.value = smoothOverviewProgress.current;
+      materialRef.current.uniforms.uSkillsProgress.value = smoothSkillsProgress.current;
+      materialRef.current.uniforms.uObjectProgress.value = smoothObjectProgress.current;
+      materialRef.current.uniforms.uOpacity.value = smoothOpacity.current;
       materialRef.current.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       materialRef.current.uniforms.uMouseActive.value = smoothMouseActive.current;
     }
 
-    // Refined subtle interactive mouse parallax only when active inside the section
     if (pointsRef.current) {
       pointsRef.current.rotation.y = smoothMouseWorld.current.x * 0.012 * smoothMouseActive.current;
       pointsRef.current.rotation.x = smoothMouseWorld.current.y * 0.008 * smoothMouseActive.current;
@@ -521,13 +544,20 @@ function CelestialPointsMesh({
         depthWrite={false}
         blending={THREE.AdditiveBlending}
         vertexShader={`
-          uniform float uProgress;
+          uniform float uOverviewProgress;
+          uniform float uSkillsProgress;
+          uniform float uObjectProgress;
+          uniform float uOpacity;
           uniform float uTime;
           uniform vec2 uMouseWorld;
           uniform float uMouseActive;
           uniform float uPixelRatio;
 
-          attribute vec3 aTargetPosition;
+          attribute vec3 aOverviewPosition;
+          attribute vec3 aDispersedPosition;
+          attribute vec3 aSkillsPosition;
+          attribute vec3 aObjectPosition;
+
           attribute vec3 aColor;
           attribute float aSize;
           attribute float aPhase;
@@ -536,7 +566,6 @@ function CelestialPointsMesh({
 
           varying vec3 vColor;
           varying float vAlpha;
-          varying float vPhase;
 
           float easeOutQuart(float x) {
             return 1.0 - pow(1.0 - x, 4.0);
@@ -544,71 +573,92 @@ function CelestialPointsMesh({
 
           void main() {
             vColor = aColor;
-            vPhase = aPhase;
 
-            // Cascade break-off: outer points break first, core points follow
-            float pOffset = aRandom * 0.22;
-            float p = clamp((uProgress - pOffset) / (1.0 - pOffset + 0.0001), 0.0, 1.0);
-            float easeP = easeOutQuart(p);
+            // Phase 1: Overview to Dispersed Nebula
+            float p1Offset = aRandom * 0.22;
+            float p1 = clamp((uOverviewProgress - p1Offset) / (1.0 - p1Offset + 0.0001), 0.0, 1.0);
+            float easeP1 = easeOutQuart(p1);
 
-            // Dynamic arching flight arc during explosion
-            float arc = sin(easeP * 3.14159);
-            vec3 flightArc = vec3(
-              arc * (aRandom - 0.5) * 1.5,
-              arc * (aSwirlSpeed) * 1.0,
-              arc * (aRandom - 0.5) * 1.3
+            float arc1 = sin(easeP1 * 3.14159);
+            vec3 flightArc1 = vec3(
+              arc1 * (aRandom - 0.5) * 1.5,
+              arc1 * (aSwirlSpeed) * 1.0,
+              arc1 * (aRandom - 0.5) * 1.3
             );
+            vec3 posPhase1 = mix(aOverviewPosition, aDispersedPosition, easeP1) + flightArc1;
 
-            // Interpolate position from Clash Display letters to even screen spread
-            vec3 pos = mix(position, aTargetPosition, easeP) + flightArc;
+            // Phase 2: Dispersed Nebula to "SKILLS" on Top-Left
+            float p2Offset = aRandom * 0.22;
+            float p2 = clamp((uSkillsProgress - p2Offset) / (1.0 - p2Offset + 0.0001), 0.0, 1.0);
+            float easeP2 = easeOutQuart(p2);
 
-            // Organic turbulence in 3D (active only as points disperse during scroll)
-            pos.y += sin(uTime * 1.2 + aPhase) * 0.05 * easeP;
-            pos.x += cos(uTime * 0.9 + aPhase * 1.3) * 0.04 * easeP;
-            pos.z += sin(uTime * 1.0 + aPhase * 0.8) * 0.04 * easeP;
+            float arc2 = sin((1.0 - easeP2) * 3.14159);
+            vec3 flightArc2 = vec3(
+              arc2 * (aRandom - 0.5) * 1.4,
+              arc2 * (aSwirlSpeed) * 1.0,
+              arc2 * (aRandom - 0.5) * 1.2
+            );
+            vec3 posPhase2 = mix(aDispersedPosition, aSkillsPosition, easeP2) + flightArc2;
+
+            // Seamless blending between Phase 1 and Phase 2:
+            // When uSkillsProgress > 0, smoothly transitions from dispersed field into SKILLS
+            vec3 posBase = mix(posPhase1, posPhase2, easeP2);
+
+            // Phase 3: Morph into 3D Geometric / Mechanical Object
+            float p3Offset = aRandom * 0.22;
+            float p3 = clamp((uObjectProgress - p3Offset) / (1.0 - p3Offset + 0.0001), 0.0, 1.0);
+            float easeP3 = easeOutQuart(p3);
+
+            vec3 rotatedObj = aObjectPosition;
+            float objAngle = uTime * 0.45;
+            float cosA = cos(objAngle);
+            float sinA = sin(objAngle);
+            rotatedObj.xz = mat2(cosA, -sinA, sinA, cosA) * rotatedObj.xz;
+
+            vec3 pos = mix(posBase, rotatedObj, easeP3);
+
+            // Flight turbulence
+            float flightActive = max(easeP1 * (1.0 - easeP1), (1.0 - easeP2) * easeP2);
+            pos.y += sin(uTime * 1.2 + aPhase) * 0.04 * flightActive;
+            pos.x += cos(uTime * 0.9 + aPhase * 1.3) * 0.03 * flightActive;
+            pos.z += sin(uTime * 1.0 + aPhase * 0.8) * 0.03 * flightActive;
 
             // Refined, localized interactive mouse repulsion:
-            // ONLY activates when cursor is directly hovering on or very close to the text (tight 0.38 unit radius)
-            // and cursor is actively within the Overview section (uMouseActive > 0)
+            // Active when hovering directly over assembled text
             vec2 mouseOffset = pos.xy - uMouseWorld;
             float mouseDist = length(mouseOffset);
-            float mouseRadius = 0.38;
+            float mouseRadius = 0.36;
 
-            // Smooth quadratic falloff: zero displacement at boundary, gentle organic parting at core
             float repelStrength = smoothstep(mouseRadius, 0.0, mouseDist);
-            float mouseRepel = repelStrength * repelStrength * 0.065 * uMouseActive;
+            float isAssembled = max(1.0 - easeP1, easeP2);
+            float mouseRepel = repelStrength * repelStrength * 0.065 * uMouseActive * isAssembled;
             pos.xy += normalize(mouseOffset + vec2(0.0001, 0.0001)) * mouseRepel;
-            pos.z += repelStrength * 0.035 * uMouseActive;
+            pos.z += repelStrength * 0.035 * uMouseActive * isAssembled;
 
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
 
-            // Crisp pinprick starlight size attenuation with restrained scaling
+            // Crisp pinprick starlight size attenuation
             float twinkle = 0.88 + 0.22 * sin(uTime * 2.5 + aPhase);
             float baseSize = aSize * uPixelRatio * (28.0 / -mvPosition.z) * twinkle;
-            gl_PointSize = clamp(baseSize * (1.0 + easeP * 0.4), 1.2, 5.2);
+            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35), 1.2, 5.2);
 
-            // Alpha transparency
-            vAlpha = 0.88 + easeP * 0.12;
+            vAlpha = (0.88 + flightActive * 0.12) * uOpacity;
           }
         `}
         fragmentShader={`
           varying vec3 vColor;
           varying float vAlpha;
-          varying float vPhase;
 
           void main() {
-            // Distance from point center
             float dist = length(gl_PointCoord - vec2(0.5));
             if (dist > 0.5) discard;
 
-            // Crisp, high-definition star particle: sharp outer disk boundary with crisp radiant core
             float edge = smoothstep(0.5, 0.38, dist);
             float core = smoothstep(0.32, 0.0, dist);
             float sparkle = pow(smoothstep(0.18, 0.0, dist), 3.0);
             vec3 creamSparkle = vec3(0.996, 0.980, 0.878) * sparkle * 0.85;
 
-            // Additive earthy starlight composition with intense crisp core
             vec3 finalColor = vColor * (0.90 + core * 0.95) + creamSparkle;
             float finalAlpha = edge * vAlpha;
 
@@ -621,30 +671,18 @@ function CelestialPointsMesh({
 }
 
 interface CharacterPointsCanvasProps {
-  progress?: number;
   className?: string;
 }
 
 export default function CharacterPointsCanvas({
-  progress = 0,
   className = "",
 }: CharacterPointsCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [mouseState, setMouseState] = useState({
     worldX: 0,
     worldY: 0,
     active: 0,
   });
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     let lastClientX = -9999;
@@ -661,18 +699,16 @@ export default function CharacterPointsCanvas({
         clientY >= rect.top &&
         clientY <= rect.bottom;
 
-      if (!isInside) {
+      if (!isInside || !particleBridge.isDarkActive) {
         setMouseState((prev) =>
           prev.active === 0 ? prev : { worldX: prev.worldX, worldY: prev.worldY, active: 0 }
         );
         return;
       }
 
-      // Normalized coordinates [-1, 1] relative to the canvas container
       const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
       const ny = -(((clientY - rect.top) / rect.height) * 2 - 1);
 
-      // Exact 3D camera world coordinates at Z=0 for camera FOV 42, distance 5.0
       const aspect = rect.width / (rect.height || 1);
       const fovRad = (42 * Math.PI) / 180;
       const vHeight = 2 * Math.tan(fovRad / 2) * 5.0;
@@ -728,11 +764,9 @@ export default function CharacterPointsCanvas({
         className="w-full h-full pointer-events-none"
         style={{ pointerEvents: "none" }}
       >
-        <CelestialPointsMesh
-          progress={progress}
+        <UnifiedCelestialMesh
           mouseWorld={{ x: mouseState.worldX, y: mouseState.worldY }}
           mouseActive={mouseState.active}
-          isMobile={isMobile}
         />
       </Canvas>
     </div>

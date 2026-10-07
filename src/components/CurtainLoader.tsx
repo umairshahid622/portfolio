@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useProgress } from "@react-three/drei";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLoading } from "../context/LoadingContext";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function CurtainLoader() {
   const { avatarReady, isCurtainComplete, setIsCurtainComplete, setCurtainParting } = useLoading();
@@ -82,6 +85,7 @@ export default function CurtainLoader() {
           },
           onComplete: () => {
             setIsCurtainComplete(true);
+            ScrollTrigger.refresh();
           },
         });
 

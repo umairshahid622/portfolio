@@ -33,7 +33,7 @@ export default function Header() {
     };
   }, []);
 
-  const isOverDarkSection = activeSection === "about";
+  const isOverDarkSection = activeSection === "about" || activeSection === "skills";
 
   return (
     <header className="nav-bar fixed top-0 left-0 right-0 z-40 w-full px-5 sm:px-8 md:px-12 py-4 bg-transparent transition-all duration-300">
@@ -78,12 +78,26 @@ export default function Header() {
             <a
               href="#about"
               className={`transition-colors cursor-pointer py-1 ${
-                isOverDarkSection
+                activeSection === "about"
                   ? "text-earth-cream font-medium"
+                  : isOverDarkSection
+                  ? "hover:text-earth-cream"
                   : "hover:text-earth-forest dark:hover:text-earth-cream"
               }`}
             >
               About
+            </a>
+            <a
+              href="#skills"
+              className={`transition-colors cursor-pointer py-1 ${
+                activeSection === "skills"
+                  ? "text-earth-cream font-medium"
+                  : isOverDarkSection
+                  ? "hover:text-earth-cream"
+                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+              }`}
+            >
+              Skills
             </a>
             <a
               href="#projects"

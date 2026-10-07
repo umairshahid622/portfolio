@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import CharacterPointsCanvas from "./CharacterPointsCanvas";
+import { particleBridge } from "../utils/particleBridge";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -76,7 +76,6 @@ export default function Overview() {
   const sectionRef = useRef<HTMLElement>(null);
   const drumRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [particleProgress, setParticleProgress] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -118,12 +117,10 @@ export default function Overview() {
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            setParticleProgress(self.progress);
+            particleBridge.overviewProgress = self.progress;
           },
         },
       });
-
-      // 3D rotation of the drum around its horizontal X axis (rolls text upward)
       tl.fromTo(
         drum,
         { rotateX: initialRotation },
@@ -133,6 +130,12 @@ export default function Overview() {
           duration: 0.9,
         }
       ).to({}, { duration: 0.1 }); // Hold resting state at the end before unpinning
+
+      const refreshTimer = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 200);
+
+      return () => clearTimeout(refreshTimer);
     },
     { scope: sectionRef, dependencies: [stepAngle, radius] }
   );
@@ -141,23 +144,8 @@ export default function Overview() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative w-full h-screen h-[100dvh] max-h-screen py-6 sm:py-8 md:py-10 px-4 sm:px-6 md:px-8 bg-earth-black text-earth-cream overflow-hidden transition-colors duration-300 flex items-center justify-center"
+      className="relative w-full h-screen h-[100dvh] max-h-screen py-6 sm:py-8 md:py-10 px-4 sm:px-6 md:px-8 bg-transparent text-earth-cream transition-colors duration-300 flex items-center justify-center"
     >
-      {/* 3D Character Points Particle Nebula Canvas - Spans the entire section behind content */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <CharacterPointsCanvas progress={particleProgress} />
-      </div>
-
-      {/* Ambient background glows */}
-      <div
-        className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-tr from-earth-moss/20 to-earth-sand/15 blur-[130px] pointer-events-none -z-10"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 w-[480px] h-[480px] rounded-full bg-gradient-to-br from-earth-terracotta/20 to-earth-sand/10 blur-[110px] pointer-events-none -z-10"
-        aria-hidden="true"
-      />
-
       <div className="w-full max-w-[94vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4">
         {/* 3D Rolling Drum Container - Positioned below the glowing OVERVIEW constellation header */}
         <div

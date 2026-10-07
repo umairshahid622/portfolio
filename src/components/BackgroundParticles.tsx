@@ -31,11 +31,13 @@ interface AmbientWisp {
 interface BackgroundParticlesProps {
   className?: string;
   count?: number;
+  showAmbientGlows?: boolean;
 }
 
 export default function BackgroundParticles({
   className = "",
   count = 46,
+  showAmbientGlows = true,
 }: BackgroundParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { isDark } = useTheme();
@@ -266,10 +268,28 @@ export default function BackgroundParticles({
   }, [isDark, count]);
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      className={`pointer-events-none ${className || "absolute inset-0 z-0"}`}
       aria-hidden="true"
-      className={`pointer-events-none w-full h-full ${className || "absolute inset-0 z-0"}`}
-    />
+    >
+      {showAmbientGlows && isDark && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
+          {/* Unified ambient background glows - single consistent lighting source */}
+          <div
+            className="absolute top-1/3 left-0 -translate-y-1/2 -translate-x-1/3 w-[620px] h-[620px] rounded-full bg-gradient-to-tr from-earth-moss/20 to-earth-sand/15 blur-[140px] pointer-events-none"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute bottom-1/4 right-0 translate-x-1/4 translate-y-1/4 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-earth-terracotta/20 to-earth-sand/10 blur-[130px] pointer-events-none"
+            aria-hidden="true"
+          />
+        </div>
+      )}
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className="pointer-events-none w-full h-full relative z-0"
+      />
+    </div>
   );
 }
