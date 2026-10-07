@@ -117,7 +117,24 @@ export default function Overview() {
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            particleBridge.overviewProgress = self.progress;
+            const p = self.progress;
+
+            // Overview text particles stay assembled during the first half of the roller,
+            // then smoothly take flight and spread into the cosmic nebula starting in the middle.
+            // Phase A (0.0 -> 0.45): Roller starts and rolls through initial lines; "OVERVIEW" text stays assembled
+            // Phase B (0.45 -> 0.85): Starting in the middle of the roller, particles spread out into the cosmic nebula
+            // Phase C (0.85 -> 1.0): Fully dispersed as roller reaches final lines and settles
+            const spreadStart = 0.45;
+            const spreadEnd = 0.85;
+
+            if (p < spreadStart) {
+              particleBridge.overviewProgress = 0.0;
+            } else if (p > spreadEnd) {
+              particleBridge.overviewProgress = 1.0;
+            } else {
+              const spreadProgress = (p - spreadStart) / (spreadEnd - spreadStart);
+              particleBridge.overviewProgress = Math.min(1.0, Math.max(0.0, spreadProgress));
+            }
           },
         },
       });
@@ -144,12 +161,12 @@ export default function Overview() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative w-full h-screen h-[100dvh] max-h-screen py-6 sm:py-8 md:py-10 px-4 sm:px-6 md:px-8 bg-transparent text-earth-cream transition-colors duration-300 flex items-center justify-center"
+      className="relative w-full h-screen h-[100dvh] max-h-screen py-6 sm:py-8 md:py-10 px-4 sm:px-6 md:px-8 bg-transparent text-earth-cream transition-colors duration-300 flex items-center justify-center overflow-hidden select-none"
     >
       <div className="w-full max-w-[94vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4">
-        {/* 3D Rolling Drum Container - Positioned below the glowing OVERVIEW constellation header */}
+        {/* 3D Rolling Drum Container - Shifted downward so while rolling it never intersects with the OVERVIEW constellation text */}
         <div
-          className="w-full relative select-none will-change-transform flex items-center justify-center mt-8 sm:mt-12 md:mt-14"
+          className="w-full relative select-none will-change-transform flex items-center justify-center mt-6 sm:mt-8 md:mt-10 translate-y-[55px] sm:translate-y-[75px] md:translate-y-[90px]"
           style={{
             perspective: "1150px",
             perspectiveOrigin: "center center",

@@ -9,7 +9,6 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 interface SkillCard {
   id: string;
   number: string;
-  category: string;
   heading: string;
   summary: string;
   skills: string[];
@@ -20,7 +19,6 @@ const SKILL_CARDS: SkillCard[] = [
   {
     id: "frontend",
     number: "01",
-    category: "Web Architecture & UI",
     heading: "Frontend Development",
     summary:
       "Engineering scalable frontend architectures, responsive interfaces, and interactive 3D WebGL experiences with modern component systems.",
@@ -39,7 +37,6 @@ const SKILL_CARDS: SkillCard[] = [
   {
     id: "mobile",
     number: "02",
-    category: "Cross-Platform Ecosystems",
     heading: "Mobile Development",
     summary:
       "Building production-grade cross-platform mobile apps with multi-flavor builds, regional localization, and multi-threaded background processing.",
@@ -57,7 +54,6 @@ const SKILL_CARDS: SkillCard[] = [
   {
     id: "backend",
     number: "03",
-    category: "Distributed Server Systems",
     heading: "Backend Development",
     summary:
       "Architecting resilient RESTful APIs, cloud microservices, and secure authentication systems with high concurrency and data integrity.",
@@ -74,8 +70,7 @@ const SKILL_CARDS: SkillCard[] = [
   },
   {
     id: "state-management",
-    number: "04",
-    category: "Reactive State Architecture",
+    number: "04",    
     heading: "State Management",
     summary:
       "Managing complex asynchronous client state, predictive UI workflows, and decoupled domain logic across web and mobile applications.",
@@ -92,7 +87,6 @@ const SKILL_CARDS: SkillCard[] = [
   {
     id: "database",
     number: "05",
-    category: "Persistence & Data Modeling",
     heading: "Database Management",
     summary:
       "Designing relational schemas and NoSQL document models with transactional consistency, ACID compliance, and query indexing.",
@@ -109,7 +103,6 @@ const SKILL_CARDS: SkillCard[] = [
   {
     id: "devops",
     number: "06",
-    category: "Infrastructure & Delivery",
     heading: "DevOps & Tools",
     summary:
       "Streamlining developer velocity with automated CI/CD pipelines, containerization, strict static code analysis, and cloud deployment.",
@@ -127,7 +120,6 @@ const SKILL_CARDS: SkillCard[] = [
   {
     id: "performance",
     number: "07",
-    category: "Optimization & Quality",
     heading: "Performance & Optimization",
     summary:
       "Eliminating rendering bottlenecks, minimizing bundle payload, and writing unit test suites for ultra-responsive applications.",
@@ -253,17 +245,7 @@ export default function Skills() {
                 style={{ backgroundColor: card.accentColor }}
               />
 
-              <div>
-                {/* Top Row: Category Tag & Number */}
-                <div className="relative z-10 flex items-center justify-between">
-                  <span className="text-[11px] font-mono tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-earth-cream/5 border border-earth-cream/10 text-earth-sand">
-                    {card.category}
-                  </span>
-                  <span className="font-mono text-xs text-earth-cream/40 font-semibold">
-                    {card.number}
-                  </span>
-                </div>
-
+              <div>                
                 {/* Heading & Summary */}
                 <div className="relative z-10 mt-3.5">
                   <h3 className="font-heading text-2xl sm:text-3xl font-bold text-earth-cream group-hover:text-earth-sand transition-colors tracking-tight">
