@@ -506,19 +506,9 @@ function UnifiedCelestialMesh() {
       new THREE.Color("#e6b172"), // Rich Warm Gold
     ];
 
-    // Luminous Golden Palette for the code symbol: rich, radiant gold from our palette
-    const symbolGoldenPalette = [
-      new THREE.Color("#dda15e"), // Primary Earth Yellow
-      new THREE.Color("#f4c07b"), // Radiant Warm Gold
-      new THREE.Color("#eec187"), // Amber Gold
-      new THREE.Color("#f5cb8a"), // Luminous Honey
-      new THREE.Color("#e6b172"), // Rich Warm Gold
-      new THREE.Color("#d4944d"), // Deep Sand Gold
-    ];
-
     const TOTAL_POINTS = 2500;
-    const SKILLS_POINTS = 1750; // Reallocated: +500 particles for dense, sharp "SKILLS" text
-    const SYMBOL_POINTS = 750;  // 750 particles for luminous, perfectly balanced "</>" symbol
+    const SKILLS_POINTS = 1750; // Dense, sharp "SKILLS" text
+    const SYMBOL_POINTS = 750;  // Perfectly balanced "</>" symbol
 
     // 1. Sample "OVERVIEW" (Centered Upper Area) - utilizes ALL 2,500 particles
     const overviewCenterY = viewport.height * (viewport.width < 3.2 ? 0.26 : 0.23);
@@ -618,13 +608,10 @@ function UnifiedCelestialMesh() {
       const oz = minorR * Math.sin(loopU);
       objectPositions.push(ox, oy, oz);
 
-      // Earthy Color assignment: symbol and highlight particles get radiant golden palette
+      // Unified Earthy Color assignment: symbol and text share the exact same color mix
       const streamRand = Math.random();
       let colObj: THREE.Color;
-      if (idx >= SKILLS_POINTS) {
-        // Symbol particles: rich, radiant gold from our palette
-        colObj = symbolGoldenPalette[Math.floor(Math.random() * symbolGoldenPalette.length)];
-      } else if (streamRand < 0.36) {
+      if (streamRand < 0.36) {
         colObj = sandPalette[Math.floor(Math.random() * sandPalette.length)];
       } else if (streamRand < 0.70) {
         colObj = terracottaPalette[Math.floor(Math.random() * terracottaPalette.length)];
@@ -635,10 +622,9 @@ function UnifiedCelestialMesh() {
       }
       colors.push(colObj.r, colObj.g, colObj.b);
 
-      const isSymbolParticle = idx >= SKILLS_POINTS;
       const size = ptOverview.isNode || ptPhase2.isNode
-        ? (isSymbolParticle ? 1.32 : 1.15) + Math.random() * 0.28
-        : (isSymbolParticle ? 0.92 : 0.75) + Math.random() * 0.25;
+        ? 1.15 + Math.random() * 0.28
+        : 0.75 + Math.random() * 0.25;
       sizes.push(size);
 
       phases.push(Math.random() * Math.PI * 2);
@@ -774,13 +760,7 @@ function UnifiedCelestialMesh() {
           }
 
           void main() {
-            vec3 pointCol = aColor;
-            if (aIsSymbol > 0.5) {
-              // Lift warmth and golden radiance of the code symbol (#dda15e: 0.867, 0.631, 0.369)
-              pointCol = mix(pointCol, vec3(0.92, 0.72, 0.42), 0.35);
-              pointCol *= 1.25;
-            }
-            vColor = pointCol;
+            vColor = aColor;
 
             // Phase 1: Overview to Dispersed Nebula
             float p1Offset = aRandom * 0.22;
@@ -889,8 +869,7 @@ function UnifiedCelestialMesh() {
             float twinkle = 0.88 + 0.22 * sin(uTime * 2.5 + aPhase);
             float hoverGlow = repelStrength * uMouseActive * (0.35 + dispersedAmount * 0.55);
             float baseSize = aSize * uPixelRatio * (28.0 / -mvPosition.z) * twinkle;
-            float symbolBonus = aIsSymbol * 0.35;
-            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35 + symbolBonus + hoverGlow), 1.3, 5.8);
+            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35 + hoverGlow), 1.2, 5.5);
 
             vAlpha = (0.88 + flightActive * 0.12) * uOpacity;
           }
