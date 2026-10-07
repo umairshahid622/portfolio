@@ -21,17 +21,18 @@ function sampleClashDisplayText(
   viewportHeight: number,
   targetWidthRatio: number,
   targetHeightRatio: number,
-  wordCenterX: number,
-  wordCenterY: number
+  wordCenterXOrLeft: number,
+  wordCenterY: number,
+  align: "center" | "left" = "center"
 ): RawPoint[] {
   if (typeof document === "undefined") {
-    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterX, wordCenterY, totalPoints);
+    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterXOrLeft, wordCenterY, totalPoints, align);
   }
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) {
-    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterX, wordCenterY, totalPoints);
+    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterXOrLeft, wordCenterY, totalPoints, align);
   }
 
   const fontSize = 240;
@@ -73,6 +74,8 @@ function sampleClashDisplayText(
 
   const edgePixels: PixelCandidate[] = [];
   const bodyPixels: PixelCandidate[] = [];
+  // Leftmost inked pixel, used to left-align the word with zero side bearing
+  let minPixelX = canvasW;
 
   for (let y = 1; y < canvasH - 1; y++) {
     for (let x = 1; x < canvasW - 1; x++) {
@@ -80,6 +83,8 @@ function sampleClashDisplayText(
       const alpha = data[idx + 3];
 
       if (alpha > 75) {
+        if (x < minPixelX) minPixelX = x;
+
         const topAlpha = data[((y - 1) * canvasW + x) * 4 + 3];
         const bottomAlpha = data[((y + 1) * canvasW + x) * 4 + 3];
         const leftAlpha = data[(y * canvasW + (x - 1)) * 4 + 3];
@@ -102,7 +107,7 @@ function sampleClashDisplayText(
   }
 
   if (edgePixels.length === 0 && bodyPixels.length === 0) {
-    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterX, wordCenterY, totalPoints);
+    return generateFallbackPoints(text, viewportWidth, viewportHeight, targetWidthRatio, targetHeightRatio, wordCenterXOrLeft, wordCenterY, totalPoints, align);
   }
 
   const targetW = viewportWidth * targetWidthRatio;
@@ -118,7 +123,9 @@ function sampleClashDisplayText(
     const edgeStep = edgePixels.length / targetEdgeCount;
     for (let i = 0; i < targetEdgeCount; i++) {
       const p = edgePixels[Math.floor(i * edgeStep)];
-      const nx = (p.x - centerX) * scale + wordCenterX;
+      const nx = align === "left"
+        ? (p.x - minPixelX) * scale + wordCenterXOrLeft
+        : (p.x - centerX) * scale + wordCenterXOrLeft;
       const ny = -(p.y - centerY) * scale + wordCenterY;
       const zProf = i % 2;
       const nz = zProf === 0 ? 0.012 : -0.012;
@@ -136,7 +143,9 @@ function sampleClashDisplayText(
     const bodyStep = bodyPixels.length / targetBodyCount;
     for (let i = 0; i < targetBodyCount; i++) {
       const p = bodyPixels[Math.floor(i * bodyStep)];
-      const nx = (p.x - centerX) * scale + wordCenterX;
+      const nx = align === "left"
+        ? (p.x - minPixelX) * scale + wordCenterXOrLeft
+        : (p.x - centerX) * scale + wordCenterXOrLeft;
       const ny = -(p.y - centerY) * scale + wordCenterY;
       const nz = (i % 3 - 1) * 0.014;
 
@@ -169,9 +178,10 @@ function generateFallbackPoints(
   viewportHeight: number,
   targetWidthRatio: number,
   targetHeightRatio: number,
-  wordCenterX: number,
+  wordCenterXOrLeft: number,
   wordCenterY: number,
-  totalPoints: number = 2500
+  totalPoints: number = 2500,
+  align: "center" | "left" = "center"
 ): RawPoint[] {
   const targetW = viewportWidth * targetWidthRatio;
   const targetH = viewportHeight * targetHeightRatio;
@@ -196,7 +206,7 @@ function generateFallbackPoints(
 
     for (let i = 0; i < count; i++) {
       const t = count > 1 ? i / (count - 1) : 0.5;
-      const baseX = (start[0] + dx * t) * scale + wordCenterX;
+      const baseX = (start[0] + dx * t) * scale;
       const baseY = (start[1] + dy * t) * scale + wordCenterY;
       const profile = i % 2;
       const offsetX = profile === 0 ? nx * strokeHalfW : -nx * strokeHalfW;
@@ -224,7 +234,7 @@ function generateFallbackPoints(
     for (let i = 0; i < count; i++) {
       const t = count > 1 ? i / (count - 1) : 0.5;
       const angle = startAngle + t * (endAngle - startAngle);
-      const baseX = (centerX + rx * Math.cos(angle)) * scale + wordCenterX;
+      const baseX = (centerX + rx * Math.cos(angle)) * scale;
       const baseY = (centerY + ry * Math.sin(angle)) * scale + wordCenterY;
       rawPoints.push({ x: baseX, y: baseY, z: (i % 2 === 0 ? 0.012 : -0.012), isNode: i % 8 === 0 });
     }
@@ -268,6 +278,19 @@ function generateFallbackPoints(
     addSegmentPoints([2.378, -0.55], [2.590, 0.20], 118, false, true);
     addSegmentPoints([2.590, 0.20], [2.802, -0.55], 118, false, true);
     addSegmentPoints([2.802, -0.55], [3.015, 0.55], 120, false, true);
+  }
+
+  // Shift points according to alignment
+  let minX = Infinity;
+  for (let i = 0; i < rawPoints.length; i++) {
+    if (rawPoints[i].x < minX) minX = rawPoints[i].x;
+  }
+  for (let i = 0; i < rawPoints.length; i++) {
+    if (align === "left") {
+      rawPoints[i].x = rawPoints[i].x - minX + wordCenterXOrLeft;
+    } else {
+      rawPoints[i].x += wordCenterXOrLeft;
+    }
   }
 
   while (rawPoints.length < totalPoints) {
@@ -422,6 +445,24 @@ function generateMechanicalGearPoints(
   return points.slice(0, count);
 }
 
+// =========================================================================
+// HEADER CONTENT EDGES → WORLD SPACE
+// Mirrors Header.tsx layout: px-5 / sm:px-8 / md:px-12 padding + max-w-7xl
+// (1280px) centered container. Returns left/right content edges in world units
+// so particle shapes line up exactly with the monogram and theme toggle.
+// =========================================================================
+function getHeaderContentEdgesWorld(viewportWidth: number, pxWidth: number) {
+  const safePx = Math.max(pxWidth, 1);
+  const mq = (q: string) =>
+    typeof window !== "undefined" && window.matchMedia ? window.matchMedia(q).matches : safePx >= parseInt(q.replace(/\D/g, ""), 10);
+  const pad = mq("(min-width: 768px)") ? 48 : mq("(min-width: 640px)") ? 32 : 20;
+  const contentW = Math.min(safePx - pad * 2, 1280);
+  const leftPx = (safePx - contentW) / 2;
+  const worldPerPx = viewportWidth / safePx;
+  const left = -viewportWidth / 2 + leftPx * worldPerPx;
+  return { left, right: -left };
+}
+
 interface CelestialMeshProps {
   mouseWorld: { x: number; y: number };
   mouseActive: number;
@@ -433,7 +474,8 @@ function UnifiedCelestialMesh({
 }: CelestialMeshProps) {
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const { viewport } = useThree();
+  const { viewport, size } = useThree();
+  const gearCenterRef = useRef(new THREE.Vector2(0, 0));
   const [fontLoaded, setFontLoaded] = useState(false);
 
   useEffect(() => {
@@ -519,8 +561,12 @@ function UnifiedCelestialMesh({
       overviewCenterY
     );
 
-    // 2. Sample "SKILLS" (Top-Left Area) - utilizes first 1,250 particles (50%)
-    const skillsCenterX = -viewport.width * (viewport.width < 3.2 ? 0.22 : 0.30);
+    // Header content edges (monogram left edge / theme toggle right edge)
+    const edges = getHeaderContentEdgesWorld(viewport.width, size.width);
+
+    // 2. Sample "SKILLS" (Top-Left) - first 1,250 particles (50%)
+    // Left-aligned: first glyph pixel sits exactly on the header's left content edge
+    const skillsLeftX = edges.left;
     const skillsCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
     const skillsWidthRatio = viewport.width < 3.2 ? 0.44 : 0.28;
     const skillsHeightRatio = viewport.width < 3.2 ? 0.09 : 0.12;
@@ -531,14 +577,17 @@ function UnifiedCelestialMesh({
       viewport.height,
       skillsWidthRatio,
       skillsHeightRatio,
-      skillsCenterX,
-      skillsCenterY
+      skillsLeftX,
+      skillsCenterY,
+      "left"
     );
 
-    // 3. Generate 3D Mechanical Gear Icon (Top-Right Area) - utilizes remaining 1,250 particles (50%)
-    const gearCenterX = viewport.width * (viewport.width < 3.2 ? 0.26 : 0.32);
-    const gearCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
+    // 3. 3D Mechanical Gear Icon (Top-Right) - remaining 1,250 particles (50%)
+    // Outer tooth tips touch the theme toggle's right edge exactly
     const gearRadius = viewport.width < 3.2 ? 0.30 : 0.40;
+    const gearCenterX = edges.right - gearRadius;
+    const gearCenterY = skillsCenterY;
+    gearCenterRef.current.set(gearCenterX, gearCenterY);
     const rawGear = generateMechanicalGearPoints(
       GEAR_POINTS,
       gearCenterX,
@@ -638,10 +687,7 @@ function UnifiedCelestialMesh({
     geo.setAttribute("aRandom", new THREE.Float32BufferAttribute(randoms, 1));
 
     return geo;
-  }, [viewport.width, viewport.height, fontLoaded]);
-
-  const gearCenterX = viewport.width * (viewport.width < 3.2 ? 0.26 : 0.32);
-  const gearCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
+  }, [viewport.width, viewport.height, size.width, fontLoaded]);
 
   const uniforms = useMemo(
     () => ({
@@ -650,7 +696,7 @@ function UnifiedCelestialMesh({
       uObjectProgress: { value: 0.0 },
       uOpacity: { value: 0.0 },
       uTime: { value: 0.0 },
-      uGearCenter: { value: new THREE.Vector2(gearCenterX, gearCenterY) },
+      uGearCenter: { value: new THREE.Vector2(0, 0) },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
       uPixelRatio: { value: 1.0 },
@@ -692,16 +738,13 @@ function UnifiedCelestialMesh({
     smoothMouseWorld.current.lerp(new THREE.Vector2(mouseWorld.x, mouseWorld.y), 0.1);
     smoothMouseActive.current = THREE.MathUtils.lerp(smoothMouseActive.current, mouseActive, 0.12);
 
-    const currentGearCenterX = viewport.width * (viewport.width < 3.2 ? 0.26 : 0.32);
-    const currentGearCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
-
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = time;
       materialRef.current.uniforms.uOverviewProgress.value = smoothOverviewProgress.current;
       materialRef.current.uniforms.uSkillsProgress.value = smoothSkillsProgress.current;
       materialRef.current.uniforms.uObjectProgress.value = smoothObjectProgress.current;
       materialRef.current.uniforms.uOpacity.value = smoothOpacity.current;
-      materialRef.current.uniforms.uGearCenter.value.set(currentGearCenterX, currentGearCenterY);
+      materialRef.current.uniforms.uGearCenter.value.copy(gearCenterRef.current);
       materialRef.current.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       materialRef.current.uniforms.uMouseActive.value = smoothMouseActive.current;
     }

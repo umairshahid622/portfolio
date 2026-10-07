@@ -35,7 +35,7 @@ export default function Skills() {
     <section
       ref={sectionRef}
       id="skills"
-      className="relative w-full h-screen h-[100dvh] min-h-screen py-20 px-4 sm:px-8 md:px-12 bg-transparent text-earth-cream transition-colors duration-300 flex flex-col justify-start"
+      className="relative w-full h-screen h-[100dvh] min-h-screen py-20 px-5 sm:px-8 md:px-12 bg-transparent text-earth-cream transition-colors duration-300 flex flex-col justify-start"
     >
       {/* Accessible Section Heading */}
       <h2 className="sr-only">Skills</h2>

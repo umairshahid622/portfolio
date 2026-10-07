@@ -55,6 +55,61 @@ export default function CurtainLoader() {
     return () => clearTimeout(safetyTimer);
   }, []);
 
+  // Prevent scrolling when the loader is appeared / active
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (!isCurtainComplete) {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+
+      const originalBodyOverflow = document.body.style.overflow;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+      };
+
+      const preventKeys = (e: KeyboardEvent) => {
+        if (
+          [
+            "Space",
+            "PageUp",
+            "PageDown",
+            "End",
+            "Home",
+            "ArrowLeft",
+            "ArrowUp",
+            "ArrowRight",
+            "ArrowDown",
+          ].includes(e.code)
+        ) {
+          e.preventDefault();
+        }
+      };
+
+      window.addEventListener("wheel", preventScroll, { passive: false });
+      window.addEventListener("touchmove", preventScroll, { passive: false });
+      window.addEventListener("keydown", preventKeys, { passive: false });
+
+      return () => {
+        document.body.style.overflow = originalBodyOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+        window.removeEventListener("wheel", preventScroll);
+        window.removeEventListener("touchmove", preventScroll);
+        window.removeEventListener("keydown", preventKeys);
+      };
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+  }, [isCurtainComplete]);
+
   // Trigger curtain split reveal when both displayProgress is 100 and avatar is ready
   useEffect(() => {
     if (isOpeningRef.current) return;
