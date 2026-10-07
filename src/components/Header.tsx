@@ -4,14 +4,10 @@ import AppButton from "./AppButton";
 
 export default function Header() {
   const { isDark, toggleTheme } = useTheme();
-  const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("hero");
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 20);
-
       // Detect which section is currently underneath the navbar
       const headerThreshold = 75;
       const sections = document.querySelectorAll<HTMLElement>("section[id]");
@@ -40,18 +36,7 @@ export default function Header() {
   const isOverDarkSection = activeSection === "about";
 
   return (
-    <header className="nav-bar fixed top-0 left-0 right-0 z-40 w-full px-5 sm:px-8 md:px-12 py-4 transition-all duration-300">
-      {/* Background blur dynamically matching the section underneath */}
-      <div
-        className={`absolute inset-0 -z-10 pointer-events-none transition-all duration-300 ${
-          isScrolled
-            ? isOverDarkSection
-              ? "opacity-100 bg-earth-black/85 backdrop-blur-md border-b border-earth-cream/10 shadow-lg shadow-black/30"
-              : "opacity-100 bg-earth-cream/80 dark:bg-earth-forest/85 backdrop-blur-md border-b border-earth-forest/10 dark:border-earth-cream/10 shadow-lg shadow-black/5 dark:shadow-black/20"
-            : "opacity-0"
-        }`}
-      />
-
+    <header className="nav-bar fixed top-0 left-0 right-0 z-40 w-full px-5 sm:px-8 md:px-12 py-4 bg-transparent transition-all duration-300">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Monogram & Name */}
         <a href="#" className="flex items-center gap-3 group cursor-pointer">

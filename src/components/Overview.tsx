@@ -141,7 +141,7 @@ export default function Overview() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative w-full min-h-screen py-20 sm:py-24 lg:py-28 px-4 sm:px-6 md:px-8 bg-earth-black text-earth-cream overflow-hidden transition-colors duration-300 flex items-center justify-center"
+      className="relative w-full h-screen h-[100dvh] max-h-screen py-6 sm:py-8 md:py-10 px-4 sm:px-6 md:px-8 bg-earth-black text-earth-cream overflow-hidden transition-colors duration-300 flex items-center justify-center"
     >
       {/* 3D Character Points Particle Nebula Canvas - Spans the entire section behind content */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -161,7 +161,7 @@ export default function Overview() {
       <div className="w-full max-w-[94vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4">
         {/* 3D Rolling Drum Container - Positioned below the glowing OVERVIEW constellation header */}
         <div
-          className="w-full relative select-none will-change-transform flex items-center justify-center mt-12 sm:mt-16 md:mt-20"
+          className="w-full relative select-none will-change-transform flex items-center justify-center mt-8 sm:mt-12 md:mt-14"
           style={{
             perspective: "1150px",
             perspectiveOrigin: "center center",
@@ -169,7 +169,7 @@ export default function Overview() {
         >
           {/* Viewport: Wide roller spanning screen width with 5 lines pure white in center and dull lines above and below */}
           <div
-            className="relative w-full max-w-[92vw] lg:max-w-5xl xl:max-w-6xl h-[380px] sm:h-[420px] md:h-[460px] select-none"
+            className="relative w-full max-w-[92vw] lg:max-w-5xl xl:max-w-6xl h-[340px] sm:h-[380px] md:h-[430px] max-h-[52vh] select-none"
             style={{
               perspective: "1100px",
               perspectiveOrigin: "center center",
