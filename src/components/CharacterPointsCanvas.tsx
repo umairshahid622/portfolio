@@ -426,15 +426,14 @@ function getHeaderContentEdgesWorld(viewportWidth: number, pxWidth: number) {
   return { left, right: -left };
 }
 
-interface CelestialMeshProps {
-  mouseWorld: { x: number; y: number };
-  mouseActive: number;
-}
+// Global lightweight mouse state for direct 120fps WebGL updates without React re-renders
+const globalMouseState = {
+  worldX: 0,
+  worldY: 0,
+  active: 0,
+};
 
-function UnifiedCelestialMesh({
-  mouseWorld,
-  mouseActive,
-}: CelestialMeshProps) {
+function UnifiedCelestialMesh() {
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const { viewport, size } = useThree();
@@ -693,8 +692,15 @@ function UnifiedCelestialMesh({
       0.08
     );
 
-    smoothMouseWorld.current.lerp(new THREE.Vector2(mouseWorld.x, mouseWorld.y), 0.1);
-    smoothMouseActive.current = THREE.MathUtils.lerp(smoothMouseActive.current, mouseActive, 0.12);
+    smoothMouseWorld.current.lerp(
+      new THREE.Vector2(globalMouseState.worldX, globalMouseState.worldY),
+      0.15
+    );
+    smoothMouseActive.current = THREE.MathUtils.lerp(
+      smoothMouseActive.current,
+      globalMouseState.active,
+      0.15
+    );
 
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = time;
@@ -811,26 +817,57 @@ function UnifiedCelestialMesh({
             pos.x += cos(uTime * 0.9 + aPhase * 1.3) * 0.03 * flightActive;
             pos.z += sin(uTime * 1.0 + aPhase * 0.8) * 0.03 * flightActive;
 
-            // Refined, localized interactive mouse repulsion:
-            // Active when hovering directly over assembled text or code symbol
+            // Interactive mouse repulsion:
+            // Dynamic behavior based on whether particles are assembled (tight, subtle)
+            // or separated out in cosmic nebula (broad, magnetic, fluid swirl).
             vec2 mouseOffset = pos.xy - uMouseWorld;
             float mouseDist = length(mouseOffset);
-            float mouseRadius = aIsSymbol > 0.5 ? 0.44 : 0.36;
+
+            // How dispersed / separated out are the particles?
+            // 1.0 = fully separated out into nebula; 0.0 = assembled into OVERVIEW or SKILLS / </>
+            float dispersedAmount = clamp(easeP1 * (1.0 - easeP2), 0.0, 1.0);
+
+            // Radius:
+            // When assembled: tight radius around glyph strokes (0.36 text, 0.44 symbol)
+            // When separated out: broad interactive field (1.10) so sweeping the cursor moves many particles
+            float textRadius = aIsSymbol > 0.5 ? 0.44 : 0.36;
+            float dispersedRadius = 1.10;
+            float mouseRadius = mix(textRadius, dispersedRadius, dispersedAmount);
+
+            // Repulsion strength:
+            // When assembled: subtle elastic displacement (0.075) so words stay readable
+            // When separated out: responsive fluid displacement (0.32) so stars part around cursor
+            float textRepelMax = 0.075;
+            float dispersedRepelMax = 0.32;
+            float currentRepelMax = mix(textRepelMax, dispersedRepelMax, dispersedAmount);
 
             float repelStrength = smoothstep(mouseRadius, 0.0, mouseDist);
-            float isAssembled = max(1.0 - easeP1, easeP2);
-            float mouseRepel = repelStrength * repelStrength * 0.065 * uMouseActive * isAssembled;
-            pos.xy += normalize(mouseOffset + vec2(0.0001, 0.0001)) * mouseRepel;
-            pos.z += repelStrength * 0.035 * uMouseActive * isAssembled;
+            float mouseRepel = repelStrength * repelStrength * currentRepelMax * uMouseActive;
+
+            // Radial push away from cursor
+            vec2 radialDir = normalize(mouseOffset + vec2(0.0001, 0.0001));
+
+            // Fluid tangential swirl when separated out:
+            // Particles gently curve around the cursor like celestial fluid
+            vec2 tangentDir = vec2(-radialDir.y, radialDir.x);
+            float swirlFactor = dispersedAmount * aSwirlSpeed * 0.45;
+            vec2 repelDir = normalize(radialDir + tangentDir * swirlFactor);
+
+            pos.xy += repelDir * mouseRepel;
+
+            // 3D Depth displacement (push particles backwards/forwards in z)
+            float zRepel = repelStrength * mix(0.035, 0.22, dispersedAmount) * uMouseActive;
+            pos.z += (aRandom > 0.5 ? 1.0 : -0.7) * zRepel;
 
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
 
-            // Crisp pinprick starlight size attenuation
+            // Crisp pinprick starlight size attenuation + interactive hover flare
             float twinkle = 0.88 + 0.22 * sin(uTime * 2.5 + aPhase);
+            float hoverGlow = repelStrength * uMouseActive * (0.35 + dispersedAmount * 0.55);
             float baseSize = aSize * uPixelRatio * (28.0 / -mvPosition.z) * twinkle;
             float symbolBonus = aIsSymbol * 0.15;
-            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35 + symbolBonus), 1.2, 5.2);
+            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35 + symbolBonus + hoverGlow), 1.2, 5.5);
 
             vAlpha = (0.88 + flightActive * 0.12) * uOpacity;
           }
@@ -867,11 +904,6 @@ export default function CharacterPointsCanvas({
   className = "",
 }: CharacterPointsCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mouseState, setMouseState] = useState({
-    worldX: 0,
-    worldY: 0,
-    active: 0,
-  });
 
   useEffect(() => {
     let lastClientX = -9999;
@@ -888,10 +920,8 @@ export default function CharacterPointsCanvas({
         clientY >= rect.top &&
         clientY <= rect.bottom;
 
-      if (!isInside || !particleBridge.isDarkActive) {
-        setMouseState((prev) =>
-          prev.active === 0 ? prev : { worldX: prev.worldX, worldY: prev.worldY, active: 0 }
-        );
+      if (!isInside) {
+        globalMouseState.active = 0;
         return;
       }
 
@@ -903,10 +933,9 @@ export default function CharacterPointsCanvas({
       const vHeight = 2 * Math.tan(fovRad / 2) * 5.0;
       const vWidth = vHeight * aspect;
 
-      const worldX = nx * (vWidth * 0.5);
-      const worldY = ny * (vHeight * 0.5);
-
-      setMouseState({ worldX, worldY, active: 1 });
+      globalMouseState.worldX = nx * (vWidth * 0.5);
+      globalMouseState.worldY = ny * (vHeight * 0.5);
+      globalMouseState.active = 1;
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -922,7 +951,7 @@ export default function CharacterPointsCanvas({
     };
 
     const handleMouseLeave = () => {
-      setMouseState((prev) => ({ ...prev, active: 0 }));
+      globalMouseState.active = 0;
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
@@ -953,10 +982,7 @@ export default function CharacterPointsCanvas({
         className="w-full h-full pointer-events-none"
         style={{ pointerEvents: "none" }}
       >
-        <UnifiedCelestialMesh
-          mouseWorld={{ x: mouseState.worldX, y: mouseState.worldY }}
-          mouseActive={mouseState.active}
-        />
+        <UnifiedCelestialMesh />
       </Canvas>
     </div>
   );

@@ -39,6 +39,12 @@ export default function ParticleExperienceWrapper({
         trigger: wrapper,
         start: "top 75%",
         end: "bottom 25%",
+        onToggle: (self) => {
+          particleBridge.isDarkActive = self.isActive;
+        },
+        onRefresh: (self) => {
+          particleBridge.isDarkActive = self.isActive;
+        },
         onEnter: () => {
           particleBridge.isDarkActive = true;
         },
