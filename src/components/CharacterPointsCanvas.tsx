@@ -277,6 +277,151 @@ function generateFallbackPoints(
   return rawPoints.slice(0, totalPoints);
 }
 
+// =========================================================================
+// 3D MECHANICAL GEAR GENERATOR
+// Parametrically constructs an authentic 8-tooth mechanical gear with
+// outer involute teeth, pitch rim, 6 radial spokes, center hub, axle bore,
+// keyway notch, and mechanical fastener nodes.
+// =========================================================================
+function generateMechanicalGearPoints(
+  count: number,
+  centerX: number,
+  centerY: number,
+  radius: number
+): RawPoint[] {
+  const points: RawPoint[] = [];
+  const teeth = 8;
+  const outerR = radius;
+  const rootR = radius * 0.76;
+  const rimR = radius * 0.60;
+  const hubR = radius * 0.30;
+  const axleR = radius * 0.14;
+
+  // 1. Involute Teeth & Outer Rim Land (approx 36% of points = 450)
+  const teethCount = Math.floor(count * 0.36);
+  for (let i = 0; i < teethCount; i++) {
+    const angle = (i / teethCount) * Math.PI * 2;
+    const toothPhase = ((angle * teeth) / (Math.PI * 2)) % 1.0;
+    // Trapezoidal tooth profile with beveled slopes
+    let toothHeight = 0;
+    if (toothPhase < 0.22) {
+      toothHeight = toothPhase / 0.22; // slope up
+    } else if (toothPhase < 0.50) {
+      toothHeight = 1.0; // crest top land
+    } else if (toothPhase < 0.72) {
+      toothHeight = 1.0 - (toothPhase - 0.50) / 0.22; // slope down
+    } else {
+      toothHeight = 0.0; // root bottom land
+    }
+
+    const r = rootR + (outerR - rootR) * toothHeight;
+    // Dual-face 3D depth for solid mechanical appearance
+    const zFace = i % 2 === 0 ? 0.016 : -0.016;
+    const isToothTip = toothPhase >= 0.22 && toothPhase <= 0.50 && i % 4 === 0;
+
+    points.push({
+      x: centerX + Math.cos(angle) * r,
+      y: centerY + Math.sin(angle) * r,
+      z: zFace,
+      isNode: isToothTip,
+    });
+  }
+
+  // 2. Pitch Circle / Tooth Root Ring (approx 14% of points = 175)
+  const pitchCount = Math.floor(count * 0.14);
+  for (let i = 0; i < pitchCount; i++) {
+    const angle = (i / pitchCount) * Math.PI * 2;
+    const z = i % 2 === 0 ? 0.012 : -0.012;
+    points.push({
+      x: centerX + Math.cos(angle) * rootR,
+      y: centerY + Math.sin(angle) * rootR,
+      z,
+      isNode: i % 18 === 0,
+    });
+  }
+
+  // 3. Inner Rim Ring (approx 14% of points = 175)
+  const rimCount = Math.floor(count * 0.14);
+  for (let i = 0; i < rimCount; i++) {
+    const angle = (i / rimCount) * Math.PI * 2;
+    const z = i % 2 === 0 ? 0.014 : -0.014;
+    points.push({
+      x: centerX + Math.cos(angle) * rimR,
+      y: centerY + Math.sin(angle) * rimR,
+      z,
+      isNode: i % 20 === 0,
+    });
+  }
+
+  // 4. 6 Radial Mechanical Spokes (approx 20% of points = 250)
+  const numSpokes = 6;
+  const spokeTotalCount = Math.floor(count * 0.20);
+  const ptsPerSpoke = Math.floor(spokeTotalCount / numSpokes);
+  for (let s = 0; s < numSpokes; s++) {
+    const baseAngle = (s / numSpokes) * Math.PI * 2;
+    for (let p = 0; p < ptsPerSpoke; p++) {
+      const t = ptsPerSpoke > 1 ? p / (ptsPerSpoke - 1) : 0.5;
+      const r = hubR + t * (rimR - hubR);
+      const spokeHalfW = 0.012;
+      const widthOffset = ((p % 2 === 0 ? 1 : -1) * spokeHalfW) / Math.max(r, 0.1);
+      const angle = baseAngle + widthOffset;
+      const z = p % 3 === 0 ? 0.012 : -0.012;
+      points.push({
+        x: centerX + Math.cos(angle) * r,
+        y: centerY + Math.sin(angle) * r,
+        z,
+        isNode: p === 0 || p === ptsPerSpoke - 1,
+      });
+    }
+  }
+
+  // 5. Center Hub Outer Ring (approx 9% of points = 112)
+  const hubCount = Math.floor(count * 0.09);
+  for (let i = 0; i < hubCount; i++) {
+    const angle = (i / hubCount) * Math.PI * 2;
+    const z = i % 2 === 0 ? 0.014 : -0.014;
+    points.push({
+      x: centerX + Math.cos(angle) * hubR,
+      y: centerY + Math.sin(angle) * hubR,
+      z,
+      isNode: i % 14 === 0,
+    });
+  }
+
+  // 6. Axle Bore & Keyway Notch (approx 7% of points = 88)
+  const axleCount = Math.floor(count * 0.07);
+  for (let i = 0; i < axleCount; i++) {
+    const angle = (i / axleCount) * Math.PI * 2;
+    const z = i % 2 === 0 ? 0.008 : -0.008;
+    // Keyway slot notch on top
+    const isKeyway = Math.abs(angle - Math.PI / 2) < 0.28;
+    const r = isKeyway ? axleR * 1.45 : axleR;
+    points.push({
+      x: centerX + Math.cos(angle) * r,
+      y: centerY + Math.sin(angle) * r,
+      z,
+      isNode: isKeyway,
+    });
+  }
+
+  // 7. Mechanical Fastener Rivets / Bolts on Spoke Shoulders (fill remaining)
+  let remaining = count - points.length;
+  for (let i = 0; i < remaining; i++) {
+    const s = i % numSpokes;
+    const baseAngle = (s / numSpokes) * Math.PI * 2;
+    const boltR = (hubR + rimR) * 0.52;
+    const jitter = (Math.random() - 0.5) * 0.015;
+    points.push({
+      x: centerX + Math.cos(baseAngle) * (boltR + jitter),
+      y: centerY + Math.sin(baseAngle) * (boltR + jitter),
+      z: 0.02,
+      isNode: true,
+    });
+  }
+
+  return points.slice(0, count);
+}
+
 interface CelestialMeshProps {
   mouseWorld: { x: number; y: number };
   mouseActive: number;
@@ -312,15 +457,16 @@ function UnifiedCelestialMesh({
   const smoothMouseActive = useRef(0.0);
 
   // Exact 2,500 particles with key target states:
-  // 1. OVERVIEW (centered top)
-  // 2. Dispersed Nebula (full screen)
-  // 3. SKILLS (top-left)
-  // 4. 3D Mechanical Cog / Celestial Object
+  // 1. OVERVIEW (centered top, 2,500 particles)
+  // 2. Dispersed Nebula (full screen, 2,500 particles)
+  // 3. SKILLS (top-left, exactly 1,250 particles = 50%)
+  // 4. 3D Mechanical Gear Icon (top-right, exactly 1,250 particles = 50%)
   const pointsGeometry = useMemo(() => {
     const overviewPositions: number[] = [];
     const dispersedPositions: number[] = [];
     const skillsPositions: number[] = [];
     const objectPositions: number[] = [];
+    const isGears: number[] = [];
     const colors: number[] = [];
     const sizes: number[] = [];
     const phases: number[] = [];
@@ -355,8 +501,10 @@ function UnifiedCelestialMesh({
     ];
 
     const TOTAL_POINTS = 2500;
+    const SKILLS_POINTS = 1250;
+    const GEAR_POINTS = 1250;
 
-    // 1. Sample "OVERVIEW" (Centered Upper Area)
+    // 1. Sample "OVERVIEW" (Centered Upper Area) - utilizes ALL 2,500 particles
     const overviewCenterY = viewport.height * (viewport.width < 3.2 ? 0.26 : 0.23);
     const overviewWidthRatio = viewport.width < 3.2 ? 0.88 : 0.68;
     const overviewHeightRatio = viewport.width < 3.2 ? 0.16 : 0.20;
@@ -371,14 +519,14 @@ function UnifiedCelestialMesh({
       overviewCenterY
     );
 
-    // 2. Sample "SKILLS" (Top-Left Area)
-    const skillsCenterX = -viewport.width * (viewport.width < 3.2 ? 0.22 : 0.32);
+    // 2. Sample "SKILLS" (Top-Left Area) - utilizes first 1,250 particles (50%)
+    const skillsCenterX = -viewport.width * (viewport.width < 3.2 ? 0.22 : 0.30);
     const skillsCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
-    const skillsWidthRatio = viewport.width < 3.2 ? 0.48 : 0.30;
-    const skillsHeightRatio = viewport.width < 3.2 ? 0.10 : 0.13;
+    const skillsWidthRatio = viewport.width < 3.2 ? 0.44 : 0.28;
+    const skillsHeightRatio = viewport.width < 3.2 ? 0.09 : 0.12;
     const rawSkills = sampleClashDisplayText(
       "SKILLS",
-      TOTAL_POINTS,
+      SKILLS_POINTS,
       viewport.width,
       viewport.height,
       skillsWidthRatio,
@@ -387,7 +535,18 @@ function UnifiedCelestialMesh({
       skillsCenterY
     );
 
-    // 3. Stratified grid for Dispersed Nebula
+    // 3. Generate 3D Mechanical Gear Icon (Top-Right Area) - utilizes remaining 1,250 particles (50%)
+    const gearCenterX = viewport.width * (viewport.width < 3.2 ? 0.26 : 0.32);
+    const gearCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
+    const gearRadius = viewport.width < 3.2 ? 0.30 : 0.40;
+    const rawGear = generateMechanicalGearPoints(
+      GEAR_POINTS,
+      gearCenterX,
+      gearCenterY,
+      gearRadius
+    );
+
+    // 4. Stratified grid for Dispersed Nebula
     const totalCount = TOTAL_POINTS;
     const numCols = 50;
     const numRows = Math.ceil(totalCount / numCols);
@@ -400,10 +559,20 @@ function UnifiedCelestialMesh({
 
     for (let idx = 0; idx < TOTAL_POINTS; idx++) {
       const ptOverview = rawOverview[idx];
-      const ptSkills = rawSkills[idx];
+      let ptPhase2: RawPoint;
+      let isGearVal = 0.0;
+
+      if (idx < SKILLS_POINTS) {
+        ptPhase2 = rawSkills[idx];
+        isGearVal = 0.0;
+      } else {
+        ptPhase2 = rawGear[idx - SKILLS_POINTS];
+        isGearVal = 1.0;
+      }
 
       overviewPositions.push(ptOverview.x, ptOverview.y, ptOverview.z);
-      skillsPositions.push(ptSkills.x, ptSkills.y, ptSkills.z);
+      skillsPositions.push(ptPhase2.x, ptPhase2.y, ptPhase2.z);
+      isGears.push(isGearVal);
 
       const cellIdx = cellIndices[idx];
       const col = cellIdx % numCols;
@@ -418,7 +587,7 @@ function UnifiedCelestialMesh({
 
       dispersedPositions.push(dispersedX, dispersedY, dispersedZ);
 
-      // 4. Parametric 3D Mechanical Cog / Celestial Torus Object
+      // 5. Parametric 3D Celestial Torus Object
       const loopU = (idx / TOTAL_POINTS) * Math.PI * 2 * 6;
       const loopV = (idx / TOTAL_POINTS) * Math.PI * 2;
       const majorR = 1.35;
@@ -443,8 +612,8 @@ function UnifiedCelestialMesh({
       }
       colors.push(colObj.r, colObj.g, colObj.b);
 
-      const size = ptOverview.isNode || ptSkills.isNode
-        ? 1.10 + Math.random() * 0.25
+      const size = ptOverview.isNode || ptPhase2.isNode
+        ? 1.15 + Math.random() * 0.28
         : 0.75 + Math.random() * 0.25;
       sizes.push(size);
 
@@ -458,6 +627,7 @@ function UnifiedCelestialMesh({
     geo.setAttribute("aDispersedPosition", new THREE.Float32BufferAttribute(dispersedPositions, 3));
     geo.setAttribute("aSkillsPosition", new THREE.Float32BufferAttribute(skillsPositions, 3));
     geo.setAttribute("aObjectPosition", new THREE.Float32BufferAttribute(objectPositions, 3));
+    geo.setAttribute("aIsGear", new THREE.Float32BufferAttribute(isGears, 1));
     // Default position attribute for bounding box
     geo.setAttribute("position", new THREE.Float32BufferAttribute(overviewPositions, 3));
 
@@ -470,6 +640,9 @@ function UnifiedCelestialMesh({
     return geo;
   }, [viewport.width, viewport.height, fontLoaded]);
 
+  const gearCenterX = viewport.width * (viewport.width < 3.2 ? 0.26 : 0.32);
+  const gearCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
+
   const uniforms = useMemo(
     () => ({
       uOverviewProgress: { value: 0.0 },
@@ -477,6 +650,7 @@ function UnifiedCelestialMesh({
       uObjectProgress: { value: 0.0 },
       uOpacity: { value: 0.0 },
       uTime: { value: 0.0 },
+      uGearCenter: { value: new THREE.Vector2(gearCenterX, gearCenterY) },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
       uPixelRatio: { value: 1.0 },
@@ -518,12 +692,16 @@ function UnifiedCelestialMesh({
     smoothMouseWorld.current.lerp(new THREE.Vector2(mouseWorld.x, mouseWorld.y), 0.1);
     smoothMouseActive.current = THREE.MathUtils.lerp(smoothMouseActive.current, mouseActive, 0.12);
 
+    const currentGearCenterX = viewport.width * (viewport.width < 3.2 ? 0.26 : 0.32);
+    const currentGearCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
+
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = time;
       materialRef.current.uniforms.uOverviewProgress.value = smoothOverviewProgress.current;
       materialRef.current.uniforms.uSkillsProgress.value = smoothSkillsProgress.current;
       materialRef.current.uniforms.uObjectProgress.value = smoothObjectProgress.current;
       materialRef.current.uniforms.uOpacity.value = smoothOpacity.current;
+      materialRef.current.uniforms.uGearCenter.value.set(currentGearCenterX, currentGearCenterY);
       materialRef.current.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       materialRef.current.uniforms.uMouseActive.value = smoothMouseActive.current;
     }
@@ -549,6 +727,7 @@ function UnifiedCelestialMesh({
           uniform float uObjectProgress;
           uniform float uOpacity;
           uniform float uTime;
+          uniform vec2 uGearCenter;
           uniform vec2 uMouseWorld;
           uniform float uMouseActive;
           uniform float uPixelRatio;
@@ -557,6 +736,7 @@ function UnifiedCelestialMesh({
           attribute vec3 aDispersedPosition;
           attribute vec3 aSkillsPosition;
           attribute vec3 aObjectPosition;
+          attribute float aIsGear;
 
           attribute vec3 aColor;
           attribute float aSize;
@@ -587,7 +767,7 @@ function UnifiedCelestialMesh({
             );
             vec3 posPhase1 = mix(aOverviewPosition, aDispersedPosition, easeP1) + flightArc1;
 
-            // Phase 2: Dispersed Nebula to "SKILLS" on Top-Left
+            // Phase 2: Dispersed Nebula to "SKILLS" (Left) & Mechanical Rotating Gear (Right)
             float p2Offset = aRandom * 0.22;
             float p2 = clamp((uSkillsProgress - p2Offset) / (1.0 - p2Offset + 0.0001), 0.0, 1.0);
             float easeP2 = easeOutQuart(p2);
@@ -598,10 +778,22 @@ function UnifiedCelestialMesh({
               arc2 * (aSwirlSpeed) * 1.0,
               arc2 * (aRandom - 0.5) * 1.2
             );
-            vec3 posPhase2 = mix(aDispersedPosition, aSkillsPosition, easeP2) + flightArc2;
+
+            // Compute rotating target position for the Gear Icon
+            vec3 targetPhase2 = aSkillsPosition;
+            if (aIsGear > 0.5) {
+              vec2 rel = targetPhase2.xy - uGearCenter;
+              // Smooth clockwise mechanical rotation
+              float gearAngle = -uTime * 0.70;
+              float cosG = cos(gearAngle);
+              float sinG = sin(gearAngle);
+              targetPhase2.xy = uGearCenter + mat2(cosG, -sinG, sinG, cosG) * rel;
+            }
+
+            vec3 posPhase2 = mix(aDispersedPosition, targetPhase2, easeP2) + flightArc2;
 
             // Seamless blending between Phase 1 and Phase 2:
-            // When uSkillsProgress > 0, smoothly transitions from dispersed field into SKILLS
+            // When uSkillsProgress > 0, smoothly transitions from dispersed field into SKILLS & Gear
             vec3 posBase = mix(posPhase1, posPhase2, easeP2);
 
             // Phase 3: Morph into 3D Geometric / Mechanical Object
@@ -624,10 +816,10 @@ function UnifiedCelestialMesh({
             pos.z += sin(uTime * 1.0 + aPhase * 0.8) * 0.03 * flightActive;
 
             // Refined, localized interactive mouse repulsion:
-            // Active when hovering directly over assembled text
+            // Active when hovering directly over assembled text or gear
             vec2 mouseOffset = pos.xy - uMouseWorld;
             float mouseDist = length(mouseOffset);
-            float mouseRadius = 0.36;
+            float mouseRadius = aIsGear > 0.5 ? 0.46 : 0.36;
 
             float repelStrength = smoothstep(mouseRadius, 0.0, mouseDist);
             float isAssembled = max(1.0 - easeP1, easeP2);
@@ -641,7 +833,8 @@ function UnifiedCelestialMesh({
             // Crisp pinprick starlight size attenuation
             float twinkle = 0.88 + 0.22 * sin(uTime * 2.5 + aPhase);
             float baseSize = aSize * uPixelRatio * (28.0 / -mvPosition.z) * twinkle;
-            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35), 1.2, 5.2);
+            float gearBonus = aIsGear * 0.15;
+            gl_PointSize = clamp(baseSize * (1.0 + flightActive * 0.35 + gearBonus), 1.2, 5.2);
 
             vAlpha = (0.88 + flightActive * 0.12) * uOpacity;
           }

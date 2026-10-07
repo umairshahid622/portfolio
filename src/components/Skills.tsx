@@ -3,24 +3,23 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { particleBridge } from "../utils/particleBridge";
-import GearIcon from "./GearIcon";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function Skills() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [mergeProgress, setMergeProgress] = useState(0);
+  const [, setMergeProgress] = useState(0);
 
   useGSAP(
     () => {
       const section = sectionRef.current;
       if (!section) return;
 
-      // ScrollTrigger that converges particles into "SKILLS" as user enters the section
+      // ScrollTrigger that converges particles into "SKILLS" (left) and 3D Gear (right)
       ScrollTrigger.create({
         trigger: section,
         start: "top 85%", // initiates convergence as section approaches viewport
-        end: "top 12%",   // solidifies completely into "SKILLS" as section settles into view
+        end: "top 12%",   // solidifies completely into "SKILLS" and Gear as section settles
         scrub: 0.8,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
@@ -43,18 +42,7 @@ export default function Skills() {
 
       {/* Top Header Bar Container */}
       <div className="w-full max-w-7xl mx-auto relative z-10">
-        {/* Top Right: Mechanical Engineering Gear Icon */}
-        <div className="absolute top-0 right-0 z-20 flex items-center gap-3">
-          <div className="hidden sm:flex flex-col text-right">
-            <span className="text-[10px] font-mono tracking-widest uppercase text-earth-sand font-semibold">
-              SYSTEM ENGINES
-            </span>
-            <span className="text-[11px] font-mono text-earth-cream/60">
-              Interactive Stack
-            </span>
-          </div>
-          <GearIcon scrollProgress={mergeProgress} size={54} />
-        </div>
+        
       </div>
     </section>
   );
