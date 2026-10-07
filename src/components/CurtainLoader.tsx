@@ -128,7 +128,16 @@ export default function CurtainLoader() {
             opacity: 0,
             duration: 0.5,
             onComplete: () => {
+              document.body.style.overflow = "";
+              document.documentElement.style.overflow = "";
+              window.scrollTo(0, 0);
+              ScrollTrigger.clearScrollMemory("manual");
               setIsCurtainComplete(true);
+              requestAnimationFrame(() => {
+                window.scrollTo(0, 0);
+                ScrollTrigger.clearScrollMemory("manual");
+                ScrollTrigger.refresh();
+              });
             },
           });
           return;
@@ -139,8 +148,16 @@ export default function CurtainLoader() {
             setCurtainParting(true);
           },
           onComplete: () => {
+            document.body.style.overflow = "";
+            document.documentElement.style.overflow = "";
+            window.scrollTo(0, 0);
+            ScrollTrigger.clearScrollMemory("manual");
             setIsCurtainComplete(true);
-            ScrollTrigger.refresh();
+            requestAnimationFrame(() => {
+              window.scrollTo(0, 0);
+              ScrollTrigger.clearScrollMemory("manual");
+              ScrollTrigger.refresh();
+            });
           },
         });
 

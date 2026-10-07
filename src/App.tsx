@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Overview from "./components/Overview";
@@ -7,7 +10,27 @@ import SmoothCursor from "./components/SmoothCursor";
 import CurtainLoader from "./components/CurtainLoader";
 import { LoadingProvider } from "./context/LoadingContext";
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function App() {
+  // Ensure that on initial load or browser refresh, viewport always starts at Hero section
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+    ScrollTrigger.clearScrollMemory("manual");
+
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+      ScrollTrigger.clearScrollMemory("manual");
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <LoadingProvider>
       <CurtainLoader />

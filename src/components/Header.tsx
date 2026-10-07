@@ -35,11 +35,30 @@ export default function Header() {
 
   const isOverDarkSection = activeSection === "about" || activeSection === "skills";
 
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    targetId: string
+  ) => {
+    e.preventDefault();
+    if (targetId === "hero") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <header className="nav-bar fixed top-0 left-0 right-0 z-40 w-full px-5 sm:px-8 md:px-12 py-4 bg-transparent transition-all duration-300">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Monogram & Name */}
-        <a href="#" className="flex items-center gap-3 group cursor-pointer">
+        <a
+          href="#"
+          onClick={(e) => handleNavClick(e, "hero")}
+          className="flex items-center gap-3 group cursor-pointer"
+        >
           <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-earth-terracotta to-earth-moss flex items-center justify-center text-earth-cream font-bold text-base shadow-md shadow-earth-terracotta/20 group-hover:scale-105 group-hover:shadow-earth-terracotta/40 transition-all duration-200">
             <span>US</span>
             <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
@@ -77,6 +96,7 @@ export default function Header() {
           >
             <a
               href="#about"
+              onClick={(e) => handleNavClick(e, "about")}
               className={`transition-colors cursor-pointer py-1 ${
                 activeSection === "about"
                   ? "text-earth-cream font-medium"
@@ -89,6 +109,7 @@ export default function Header() {
             </a>
             <a
               href="#skills"
+              onClick={(e) => handleNavClick(e, "skills")}
               className={`transition-colors cursor-pointer py-1 ${
                 activeSection === "skills"
                   ? "text-earth-cream font-medium"
@@ -101,6 +122,7 @@ export default function Header() {
             </a>
             <a
               href="#projects"
+              onClick={(e) => handleNavClick(e, "projects")}
               className={`transition-colors cursor-pointer py-1 ${
                 isOverDarkSection
                   ? "hover:text-earth-cream"

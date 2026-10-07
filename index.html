@@ -6,6 +6,29 @@
     <meta name="color-scheme" content="dark light" />
     <script>
       (function() {
+        // Enforce manual scroll restoration and reset scroll position to Hero (top: 0) on load/reload
+        if ('scrollRestoration' in history) {
+          history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+
+        // Strip any URL anchor hash so browser does not scroll or jump down on reload
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+
+        window.addEventListener('beforeunload', function() {
+          window.scrollTo(0, 0);
+        });
+
+        window.addEventListener('DOMContentLoaded', function() {
+          window.scrollTo(0, 0);
+        });
+
+        window.addEventListener('load', function() {
+          window.scrollTo(0, 0);
+        });
+
         try {
           var stored = localStorage.getItem('portfolio-theme');
           var isDark = stored ? stored === 'dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;

@@ -38,12 +38,16 @@ export default function ParticleExperienceWrapper({
       ScrollTrigger.create({
         trigger: wrapper,
         start: "top 75%",
-        end: "bottom 25%",
+        end: "bottom bottom",
         onToggle: (self) => {
-          particleBridge.isDarkActive = self.isActive;
+          if (self.isActive) {
+            particleBridge.isDarkActive = true;
+          }
         },
         onRefresh: (self) => {
-          particleBridge.isDarkActive = self.isActive;
+          if (self.isActive) {
+            particleBridge.isDarkActive = true;
+          }
         },
         onEnter: () => {
           particleBridge.isDarkActive = true;
@@ -52,9 +56,11 @@ export default function ParticleExperienceWrapper({
           particleBridge.isDarkActive = true;
         },
         onLeave: () => {
-          particleBridge.isDarkActive = false;
+          // Keep active so particles do not disappear at bottom of content
+          particleBridge.isDarkActive = true;
         },
         onLeaveBack: () => {
+          // Only fade out when scrolling all the way back up to Hero
           particleBridge.isDarkActive = false;
         },
       });
