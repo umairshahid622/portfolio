@@ -56,13 +56,10 @@ export default function BackgroundParticles({
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Rich palette matching earth theme
+    // Palette matching brand white and brand red
     const colorsDark = [
-      "rgba(221, 161, 94,",  // Warm Sand #dda15e
-      "rgba(188, 108, 37,",  // Terracotta #bc6c25
-      "rgba(254, 250, 224,", // Warm Cream #fefae0
-      "rgba(140, 155, 90,",  // Mellow Olive/Moss
-      "rgba(235, 185, 110,", // Glowing Amber
+      "rgba(254, 250, 224,", // Warm Cream / Brand White #fefae0
+      "rgba(188, 108, 37,",  // Terracotta / Brand Red #bc6c25
     ];
 
     const colorsLight = [

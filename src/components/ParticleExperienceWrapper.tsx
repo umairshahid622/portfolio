@@ -2,7 +2,6 @@ import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import BackgroundParticles from "./BackgroundParticles";
 import CharacterPointsCanvas from "./CharacterPointsCanvas";
 import { particleBridge } from "../utils/particleBridge";
 
@@ -79,12 +78,6 @@ export default function ParticleExperienceWrapper({
       <div
         className="sticky top-0 left-0 w-full h-screen h-[100dvh] pointer-events-none z-0 overflow-hidden"
       >
-        {/* Single consistent background: subtle ambient glows & floating motes */}
-        <BackgroundParticles
-          className="absolute inset-0 pointer-events-none z-0"
-          count={26}
-          showAmbientGlows={true}
-        />
         <CharacterPointsCanvas className="relative z-10" />
       </div>
 

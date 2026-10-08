@@ -5,7 +5,6 @@ import { useTheme } from "../context/ThemeContext";
 import { useLoading } from "../context/LoadingContext";
 import AvatarCanvas from "./AvatarCanvas";
 import TextSpiralWrap from "./TextSpiralWrap";
-import BackgroundParticles from "./BackgroundParticles";
 import AtmosphericVeils from "./AtmosphericVeils";
 import AppButton from "./AppButton";
 
@@ -292,9 +291,6 @@ export default function Hero() {
         }}
       />
 
-      {/* Atmospheric Moving Particles (Glowing rings, bokeh orbs & golden motes) */}
-      <BackgroundParticles className="absolute inset-0 pointer-events-none z-0" count={20} />
-
       {/* Atmospheric SVG Veils, Self-Drawing Bubble Spirals & Randomly Popping GSAP Bubbles */}
       <AtmosphericVeils className="absolute inset-0 pointer-events-none z-0" />
 
@@ -331,7 +327,7 @@ export default function Hero() {
             <div className="flex-1 flex justify-start overflow-visible pl-2 sm:pl-4 md:pl-8 lg:pl-10 pointer-events-none">
               <span
                 style={{ opacity: 0 }}
-                className="hero-popout-shahid block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-earth-terracotta via-earth-moss to-earth-terracotta dark:from-earth-sand dark:via-earth-terracotta dark:to-earth-sand leading-none text-left will-change-transform pointer-events-auto"
+                className="hero-popout-shahid block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-terracotta dark:text-earth-sand leading-none text-left will-change-transform pointer-events-auto"
               >
                 <TextSpiralWrap>Shahid</TextSpiralWrap>
               </span>

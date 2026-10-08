@@ -131,7 +131,7 @@ export default function TextSpiralWrap({
           d={LASSO_PATH}
           vectorEffect="non-scaling-stroke"
           fill="none"
-          stroke={strokeColor || `url(#${gradientId})`}
+          stroke={strokeColor || "#bc6c25"}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
