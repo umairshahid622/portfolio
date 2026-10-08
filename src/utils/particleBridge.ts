@@ -12,6 +12,6 @@ export const particleBridge: ParticleState = {
   overviewProgress: 0,
   skillsProgress: 0,
   objectProgress: 0,
-  activeWord: "OVERVIEW",
+  activeWord: "ABOUT ME",
   isDarkActive: false,
 };

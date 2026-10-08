@@ -254,30 +254,35 @@ function generateFallbackPoints(
     addArcPoints(1.8, 0.25, 0.28, 0.25, 0.2, Math.PI, 180);
     addArcPoints(1.8, -0.25, 0.28, 0.25, Math.PI, 0.2, 180);
   } else {
-    // "OVERVIEW"
-    addArcPoints(-2.705, 0.0, 0.31, 0.54, 0, Math.PI * 2, 338);
-    addSegmentPoints([-2.175, 0.55], [-1.875, -0.55], 142, true, true);
-    addSegmentPoints([-1.875, -0.55], [-1.575, 0.55], 142, false, true);
-    addSegmentPoints([-1.355, -0.55], [-1.355, 0.55], 112, true, true);
-    addSegmentPoints([-1.355, 0.55], [-0.835, 0.55], 62, false, true);
-    addSegmentPoints([-1.355, 0.0], [-0.915, 0.0], 48, false, true);
-    addSegmentPoints([-1.355, -0.55], [-0.835, -0.55], 62, false, true);
-    addSegmentPoints([-0.605, -0.55], [-0.605, 0.55], 115, true, true);
-    addArcPoints(-0.605, 0.275, 0.31, 0.275, Math.PI / 2, -Math.PI / 2, 140);
-    addSegmentPoints([-0.605, 0.0], [-0.035, -0.55], 95, false, true);
-    addSegmentPoints([0.185, 0.55], [0.485, -0.55], 142, true, true);
-    addSegmentPoints([0.485, -0.55], [0.785, 0.55], 142, false, true);
-    addSegmentPoints([1.105, -0.55], [1.105, 0.55], 130, true, true);
-    addSegmentPoints([0.985, 0.55], [1.225, 0.55], 35, true, true);
-    addSegmentPoints([0.985, -0.55], [1.225, -0.55], 35, true, true);
-    addSegmentPoints([1.425, -0.55], [1.425, 0.55], 112, true, true);
-    addSegmentPoints([1.425, 0.55], [1.945, 0.55], 62, false, true);
-    addSegmentPoints([1.425, 0.0], [1.865, 0.0], 48, false, true);
-    addSegmentPoints([1.425, -0.55], [1.945, -0.55], 62, false, true);
-    addSegmentPoints([2.165, 0.55], [2.378, -0.55], 118, true, true);
-    addSegmentPoints([2.378, -0.55], [2.590, 0.20], 118, false, true);
-    addSegmentPoints([2.590, 0.20], [2.802, -0.55], 118, false, true);
-    addSegmentPoints([2.802, -0.55], [3.015, 0.55], 120, false, true);
+    // "ABOUT ME"
+    // A
+    addSegmentPoints([-2.7, -0.55], [-2.35, 0.55], 115, true, true);
+    addSegmentPoints([-2.35, 0.55], [-2.0, -0.55], 115, false, true);
+    addSegmentPoints([-2.52, -0.1], [-2.18, -0.1], 50, false, false);
+    // B
+    addSegmentPoints([-1.75, -0.55], [-1.75, 0.55], 105, true, true);
+    addArcPoints(-1.75, 0.275, 0.26, 0.275, -Math.PI / 2, Math.PI / 2, 85);
+    addArcPoints(-1.75, -0.275, 0.28, 0.275, -Math.PI / 2, Math.PI / 2, 90);
+    // O
+    addArcPoints(-1.05, 0.0, 0.30, 0.54, 0, Math.PI * 2, 220);
+    // U
+    addSegmentPoints([-0.60, 0.55], [-0.60, -0.25], 85, true, false);
+    addArcPoints(-0.40, -0.25, 0.20, 0.30, Math.PI, 0, 75);
+    addSegmentPoints([-0.20, -0.25], [-0.20, 0.55], 85, false, true);
+    // T
+    addSegmentPoints([0.25, 0.55], [0.25, -0.55], 110, true, true);
+    addSegmentPoints([-0.02, 0.55], [0.52, 0.55], 65, false, false);
+    // Space
+    // M
+    addSegmentPoints([0.95, -0.55], [0.95, 0.55], 95, true, true);
+    addSegmentPoints([0.95, 0.55], [1.30, 0.0], 80, false, true);
+    addSegmentPoints([1.30, 0.0], [1.65, 0.55], 80, false, true);
+    addSegmentPoints([1.65, 0.55], [1.65, -0.55], 95, false, true);
+    // E
+    addSegmentPoints([2.0, -0.55], [2.0, 0.55], 100, true, true);
+    addSegmentPoints([2.0, 0.55], [2.48, 0.55], 60, false, false);
+    addSegmentPoints([2.0, 0.0], [2.38, 0.0], 48, false, false);
+    addSegmentPoints([2.0, -0.55], [2.48, -0.55], 60, false, false);
   }
 
   // Shift points according to alignment
@@ -460,7 +465,7 @@ function UnifiedCelestialMesh() {
   const smoothMouseActive = useRef(0.0);
 
   // Exact 2,500 particles with key target states:
-  // 1. OVERVIEW (centered top, 2,500 particles)
+  // 1. ABOUT ME (centered top, 2,500 particles)
   // 2. Dispersed Nebula (full screen, 2,500 particles)
   // 3. SKILLS (top-left, exactly 1,250 particles = 50%)
   // 4. 3D Code Symbol "</>" (top-right, exactly 1,250 particles = 50%)
@@ -510,12 +515,12 @@ function UnifiedCelestialMesh() {
     const SKILLS_POINTS = 1750; // Dense, sharp "SKILLS" text
     const SYMBOL_POINTS = 750;  // Perfectly balanced "</>" symbol
 
-    // 1. Sample "OVERVIEW" (Centered Upper Area) - utilizes ALL 2,500 particles
+    // 1. Sample "ABOUT ME" (Centered Upper Area) - utilizes ALL 2,500 particles
     const overviewCenterY = viewport.height * (viewport.width < 3.2 ? 0.26 : 0.23);
     const overviewWidthRatio = viewport.width < 3.2 ? 0.88 : 0.68;
     const overviewHeightRatio = viewport.width < 3.2 ? 0.16 : 0.20;
     const rawOverview = sampleClashDisplayText(
-      "OVERVIEW",
+      "ABOUT ME",
       TOTAL_POINTS,
       viewport.width,
       viewport.height,

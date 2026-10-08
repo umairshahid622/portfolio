@@ -105,7 +105,7 @@ export default function Header() {
                   : "hover:text-earth-forest dark:hover:text-earth-cream"
               }`}
             >
-              About
+              About me
             </a>
             <a
               href="#skills"
