@@ -4,6 +4,8 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { particleBridge } from "../utils/particleBridge";
 
+import { cn } from "../utils/cn";
+
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export interface WorkExperienceItem {
@@ -18,8 +20,6 @@ export interface WorkExperienceItem {
   bullets: string[];
   skills: string[];
 }
-
-export const PALETTE_GREEN = "#606c38";
 
 export const WORK_EXPERIENCES: WorkExperienceItem[] = [
   {
@@ -320,33 +320,25 @@ export default function WorkExperience() {
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
-              style={{
-                zIndex: index + 10,
-              }}
-              className="absolute top-0 left-0 w-full h-full rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-6 bg-[#161412] border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between"
+              className={cn(
+                "absolute top-0 left-0 w-full h-full rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-6 bg-earth-card border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between",
+                index === 0 && "z-10",
+                index === 1 && "z-[11]",
+                index === 2 && "z-[12]",
+                index === 3 && "z-[13]"
+              )}
             >
               {/* Top Accent Gradient Border */}
-              <div
-                className="absolute top-0 left-0 right-0 h-[2px] opacity-80"
-                style={{
-                  background: `linear-gradient(90deg, transparent, ${PALETTE_GREEN}, transparent)`,
-                }}
-              />
+              <div className="absolute top-0 left-0 right-0 h-[2px] opacity-80 bg-gradient-to-r from-transparent via-earth-moss to-transparent" />
 
               {/* Ambient Accent Radial Glow */}
-              <div
-                className="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-3xl opacity-10 pointer-events-none"
-                style={{ backgroundColor: PALETTE_GREEN }}
-              />
+              <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-3xl opacity-10 pointer-events-none bg-earth-moss" />
 
               {/* Card Header */}
               <div>
                 {/* Number & Company Name in Display Font */}
                 <div className="flex items-baseline gap-3 sm:gap-4 mb-1">
-                  <span
-                    className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight select-none"
-                    style={{ color: PALETTE_GREEN }}
-                  >
+                  <span className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight select-none text-earth-moss">
                     {item.number}
                   </span>
                   <div className="flex flex-wrap items-baseline gap-2 sm:gap-2.5">
@@ -366,22 +358,13 @@ export default function WorkExperience() {
 
                 {/* Domain under Role */}
                 <div className="mt-1 mb-2.5 sm:mb-3">
-                  <span
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-mono font-medium border"
-                    style={{
-                      backgroundColor: `${PALETTE_GREEN}20`,
-                      borderColor: `${PALETTE_GREEN}50`,
-                      color: "#9db458",
-                    }}
-                  >
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-sans font-medium border bg-earth-moss/20 border-earth-moss/50 text-earth-moss">
                     {item.domain}
                   </span>
                 </div>
 
                 {/* Role Summary */}
-                <p className="text-xs sm:text-[13px] text-earth-cream/80 leading-relaxed mb-2.5 sm:mb-3 border-l-2 pl-3 py-0.5"
-                   style={{ borderColor: PALETTE_GREEN }}
-                >
+                <p className="text-xs sm:text-[13px] text-earth-cream/80 leading-relaxed mb-2.5 sm:mb-3 border-l-2 border-earth-moss pl-3 py-0.5">
                   {item.summary}
                 </p>
 
@@ -392,10 +375,7 @@ export default function WorkExperience() {
                       key={bIdx}
                       className="text-[12px] sm:text-[13px] text-earth-sand/90 leading-relaxed flex items-start gap-2.5"
                     >
-                      <span
-                        className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
-                        style={{ backgroundColor: PALETTE_GREEN }}
-                      />
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 bg-earth-moss" />
                       <span>{bullet}</span>
                     </li>
                   ))}
@@ -405,13 +385,13 @@ export default function WorkExperience() {
               {/* Card Footer: Tech Stack & Date */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 pt-2.5 sm:pt-3 border-t border-earth-cream/10 mt-auto">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="text-[11px] font-mono text-earth-cream/40 uppercase tracking-wider mr-1">
+                  <span className="text-[11px] font-sans text-earth-cream/40 uppercase tracking-wider mr-1">
                     Stack:
                   </span>
                   {item.skills.map((skill, sIdx) => (
                     <span
                       key={sIdx}
-                      className="text-[11px] sm:text-xs font-mono px-2.5 py-0.5 sm:py-1 rounded-md bg-earth-cream/[0.04] border border-earth-cream/10 text-earth-sand hover:text-earth-cream transition-colors"
+                      className="text-[11px] sm:text-xs font-sans px-2.5 py-0.5 sm:py-1 rounded-md bg-earth-cream/[0.04] border border-earth-cream/10 text-earth-sand hover:text-earth-cream transition-colors"
                     >
                       {skill}
                     </span>
@@ -420,7 +400,7 @@ export default function WorkExperience() {
 
                 {/* Date / Period in Footer */}
                 <div className="shrink-0 self-start sm:self-auto">
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs px-3 py-1 rounded-full bg-earth-cream/[0.05] border border-earth-cream/10 text-earth-sand font-medium">
+                  <span className="inline-flex items-center gap-1.5 font-sans text-[11px] sm:text-xs px-3 py-1 rounded-full bg-earth-cream/[0.05] border border-earth-cream/10 text-earth-sand font-medium">
                     <svg
                       className="w-3.5 h-3.5 opacity-60"
                       fill="none"

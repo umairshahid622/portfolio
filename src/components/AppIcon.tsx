@@ -1,5 +1,6 @@
 import React from "react";
 import { Icons, type IconName } from "../assets/Icons";
+import { cn } from "../utils/cn";
 
 export interface AppIconProps {
   icon: IconName | string | React.ReactNode;
@@ -19,7 +20,7 @@ export function AppIcon({
   // If a React Node / JSX element is passed
   if (React.isValidElement(icon)) {
     return React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-      className: `${(icon.props as { className?: string }).className || ""} ${className}`.trim(),
+      className: cn((icon.props as { className?: string }).className, className),
     });
   }
 
@@ -30,18 +31,11 @@ export function AppIcon({
     return (
       <span
         aria-hidden={ariaHidden}
-        className={`inline-block shrink-0 bg-current align-middle ${className}`}
+        className={cn("app-icon-mask inline-block shrink-0 bg-current align-middle", className)}
         style={{
-          maskImage: `url("${iconUrl}")`,
-          maskRepeat: "no-repeat",
-          maskPosition: "center",
-          maskSize: "contain",
-          WebkitMaskImage: `url("${iconUrl}")`,
-          WebkitMaskRepeat: "no-repeat",
-          WebkitMaskPosition: "center",
-          WebkitMaskSize: "contain",
+          "--icon-url": `url("${iconUrl}")`,
           ...style,
-        }}
+        } as React.CSSProperties}
       />
     );
   }

@@ -3,6 +3,7 @@ import { useProgress } from "@react-three/drei";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLoading } from "../context/LoadingContext";
+import { cn } from "../utils/cn";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -215,11 +216,12 @@ export default function CurtainLoader() {
   return (
     <div
       ref={containerRef}
-      className={`fixed inset-0 z-[9990] overflow-hidden select-none transition-[visibility] duration-0 ${
+      className={cn(
+        "fixed inset-0 z-[9990] overflow-hidden select-none transition-[visibility] duration-0",
         isCurtainComplete
           ? "pointer-events-none opacity-0 invisible"
           : "pointer-events-auto opacity-100 visible"
-      }`}
+      )}
       aria-label="Loading Screen"
       role="dialog"
       aria-modal="true"
@@ -227,11 +229,7 @@ export default function CurtainLoader() {
       {/* Left Curtain Panel */}
       <div
         ref={leftPanelRef}
-        className="absolute top-0 left-0 w-1/2 h-full bg-[#1b2511] will-change-transform"
-        style={{
-          background:
-            "radial-gradient(circle at 100% 50%, #293817 0%, #1e2a12 60%, #141c0c 100%)",
-        }}
+        className="curtain-panel-left absolute top-0 left-0 w-1/2 h-full will-change-transform"
       >
         {/* Soft atmospheric ambient glow container */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -242,24 +240,14 @@ export default function CurtainLoader() {
         {/* Luminous Right Border - attached to and travels with Left Door */}
         <div
           ref={leftBorderRef}
-          className="absolute top-0 right-0 w-[1px] h-full pointer-events-none z-10 will-change-transform"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent 0%, #bc6c25 20%, #dda15e 50%, #bc6c25 80%, transparent 100%)",
-            boxShadow:
-              "0 0 8px rgba(188, 108, 37, 0.5), -1px 0 2px rgba(221, 161, 94, 0.5)",
-          }}
+          className="curtain-luminous-border absolute top-0 right-0 w-[1px] h-full pointer-events-none z-10 will-change-transform"
         />
       </div>
 
       {/* Right Curtain Panel */}
       <div
         ref={rightPanelRef}
-        className="absolute top-0 right-0 w-1/2 h-full bg-[#1b2511] will-change-transform"
-        style={{
-          background:
-            "radial-gradient(circle at 0% 50%, #293817 0%, #1e2a12 60%, #141c0c 100%)",
-        }}
+        className="curtain-panel-right absolute top-0 right-0 w-1/2 h-full will-change-transform"
       >
         {/* Soft atmospheric ambient glow container */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -270,13 +258,7 @@ export default function CurtainLoader() {
         {/* Luminous Left Border - attached to and travels with Right Door */}
         <div
           ref={rightBorderRef}
-          className="absolute top-0 left-0 w-[1px] h-full pointer-events-none z-10 will-change-transform"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent 0%, #bc6c25 20%, #dda15e 50%, #bc6c25 80%, transparent 100%)",
-            boxShadow:
-              "0 0 8px rgba(188, 108, 37, 0.5), 1px 0 2px rgba(221, 161, 94, 0.5)",
-          }}
+          className="curtain-luminous-border absolute top-0 left-0 w-[1px] h-full pointer-events-none z-10 will-change-transform"
         />
       </div>
 

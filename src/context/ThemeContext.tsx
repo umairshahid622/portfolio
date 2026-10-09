@@ -28,17 +28,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    const currentColors = THEME_COLORS[theme];
     if (theme === "dark") {
       root.classList.add("dark");
+      root.classList.remove("light");
       root.style.colorScheme = "dark";
-      root.style.backgroundColor = currentColors.background;
-      root.style.color = currentColors.text;
     } else {
       root.classList.remove("dark");
+      root.classList.add("light");
       root.style.colorScheme = "light";
-      root.style.backgroundColor = currentColors.background;
-      root.style.color = currentColors.text;
     }
     try {
       localStorage.setItem(STORAGE_KEY, theme);

@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { particleBridge } from "../utils/particleBridge";
+import { cn } from "../utils/cn";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -109,6 +110,12 @@ export default function Overview() {
       // Roll fully through all 14 lines and roll past the top edge out of the frame
       const totalRotation = (PARAGRAPH_LINES.length + 3) * stepAngle;
 
+      gsap.set(drum, {
+        transformStyle: "preserve-3d",
+        transformOrigin: "center center",
+        rotateX: initialRotation,
+      });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           id: "about-timeline",
@@ -196,14 +203,10 @@ export default function Overview() {
         >
           {/* Viewport: Wide roller spanning screen width with 5 lines pure white in center and dull lines above and below */}
           <div
-            className="relative w-full max-w-[92vw] lg:max-w-5xl xl:max-w-6xl h-[340px] sm:h-[380px] md:h-[430px] max-h-[52vh] select-none"
+            className="overview-roller-mask relative w-full max-w-[92vw] lg:max-w-5xl xl:max-w-6xl h-[340px] sm:h-[380px] md:h-[430px] max-h-[52vh] select-none"
             style={{
               perspective: "1100px",
               perspectiveOrigin: "center center",
-              maskImage:
-                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
-              WebkitMaskImage:
-                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%)",
             }}
           >
             {/* 3D Rotating Drum Container */}
@@ -219,7 +222,9 @@ export default function Overview() {
               {PARAGRAPH_LINES.map((item, index) => (
                 <div
                   key={item.id}
-                  className="absolute top-1/2 left-0 right-0 -translate-y-1/2 flex items-center justify-center text-center px-4 sm:px-6 pointer-events-none select-none will-change-transform"
+                  className={cn(
+                    "overview-line-item absolute top-1/2 left-0 right-0 -translate-y-1/2 flex items-center justify-center text-center px-4 sm:px-6 pointer-events-none select-none will-change-transform"
+                  )}
                   style={{
                     transform: `rotateX(${-index * stepAngle}deg) translateZ(${radius}px)`,
                     transformStyle: "preserve-3d",

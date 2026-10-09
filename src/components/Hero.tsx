@@ -7,6 +7,7 @@ import AvatarCanvas from "./AvatarCanvas";
 import TextSpiralWrap from "./TextSpiralWrap";
 import AtmosphericVeils from "./AtmosphericVeils";
 import AppButton from "./AppButton";
+import { cn } from "../utils/cn";
 
 gsap.registerPlugin(useGSAP);
 
@@ -280,16 +281,13 @@ export default function Hero() {
     <section
       ref={containerRef}
       id="hero"
-      className="relative z-20 w-full min-h-screen flex flex-col justify-center items-center py-16 px-5 sm:px-8 md:px-12 overflow-hidden bg-earth-cream dark:bg-earth-forest text-earth-forest dark:text-earth-cream transition-colors duration-300"
+      className={cn(
+        "relative z-20 w-full min-h-screen flex flex-col justify-center items-center py-16 px-5 sm:px-8 md:px-12 overflow-hidden transition-colors duration-300",
+        isDark ? "bg-earth-forest text-earth-cream" : "bg-earth-cream text-earth-forest"
+      )}
     >
       {/* Subtle grid pattern overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none -z-10 opacity-[0.03] dark:opacity-[0.03]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-          backgroundSize: "32px 32px",
-        }}
-      />
+      <div className="hero-grid-pattern absolute inset-0 pointer-events-none -z-10 opacity-[0.03] dark:opacity-[0.03]" />
 
       {/* Atmospheric SVG Veils, Self-Drawing Bubble Spirals & Randomly Popping GSAP Bubbles */}
       <AtmosphericVeils className="absolute inset-0 pointer-events-none z-0" />
@@ -309,10 +307,7 @@ export default function Hero() {
           <h1 className="w-full flex items-center justify-between select-none pointer-events-none">
             {/* Left Wing: Umair */}
             <div className="flex-1 flex justify-end overflow-visible pr-2 sm:pr-4 md:pr-8 lg:pr-10 pointer-events-none">
-              <span
-                style={{ opacity: 0 }}
-                className="hero-popout-umair block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-none text-right will-change-transform pointer-events-auto"
-              >
+              <span className="hero-popout-umair opacity-0 block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-forest dark:text-earth-cream leading-none text-right will-change-transform pointer-events-auto">
                 <TextSpiralWrap>Umair</TextSpiralWrap>
               </span>
             </div>
@@ -325,10 +320,7 @@ export default function Hero() {
 
             {/* Right Wing: Shahid */}
             <div className="flex-1 flex justify-start overflow-visible pl-2 sm:pl-4 md:pl-8 lg:pl-10 pointer-events-none">
-              <span
-                style={{ opacity: 0 }}
-                className="hero-popout-shahid block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-terracotta dark:text-earth-sand leading-none text-left will-change-transform pointer-events-auto"
-              >
+              <span className="hero-popout-shahid opacity-0 block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-terracotta dark:text-earth-sand leading-none text-left will-change-transform pointer-events-auto">
                 <TextSpiralWrap>Shahid</TextSpiralWrap>
               </span>
             </div>
@@ -336,24 +328,15 @@ export default function Hero() {
 
           {/* Revealed Content: positioned directly below H1 */}
           <div className="absolute top-full left-0 right-0 pt-3 sm:pt-4 flex flex-col items-center justify-center text-center space-y-2 sm:space-y-2.5 pointer-events-none">
-            <h2
-              style={{ opacity: 0 }}
-              className="hero-popout-role text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight text-center will-change-transform pointer-events-auto"
-            >
+            <h2 className="hero-popout-role opacity-0 text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-earth-forest/90 dark:text-earth-cream/90 tracking-tight text-center will-change-transform pointer-events-auto">
               <TextSpiralWrap strokeWidth={2}>Full-stack Developer</TextSpiralWrap>
             </h2>
 
-            <p
-              style={{ opacity: 0 }}
-              className="hero-popout-tagline text-xs sm:text-sm md:text-base text-earth-forest/75 dark:text-earth-cream/75 max-w-lg font-medium tracking-wide text-center will-change-transform pointer-events-auto px-4"
-            >
+            <p className="hero-popout-tagline opacity-0 text-xs sm:text-sm md:text-base text-earth-forest/75 dark:text-earth-cream/75 max-w-lg font-medium tracking-wide text-center will-change-transform pointer-events-auto px-4">
               Engineering scalable solutions across web & mobile
             </p>
 
-            <div
-              style={{ opacity: 0 }}
-              className="hero-popout-ctas flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-1 sm:pt-1.5 will-change-transform pointer-events-auto"
-            >
+            <div className="hero-popout-ctas opacity-0 flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-1 sm:pt-1.5 will-change-transform pointer-events-auto">
               <AppButton
                 href="#contact"
                 variant="primary"

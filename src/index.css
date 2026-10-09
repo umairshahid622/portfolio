@@ -18,22 +18,26 @@
   font-style: normal;
 }
 
-@theme {
-  --font-heading: "Clash Display", system-ui, -apple-system, sans-serif;
-  --font-sans: "Archivo", system-ui, -apple-system, sans-serif;
+:root {
+  /* ==========================================================================
+   * 1. TYPOGRAPHY: STRICT 2-FONT DESIGN SYSTEM
+   * Headings: Clash Display
+   * Body & Everything Else: Archivo
+   * ========================================================================== */
+  --font-heading: "Clash Display", sans-serif;
+  --font-sans: "Archivo", sans-serif;
+  --font-mono: "Archivo", sans-serif;
 
-  /*
-   * ==========================================================================
-   * Earthy Color Palette:
+  /* ==========================================================================
+   * 2. COLOR PALETTE VARIABLES (NO HARDCODED COLORS ANYWHERE)
    * #606c38 - Olive / Moss Green
    * #283618 - Dark Moss / Deep Forest Green
    * #fefae0 - Cornsilk / Warm Cream
    * #dda15e - Earth Yellow / Warm Sand
    * #bc6c25 - Tiger's Eye / Terracotta / Copper
-   * ==========================================================================
-   */
-
-  /* Natural / Descriptive names */
+   * #0e140a - Deep Onyx
+   * #161412 - Dark Card Surface
+   * ========================================================================== */
   --color-moss: #606c38;
   --color-olive: #606c38;
   --color-forest: #283618;
@@ -45,47 +49,86 @@
   --color-copper: #bc6c25;
   --color-tigers-eye: #bc6c25;
   --color-onyx: #0e140a;
+  --color-surface-dark: #161412;
+  --color-card-dark: #161412;
+}
+
+@theme {
+  --font-heading: "Clash Display", sans-serif;
+  --font-sans: "Archivo", sans-serif;
+  --font-mono: "Archivo", sans-serif;
+
+  /* Natural / Descriptive names */
+  --color-moss: var(--color-moss);
+  --color-olive: var(--color-olive);
+  --color-forest: var(--color-forest);
+  --color-cream: var(--color-cream);
+  --color-cornsilk: var(--color-cream);
+  --color-sand: var(--color-sand);
+  --color-earth-yellow: var(--color-sand);
+  --color-terracotta: var(--color-terracotta);
+  --color-copper: var(--color-copper);
+  --color-tigers-eye: var(--color-terracotta);
+  --color-onyx: var(--color-onyx);
 
   /* Earth namespace: `bg-earth-moss`, `text-earth-cream`, etc. */
-  --color-earth-black: #0e140a;
-  --color-earth-onyx: #0e140a;
-  --color-earth-moss: #606c38;
-  --color-earth-olive: #606c38;
-  --color-earth-forest: #283618;
-  --color-earth-dark: #283618;
-  --color-earth-cream: #fefae0;
-  --color-earth-cornsilk: #fefae0;
-  --color-earth-light: #fefae0;
-  --color-earth-sand: #dda15e;
-  --color-earth-yellow: #dda15e;
-  --color-earth-terracotta: #bc6c25;
-  --color-earth-copper: #bc6c25;
-  --color-earth-rust: #bc6c25;
+  --color-earth-black: var(--color-onyx);
+  --color-earth-onyx: var(--color-onyx);
+  --color-earth-moss: var(--color-moss);
+  --color-earth-olive: var(--color-olive);
+  --color-earth-forest: var(--color-forest);
+  --color-earth-dark: var(--color-forest);
+  --color-earth-cream: var(--color-cream);
+  --color-earth-cornsilk: var(--color-cream);
+  --color-earth-light: var(--color-cream);
+  --color-earth-sand: var(--color-sand);
+  --color-earth-yellow: var(--color-sand);
+  --color-earth-terracotta: var(--color-terracotta);
+  --color-earth-copper: var(--color-copper);
+  --color-earth-rust: var(--color-terracotta);
+  --color-earth-card: var(--color-card-dark);
+  --color-surface-dark: var(--color-surface-dark);
 
-  /* Numbered palette tokens: `bg-palette-1` to `bg-palette-5` */
-  --color-palette-1: #606c38;
-  --color-palette-2: #283618;
-  --color-palette-3: #fefae0;
-  --color-palette-4: #dda15e;
-  --color-palette-5: #bc6c25;
-  --color-palette-black: #0e140a;
+  /* Numbered palette tokens */
+  --color-palette-1: var(--color-moss);
+  --color-palette-2: var(--color-forest);
+  --color-palette-3: var(--color-cream);
+  --color-palette-4: var(--color-sand);
+  --color-palette-5: var(--color-terracotta);
+  --color-palette-black: var(--color-onyx);
+}
 
-  /* Hex-coded tokens: `bg-palette-606c38`, `text-palette-fefae0`, etc. */
-  --color-palette-606c38: #606c38;
-  --color-palette-283618: #283618;
-  --color-palette-fefae0: #fefae0;
-  --color-palette-dda15e: #dda15e;
-  --color-palette-bc6c25: #bc6c25;
-  --color-palette-0e140a: #0e140a;
+/* Base typography */
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-sans);
 }
 
 body {
-  font-family: var(--font-sans);
   overflow-x: hidden;
 }
 
-h1, h2, h3, .font-heading {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading {
   font-family: var(--font-heading);
+}
+
+/* Force elimination of SF Mono / system monospace */
+code,
+pre,
+kbd,
+samp,
+.font-mono {
+  font-family: var(--font-sans) !important;
 }
 
 @media (pointer: fine) {
@@ -100,13 +143,13 @@ h1, h2, h3, .font-heading {
 
 /*
  * ==========================================================================
- * Directional Ripple Button Architecture & Earthy Palette Tokens
+ * Directional Ripple Button Architecture (Variables-Driven)
  * ==========================================================================
  */
 
 .app-btn {
-  --accent: #bc6c25;
-  --accent-contrast: #fefae0;
+  --accent: var(--color-terracotta);
+  --accent-contrast: var(--color-cream);
   --btn-ring: var(--accent);
   background-color: var(--accent);
   color: var(--accent-contrast);
@@ -118,16 +161,16 @@ h1, h2, h3, .font-heading {
 
 /* Primary Variant */
 .app-btn-primary {
-  --accent: #bc6c25;
-  --accent-contrast: #fefae0;
-  --btn-ring: #bc6c25;
+  --accent: var(--color-terracotta);
+  --accent-contrast: var(--color-cream);
+  --btn-ring: var(--color-terracotta);
   background-color: var(--accent);
   color: var(--accent-contrast);
 }
 :where(.dark, .dark *) .app-btn-primary {
-  --accent: #dda15e;
-  --accent-contrast: #283618;
-  --btn-ring: #dda15e;
+  --accent: var(--color-sand);
+  --accent-contrast: var(--color-forest);
+  --btn-ring: var(--color-sand);
   background-color: var(--accent);
   color: var(--accent-contrast);
 }
@@ -137,18 +180,18 @@ h1, h2, h3, .font-heading {
 
 /* Secondary Variant */
 .app-btn-secondary {
-  --accent: #fefae0;
-  --accent-contrast: #283618;
-  --btn-ring: rgba(40, 54, 24, 0.25);
-  background-color: rgba(40, 54, 24, 0.05);
-  color: #283618;
+  --accent: var(--color-cream);
+  --accent-contrast: var(--color-forest);
+  --btn-ring: color-mix(in srgb, var(--color-forest) 25%, transparent);
+  background-color: color-mix(in srgb, var(--color-forest) 5%, transparent);
+  color: var(--color-forest);
 }
 :where(.dark, .dark *) .app-btn-secondary {
-  --accent: #283618;
-  --accent-contrast: #dda15e;
-  --btn-ring: rgba(221, 161, 94, 0.35);
-  background-color: rgba(221, 161, 94, 0.08);
-  color: #dda15e;
+  --accent: var(--color-forest);
+  --accent-contrast: var(--color-sand);
+  --btn-ring: color-mix(in srgb, var(--color-sand) 35%, transparent);
+  background-color: color-mix(in srgb, var(--color-sand) 8%, transparent);
+  color: var(--color-sand);
 }
 .app-btn-secondary .app-btn-fill {
   background-color: var(--accent-contrast);
@@ -156,18 +199,18 @@ h1, h2, h3, .font-heading {
 
 /* Outline Variant */
 .app-btn-outline {
-  --accent: #fefae0;
-  --accent-contrast: #bc6c25;
-  --btn-ring: rgba(96, 108, 56, 0.4);
-  background-color: rgba(96, 108, 56, 0.08);
-  color: #283618;
+  --accent: var(--color-cream);
+  --accent-contrast: var(--color-terracotta);
+  --btn-ring: color-mix(in srgb, var(--color-moss) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-moss) 8%, transparent);
+  color: var(--color-forest);
 }
 :where(.dark, .dark *) .app-btn-outline {
-  --accent: #283618;
-  --accent-contrast: #dda15e;
-  --btn-ring: rgba(221, 161, 94, 0.4);
-  background-color: rgba(221, 161, 94, 0.08);
-  color: #dda15e;
+  --accent: var(--color-forest);
+  --accent-contrast: var(--color-sand);
+  --btn-ring: color-mix(in srgb, var(--color-sand) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-sand) 8%, transparent);
+  color: var(--color-sand);
 }
 .app-btn-outline .app-btn-fill {
   background-color: var(--accent-contrast);
@@ -175,18 +218,18 @@ h1, h2, h3, .font-heading {
 
 /* Ghost Variant */
 .app-btn-ghost {
-  --accent: #bc6c25;
-  --accent-contrast: rgba(40, 54, 24, 0.08);
+  --accent: var(--color-terracotta);
+  --accent-contrast: color-mix(in srgb, var(--color-forest) 8%, transparent);
   --btn-ring: transparent;
   background-color: transparent;
-  color: #283618;
+  color: var(--color-forest);
 }
 :where(.dark, .dark *) .app-btn-ghost {
-  --accent: #dda15e;
-  --accent-contrast: rgba(254, 250, 224, 0.1);
+  --accent: var(--color-sand);
+  --accent-contrast: color-mix(in srgb, var(--color-cream) 10%, transparent);
   --btn-ring: transparent;
   background-color: transparent;
-  color: #fefae0;
+  color: var(--color-cream);
 }
 .app-btn-ghost .app-btn-fill {
   background-color: var(--accent-contrast);
@@ -194,30 +237,74 @@ h1, h2, h3, .font-heading {
 
 /* Icon Variant */
 .app-btn-icon {
-  --accent: #bc6c25;
-  --btn-ring: rgba(40, 54, 24, 0.18);
-  background-color: rgba(40, 54, 24, 0.06);
-  color: #bc6c25;
+  --accent: var(--color-terracotta);
+  --btn-ring: color-mix(in srgb, var(--color-forest) 18%, transparent);
+  background-color: color-mix(in srgb, var(--color-forest) 6%, transparent);
+  color: var(--color-terracotta);
   transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 .app-btn-icon:hover {
-  background-color: rgba(188, 108, 37, 0.14);
-  color: #9d5619;
-  box-shadow: 0 0 14px rgba(188, 108, 37, 0.22);
-  --btn-ring: rgba(188, 108, 37, 0.45);
+  background-color: color-mix(in srgb, var(--color-terracotta) 14%, transparent);
+  color: var(--color-terracotta);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-terracotta) 22%, transparent);
+  --btn-ring: color-mix(in srgb, var(--color-terracotta) 45%, transparent);
 }
 :where(.dark, .dark *) .app-btn-icon {
-  --accent: #dda15e;
-  --btn-ring: rgba(254, 250, 224, 0.2);
-  background-color: rgba(254, 250, 224, 0.08);
-  color: #dda15e;
+  --accent: var(--color-sand);
+  --btn-ring: color-mix(in srgb, var(--color-cream) 20%, transparent);
+  background-color: color-mix(in srgb, var(--color-cream) 8%, transparent);
+  color: var(--color-sand);
 }
 :where(.dark, .dark *) .app-btn-icon:hover {
-  background-color: rgba(221, 161, 94, 0.18);
-  color: #fefae0;
-  box-shadow: 0 0 16px rgba(221, 161, 94, 0.3);
-  --btn-ring: rgba(221, 161, 94, 0.5);
+  background-color: color-mix(in srgb, var(--color-sand) 18%, transparent);
+  color: var(--color-cream);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-sand) 30%, transparent);
+  --btn-ring: color-mix(in srgb, var(--color-sand) 50%, transparent);
 }
 .app-btn-icon .app-btn-fill {
   display: none !important;
+}
+
+/*
+ * ==========================================================================
+ * Utility & Component Classes (Variables-Driven)
+ * ==========================================================================
+ */
+
+/* Hero background grid */
+.hero-grid-pattern {
+  background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+/* Curtain Loader */
+.curtain-panel-left {
+  background: radial-gradient(circle at 100% 50%, var(--color-forest) 0%, var(--color-surface-dark) 60%, var(--color-onyx) 100%);
+}
+
+.curtain-panel-right {
+  background: radial-gradient(circle at 0% 50%, var(--color-forest) 0%, var(--color-surface-dark) 60%, var(--color-onyx) 100%);
+}
+
+.curtain-luminous-border {
+  background: linear-gradient(to bottom, transparent 0%, var(--color-terracotta) 20%, var(--color-sand) 50%, var(--color-terracotta) 80%, transparent 100%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-terracotta) 50%, transparent), 0 0 2px color-mix(in srgb, var(--color-sand) 50%, transparent);
+}
+
+/* Overview 3D roller mask */
+.overview-roller-mask {
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%);
+}
+
+/* AppIcon SVG mask */
+.app-icon-mask {
+  mask-image: var(--icon-url);
+  -webkit-mask-image: var(--icon-url);
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
 }

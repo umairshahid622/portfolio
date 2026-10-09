@@ -221,8 +221,8 @@ export default function SmoothCursor() {
           gsap.to(ring, {
             scale: 1.45,
             opacity: 1,
-            borderColor: "var(--color-terracotta, #bc6c25)",
-            backgroundColor: "rgba(188, 108, 37, 0.12)",
+            borderColor: "var(--color-terracotta)",
+            backgroundColor: "color-mix(in srgb, var(--color-terracotta) 12%, transparent)",
             duration: 0.25,
             ease: "power2.out",
           });
@@ -246,7 +246,7 @@ export default function SmoothCursor() {
           gsap.to(ring, {
             scale: 1,
             opacity: 1,
-            borderColor: "rgba(188, 108, 37, 0.4)",
+            borderColor: "color-mix(in srgb, var(--color-terracotta) 40%, transparent)",
             backgroundColor: "transparent",
             duration: 0.3,
             ease: "back.out(2)",

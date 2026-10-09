@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { cn } from "../utils/cn";
 
 interface Particle {
   x: number;
@@ -34,6 +35,24 @@ interface BackgroundParticlesProps {
   showAmbientGlows?: boolean;
 }
 
+function getRgbPrefixFromVar(varName: string, fallback: string): string {
+  if (typeof window === "undefined") return fallback;
+  const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  if (!val) return fallback;
+  if (val.startsWith("#")) {
+    const full = val.length === 4
+      ? `#${val[1]}${val[1]}${val[2]}${val[2]}${val[3]}${val[3]}`
+      : val;
+    const r = parseInt(full.slice(1, 3), 16);
+    const g = parseInt(full.slice(3, 5), 16);
+    const b = parseInt(full.slice(5, 7), 16);
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      return `rgba(${r}, ${g}, ${b},`;
+    }
+  }
+  return fallback;
+}
+
 export default function BackgroundParticles({
   className = "",
   count = 46,
@@ -56,18 +75,15 @@ export default function BackgroundParticles({
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Palette matching brand white and brand red
-    const colorsDark = [
-      "rgba(254, 250, 224,", // Warm Cream / Brand White #fefae0
-      "rgba(188, 108, 37,",  // Terracotta / Brand Red #bc6c25
-    ];
+    // Palette sourced dynamically from CSS variables
+    const creamRgb = getRgbPrefixFromVar("--color-cream", "rgba(254, 250, 224,");
+    const terracottaRgb = getRgbPrefixFromVar("--color-terracotta", "rgba(188, 108, 37,");
+    const mossRgb = getRgbPrefixFromVar("--color-moss", "rgba(96, 108, 56,");
+    const sandRgb = getRgbPrefixFromVar("--color-sand", "rgba(221, 161, 94,");
+    const forestRgb = getRgbPrefixFromVar("--color-forest", "rgba(40, 54, 24,");
 
-    const colorsLight = [
-      "rgba(188, 108, 37,",  // Terracotta
-      "rgba(96, 108, 56,",   // Moss
-      "rgba(221, 161, 94,",  // Sand
-      "rgba(40, 54, 24,",    // Deep Forest
-    ];
+    const colorsDark = [creamRgb, terracottaRgb];
+    const colorsLight = [terracottaRgb, mossRgb, sandRgb, forestRgb];
 
     const activeColors = isDark ? colorsDark : colorsLight;
 
@@ -104,14 +120,14 @@ export default function BackgroundParticles({
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Deep background flowing filaments/wisps (as seen faintly in reference)
+    // Deep background flowing filaments/wisps
     const wisps: AmbientWisp[] = [
       {
         yFraction: 0.22,
         amplitude: 45,
         wavelength: 0.0018,
         speed: 0.0003,
-        color: isDark ? "rgba(96, 108, 56," : "rgba(188, 108, 37,",
+        color: isDark ? mossRgb : terracottaRgb,
         alpha: isDark ? 0.09 : 0.05,
         offset: 0,
       },
@@ -120,7 +136,7 @@ export default function BackgroundParticles({
         amplitude: 65,
         wavelength: 0.0012,
         speed: -0.00025,
-        color: isDark ? "rgba(221, 161, 94," : "rgba(96, 108, 56,",
+        color: isDark ? sandRgb : mossRgb,
         alpha: isDark ? 0.06 : 0.04,
         offset: 2.5,
       },
@@ -129,7 +145,7 @@ export default function BackgroundParticles({
         amplitude: 50,
         wavelength: 0.0015,
         speed: 0.0002,
-        color: isDark ? "rgba(188, 108, 37," : "rgba(221, 161, 94,",
+        color: isDark ? terracottaRgb : sandRgb,
         alpha: isDark ? 0.05 : 0.03,
         offset: 4.1,
       },
@@ -266,7 +282,7 @@ export default function BackgroundParticles({
 
   return (
     <div
-      className={`pointer-events-none ${className || "absolute inset-0 z-0"}`}
+      className={cn("pointer-events-none", className || "absolute inset-0 z-0")}
       aria-hidden="true"
     >
       {showAmbientGlows && isDark && (

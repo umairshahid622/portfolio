@@ -1,30 +1,30 @@
 import type { ThemeColors, ThemePalette } from "../interfaces/theme";
 
 export const THEME_PALETTE: ThemePalette = {
-  moss: "#606c38",       // Olive / Moss Green
-  forest: "#283618",     // Dark Moss / Deep Forest Green
-  cream: "#fefae0",      // Cornsilk / Warm Cream
-  sand: "#dda15e",       // Earth Yellow / Warm Sand
-  terracotta: "#bc6c25", // Tiger's Eye / Terracotta / Copper
+  moss: "var(--color-moss)",
+  forest: "var(--color-forest)",
+  cream: "var(--color-cream)",
+  sand: "var(--color-sand)",
+  terracotta: "var(--color-terracotta)",
 } as const;
 
 export const THEME_COLORS: Record<"dark" | "light", ThemeColors> = {
   dark: {
-    background: "#283618", // Dark Moss / Deep Forest Green
-    surface: "#1f2a13",
-    text: "#fefae0",       // Cornsilk / Warm Cream
-    textMuted: "#dda15e",  // Warm Sand
-    accent: "#bc6c25",     // Terracotta
-    primary: "#606c38",    // Olive / Moss Green
+    background: "var(--color-forest)",
+    surface: "var(--color-onyx)",
+    text: "var(--color-cream)",
+    textMuted: "var(--color-sand)",
+    accent: "var(--color-terracotta)",
+    primary: "var(--color-moss)",
     ...THEME_PALETTE,
   },
   light: {
-    background: "#fefae0", // Cornsilk / Warm Cream
-    surface: "#f5f0d0",
-    text: "#283618",       // Dark Moss / Deep Forest Green
-    textMuted: "#606c38",  // Olive / Moss Green
-    accent: "#bc6c25",     // Terracotta
-    primary: "#dda15e",    // Warm Sand
+    background: "var(--color-cream)",
+    surface: "var(--color-sand)",
+    text: "var(--color-forest)",
+    textMuted: "var(--color-moss)",
+    accent: "var(--color-terracotta)",
+    primary: "var(--color-sand)",
     ...THEME_PALETTE,
   },
 } as const;

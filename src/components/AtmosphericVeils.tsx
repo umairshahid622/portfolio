@@ -2,6 +2,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useTheme } from "../context/ThemeContext";
+import { cn } from "../utils/cn";
 
 gsap.registerPlugin(useGSAP);
 
@@ -328,7 +329,7 @@ export default function AtmosphericVeils({ className = "" }: AtmosphericVeilsPro
     <div
       ref={containerRef}
       aria-hidden="true"
-      className={`pointer-events-none select-none overflow-hidden ${className || "absolute inset-0 z-0"}`}
+      className={cn("pointer-events-none select-none overflow-hidden", className || "absolute inset-0 z-0")}
     >
       <svg
         className="w-full h-full"
@@ -346,37 +347,37 @@ export default function AtmosphericVeils({ className = "" }: AtmosphericVeilsPro
 
           {/* Golden Warm Sand Stroke Gradient */}
           <linearGradient id="stroke-gold-sand" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={isDark ? "#fefae0" : "#bc6c25"} stopOpacity="0.9" />
-            <stop offset="50%" stopColor={isDark ? "#dda15e" : "#606c38"} stopOpacity="0.75" />
-            <stop offset="100%" stopColor={isDark ? "#bc6c25" : "#dda15e"} stopOpacity="0.4" />
+            <stop offset="0%" stopColor={isDark ? "var(--color-cream)" : "var(--color-terracotta)"} stopOpacity="0.9" />
+            <stop offset="50%" stopColor={isDark ? "var(--color-sand)" : "var(--color-moss)"} stopOpacity="0.75" />
+            <stop offset="100%" stopColor={isDark ? "var(--color-terracotta)" : "var(--color-sand)"} stopOpacity="0.4" />
           </linearGradient>
 
           {/* Terracotta Moss Stroke Gradient */}
           <linearGradient id="stroke-terracotta-moss" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={isDark ? "#bc6c25" : "#606c38"} stopOpacity="0.8" />
-            <stop offset="50%" stopColor={isDark ? "#dda15e" : "#dda15e"} stopOpacity="0.7" />
-            <stop offset="100%" stopColor={isDark ? "#96a666" : "#bc6c25"} stopOpacity="0.4" />
+            <stop offset="0%" stopColor={isDark ? "var(--color-terracotta)" : "var(--color-moss)"} stopOpacity="0.8" />
+            <stop offset="50%" stopColor="var(--color-sand)" stopOpacity="0.7" />
+            <stop offset="100%" stopColor={isDark ? "var(--color-moss)" : "var(--color-terracotta)"} stopOpacity="0.4" />
           </linearGradient>
 
           {/* Bright Radiant Light Streak Gradient */}
           <linearGradient id="filament-glow-grad" x1="0%" y1="0%" x2="40%" y2="100%">
-            <stop offset="0%" stopColor={isDark ? "#ffffff" : "#bc6c25"} stopOpacity="0.95" />
-            <stop offset="50%" stopColor={isDark ? "#fefae0" : "#dda15e"} stopOpacity="0.85" />
-            <stop offset="100%" stopColor={isDark ? "#dda15e" : "#606c38"} stopOpacity="0" />
+            <stop offset="0%" stopColor={isDark ? "var(--color-cream)" : "var(--color-terracotta)"} stopOpacity="0.95" />
+            <stop offset="50%" stopColor={isDark ? "var(--color-cream)" : "var(--color-sand)"} stopOpacity="0.85" />
+            <stop offset="100%" stopColor={isDark ? "var(--color-sand)" : "var(--color-moss)"} stopOpacity="0" />
           </linearGradient>
 
           {/* Olive Emerald Celestial Gradient */}
           <linearGradient id="stroke-olive-celestial" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%" stopColor={isDark ? "#96a666" : "#606c38"} stopOpacity="0.35" />
-            <stop offset="50%" stopColor={isDark ? "#dda15e" : "#bc6c25"} stopOpacity="0.85" />
-            <stop offset="100%" stopColor={isDark ? "#fefae0" : "#dda15e"} stopOpacity="0.25" />
+            <stop offset="0%" stopColor={isDark ? "var(--color-moss)" : "var(--color-moss)"} stopOpacity="0.35" />
+            <stop offset="50%" stopColor={isDark ? "var(--color-sand)" : "var(--color-terracotta)"} stopOpacity="0.85" />
+            <stop offset="100%" stopColor={isDark ? "var(--color-cream)" : "var(--color-sand)"} stopOpacity="0.25" />
           </linearGradient>
 
           {/* Warm Amber Cream Gradient */}
           <linearGradient id="stroke-cream-amber" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={isDark ? "#fefae0" : "#dda15e"} stopOpacity="0.9" />
-            <stop offset="60%" stopColor={isDark ? "#dda15e" : "#bc6c25"} stopOpacity="0.75" />
-            <stop offset="100%" stopColor={isDark ? "#bc6c25" : "#606c38"} stopOpacity="0.3" />
+            <stop offset="0%" stopColor={isDark ? "var(--color-cream)" : "var(--color-sand)"} stopOpacity="0.9" />
+            <stop offset="60%" stopColor={isDark ? "var(--color-sand)" : "var(--color-terracotta)"} stopOpacity="0.75" />
+            <stop offset="100%" stopColor={isDark ? "var(--color-terracotta)" : "var(--color-moss)"} stopOpacity="0.3" />
           </linearGradient>
         </defs>
 
@@ -389,12 +390,11 @@ export default function AtmosphericVeils({ className = "" }: AtmosphericVeilsPro
           {Array.from({ length: 6 }).map((_, i) => (
             <path
               key={i}
-              className="generative-svg-path"
+              className="generative-svg-path opacity-0"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
               filter="url(#stroke-glow)"
-              style={{ opacity: 0 }}
             />
           ))}
         </g>

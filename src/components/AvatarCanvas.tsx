@@ -3,6 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, useAnimations, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { useLoading } from "../context/LoadingContext";
+import { cn } from "../utils/cn";
 
 interface AvatarModelProps {
   onWalkComplete?: () => void;
@@ -125,7 +126,7 @@ function AvatarModel({
           scale={2.4}
           blur={2.0}
           far={2.5}
-          color="#15200c"
+          color={typeof window !== "undefined" ? getComputedStyle(document.documentElement).getPropertyValue("--color-onyx").trim() || "#0e140a" : "#0e140a"}
         />
       </group>
     </group>
@@ -149,9 +150,20 @@ export default function AvatarCanvas({
   onAnimationComplete,
   onReady,
 }: AvatarCanvasProps) {
+  const getCssVar = (name: string, fallback: string): string => {
+    if (typeof window === "undefined") return fallback;
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+  };
+
+  const creamColor = getCssVar("--color-cream", "#fefae0");
+  const forestColor = getCssVar("--color-forest", "#283618");
+  const sandColor = getCssVar("--color-sand", "#dda15e");
+  const terracottaColor = getCssVar("--color-terracotta", "#bc6c25");
+  const mossColor = getCssVar("--color-moss", "#606c38");
+
   return (
     <div
-      className={`w-full h-full relative flex items-center justify-center select-none pointer-events-none ${className}`}
+      className={cn("w-full h-full relative flex items-center justify-center select-none pointer-events-none", className)}
     >
       <Canvas
         camera={{ position: [0, 0.05, 4.2], fov: 38 }}
@@ -163,13 +175,12 @@ export default function AvatarCanvas({
         }}
         shadows
         className="w-full h-full pointer-events-none"
-        style={{ pointerEvents: "none" }}
       >
         {/* Soft hemispheric light for rich ambient atmosphere */}
         <hemisphereLight
           args={[
-            isDark ? "#fefae0" : "#ffffff",
-            isDark ? "#283618" : "#dda15e",
+            isDark ? creamColor : "#ffffff",
+            isDark ? forestColor : sandColor,
             isDark ? 0.95 : 0.75,
           ]}
         />
@@ -197,21 +208,21 @@ export default function AvatarCanvas({
         <directionalLight
           position={[-3, 2, 2]}
           intensity={isDark ? 1.2 : 0.9}
-          color={isDark ? "#dda15e" : "#bc6c25"}
+          color={isDark ? sandColor : terracottaColor}
         />
 
         {/* Rim / Back Light: Terracotta edge lighting that outlines the silhouette */}
         <directionalLight
           position={[0, 3, -3]}
           intensity={isDark ? 2.2 : 1.5}
-          color={isDark ? "#bc6c25" : "#dda15e"}
+          color={isDark ? terracottaColor : sandColor}
         />
 
         {/* Ground bounce light for subtle chin/torso fill */}
         <directionalLight
           position={[0, -2, 1]}
           intensity={0.4}
-          color={isDark ? "#606c38" : "#fefae0"}
+          color={isDark ? mossColor : creamColor}
         />
 
         <Suspense fallback={null}>

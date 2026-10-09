@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { particleBridge } from "../utils/particleBridge";
+import { cn } from "../utils/cn";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -12,7 +13,7 @@ export interface SkillCard {
   heading: string;
   summary: string;
   skills: string[];
-  accentColor: string;
+  accentClass: string;
 }
 
 export const SKILL_CARDS: SkillCard[] = [
@@ -32,7 +33,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "HTML5 / CSS3",
       "Responsive UI/UX",
     ],
-    accentColor: "#dda15e",
+    accentClass: "bg-earth-sand",
   },
   {
     id: "mobile",
@@ -49,7 +50,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Localization",
       "Dart Isolates",
     ],
-    accentColor: "#bc6c25",
+    accentClass: "bg-earth-terracotta",
   },
   {
     id: "backend",
@@ -66,7 +67,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Authentication (JWT)",
       "Supabase Auth",
     ],
-    accentColor: "#606c38",
+    accentClass: "bg-earth-moss",
   },
   {
     id: "state-management",
@@ -82,7 +83,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Zustand",
       "Reactive Streams",
     ],
-    accentColor: "#d98236",
+    accentClass: "bg-earth-copper",
   },
   {
     id: "database",
@@ -98,7 +99,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Supabase",
       "Data Modeling & Optimization",
     ],
-    accentColor: "#e6b172",
+    accentClass: "bg-earth-yellow",
   },
   {
     id: "devops",
@@ -115,7 +116,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Version Control",
       "Codacy Static Analysis",
     ],
-    accentColor: "#788746",
+    accentClass: "bg-earth-olive",
   },
   {
     id: "performance",
@@ -131,7 +132,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Unit Testing",
       "Code Reviews & Debugging",
     ],
-    accentColor: "#b85d1e",
+    accentClass: "bg-earth-rust",
   },
 ];
 
@@ -254,8 +255,10 @@ export default function Skills() {
             >
               {/* Subtle Ambient Radial Glow */}
               <div
-                className="absolute -top-24 -right-24 w-52 h-52 rounded-full blur-3xl transition-opacity duration-500 pointer-events-none opacity-20 group-hover:opacity-40"
-                style={{ backgroundColor: card.accentColor }}
+                className={cn(
+                  "absolute -top-24 -right-24 w-52 h-52 rounded-full blur-3xl transition-opacity duration-500 pointer-events-none opacity-20 group-hover:opacity-40",
+                  card.accentClass
+                )}
               />
 
               <div>                
@@ -275,7 +278,7 @@ export default function Skills() {
                 {card.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="text-[11px] sm:text-xs font-mono px-2.5 py-0.5 rounded-md bg-earth-cream/5 text-earth-cream/90 border border-earth-cream/10 group-hover:border-earth-sand/25 transition-colors"
+                    className="text-[11px] sm:text-xs font-sans px-2.5 py-0.5 rounded-md bg-earth-cream/5 text-earth-cream/90 border border-earth-cream/10 group-hover:border-earth-sand/25 transition-colors"
                   >
                     {skill}
                   </span>

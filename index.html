@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark" style="color-scheme: dark; background-color: #283618;">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -36,24 +36,28 @@
           if (isDark) {
             root.classList.add('dark');
             root.style.colorScheme = 'dark';
-            root.style.backgroundColor = '#283618';
           } else {
             root.classList.remove('dark');
             root.style.colorScheme = 'light';
-            root.style.backgroundColor = '#fefae0';
           }
         } catch (e) {}
       })();
     </script>
     <style>
-      /* Critical inline styles to prevent FOUC / flash before CSS loads */
+      :root {
+        --color-forest: #283618;
+        --color-cream: #fefae0;
+      }
+      /* Critical styles to prevent FOUC / flash before CSS loads */
       html {
-        background-color: #283618;
-        color: #fefae0;
+        color-scheme: dark;
+        background-color: var(--color-forest);
+        color: var(--color-cream);
       }
       html:not(.dark) {
-        background-color: #fefae0;
-        color: #283618;
+        color-scheme: light;
+        background-color: var(--color-cream);
+        color: var(--color-forest);
       }
       body {
         margin: 0;
@@ -66,7 +70,7 @@
     <link rel="preload" href="/fonts/Archivo-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <title>Umair | Portfolio</title>
   </head>
-  <body style="background-color: inherit; color: inherit;">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

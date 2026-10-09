@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { particleBridge } from "../utils/particleBridge";
 import { loadMeshFontGeometries, type TextMeshGeometries } from "../utils/meshFontBuilder";
+import { cn } from "../utils/cn";
 
 // =========================================================================
 // HEADER CONTENT EDGES → WORLD SPACE
@@ -493,11 +494,18 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     };
   }, [viewport.width, viewport.height, size.width]);
 
-  // Mesh & Point Materials (White and Red)
-  const whiteMeshMat = useMemo(() => createBreakdownMeshMaterial("#fefae0"), []);
-  const whitePointsMat = useMemo(() => createBreakdownPointsMaterial("#fefae0"), []);
-  const redMeshMat = useMemo(() => createBreakdownMeshMaterial("#bc6c25"), []);
-  const redPointsMat = useMemo(() => createBreakdownPointsMaterial("#bc6c25"), []);
+  // Mesh & Point Materials (Cream and Terracotta sourced via CSS variables)
+  const creamColor = typeof window !== "undefined"
+    ? getComputedStyle(document.documentElement).getPropertyValue("--color-cream").trim() || "#fefae0"
+    : "#fefae0";
+  const terracottaColor = typeof window !== "undefined"
+    ? getComputedStyle(document.documentElement).getPropertyValue("--color-terracotta").trim() || "#bc6c25"
+    : "#bc6c25";
+
+  const whiteMeshMat = useMemo(() => createBreakdownMeshMaterial(creamColor), [creamColor]);
+  const whitePointsMat = useMemo(() => createBreakdownPointsMaterial(creamColor), [creamColor]);
+  const redMeshMat = useMemo(() => createBreakdownMeshMaterial(terracottaColor), [terracottaColor]);
+  const redPointsMat = useMemo(() => createBreakdownPointsMaterial(terracottaColor), [terracottaColor]);
 
   useEffect(() => {
     return () => {
@@ -704,8 +712,7 @@ export default function CharacterPointsCanvas({
   return (
     <div
       ref={containerRef}
-      className={`absolute inset-0 pointer-events-none select-none ${className}`}
-      style={{ width: "100%", height: "100%" }}
+      className={cn("absolute inset-0 pointer-events-none select-none w-full h-full", className)}
     >
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
@@ -717,7 +724,7 @@ export default function CharacterPointsCanvas({
           depth: false,
           stencil: false,
         }}
-        style={{ width: "100%", height: "100%", pointerEvents: "none" }}
+        className="w-full h-full pointer-events-none"
       >
         {geometries && <UnifiedCelestialMesh geometries={geometries} />}
       </Canvas>
