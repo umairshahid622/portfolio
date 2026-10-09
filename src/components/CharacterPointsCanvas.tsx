@@ -68,11 +68,11 @@ const BREAKDOWN_VERTEX_SHADER = `
       float r2 = fract(abs(s2));
       float r3 = fract(abs(s3));
 
-      // Target position distributed evenly across screen boundaries (with 8% safe margin)
+      // Target position distributed evenly across screen boundaries
       vec3 screenTarget = vec3(
-        (r1 - 0.5) * uViewport.x * 0.86,
-        (r2 - 0.5) * uViewport.y * 0.84,
-        (r3 - 0.5) * 1.5
+        (r1 - 0.5) * uViewport.x * 0.92,
+        (r2 - 0.5) * uViewport.y * 0.90,
+        (r3 - 0.5) * 1.6
       );
 
       // Node shrinkage & separation as it breaks apart into geometric facet
@@ -85,7 +85,7 @@ const BREAKDOWN_VERTEX_SHADER = `
       localVec *= scale;
 
       float t = smoothstep(0.0, 1.0, breakP);
-      vec3 arc = vec3(aRandom.x * 0.35, abs(aRandom.y) * 0.45 + 0.1, aRandom.z * 0.4) * sin(breakP * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
 
       vec3 currentCenter = mix(worldCenter, screenTarget, t) + arc;
       finalWorldPos = currentCenter + localVec;
@@ -158,13 +158,13 @@ const POINTS_VERTEX_SHADER = `
       float r3 = fract(abs(s3));
 
       vec3 screenTarget = vec3(
-        (r1 - 0.5) * uViewport.x * 0.86,
-        (r2 - 0.5) * uViewport.y * 0.84,
-        (r3 - 0.5) * 1.5
+        (r1 - 0.5) * uViewport.x * 0.92,
+        (r2 - 0.5) * uViewport.y * 0.90,
+        (r3 - 0.5) * 1.6
       );
 
       float t = smoothstep(0.0, 1.0, breakP);
-      vec3 arc = vec3(aRandom.x * 0.35, abs(aRandom.y) * 0.45 + 0.1, aRandom.z * 0.4) * sin(breakP * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
 
       finalWorldPos = mix(worldCenter, screenTarget, t) + arc;
     }
@@ -349,17 +349,17 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     smoothOverviewProgress.current = THREE.MathUtils.lerp(
       smoothOverviewProgress.current,
       particleBridge.overviewProgress,
-      0.08
+      0.12
     );
     smoothSkillsProgress.current = THREE.MathUtils.lerp(
       smoothSkillsProgress.current,
       particleBridge.skillsProgress,
-      0.08
+      0.12
     );
     smoothDarkActive.current = THREE.MathUtils.lerp(
       smoothDarkActive.current,
       particleBridge.isDarkActive ? 1.0 : 0.0,
-      0.08
+      0.12
     );
 
     smoothMouseWorld.current.lerp(
@@ -373,8 +373,8 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     );
 
     // Section 1 (ABOUT ME):
-    // Opacity fades out if scrolling into Skills
-    const skillsHide = 1.0 - THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.0, 0.20);
+    // Opacity fades out once merging into Skills begins
+    const skillsHide = 1.0 - THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.0, 0.25);
     const aboutMeOpacity = smoothDarkActive.current * skillsHide;
     const aboutMeBreak = smoothOverviewProgress.current;
 

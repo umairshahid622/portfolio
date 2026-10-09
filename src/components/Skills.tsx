@@ -146,17 +146,16 @@ export default function Skills() {
       const cardsTrack = trackRef.current;
       if (!section || !cardsTrack) return;
 
-      // 1. Particle convergence: converges into "SKILLS" and "</>" as section approaches viewport
+      // 1. Ensure particles stay merged into "SKILLS" and "</>" upon entering section
       ScrollTrigger.create({
         trigger: section,
-        start: "top 80%",
+        start: "top bottom",
         end: "top top",
-        scrub: 0.8,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          if (self.progress <= 1.0) {
-            particleBridge.skillsProgress = self.progress;
-          }
+        onEnter: () => {
+          particleBridge.skillsProgress = 1.0;
+        },
+        onEnterBack: () => {
+          particleBridge.skillsProgress = 1.0;
         },
       });
 

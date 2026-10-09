@@ -75,6 +75,7 @@ const PARAGRAPH_LINES: ParagraphLine[] = [
 export default function Overview() {
   const sectionRef = useRef<HTMLElement>(null);
   const drumRef = useRef<HTMLDivElement>(null);
+  const rollerContainerRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -100,18 +101,19 @@ export default function Overview() {
 
       const drum = drumRef.current;
       const section = sectionRef.current;
-      if (!drum || !section) return;
+      const rollerContainer = rollerContainerRef.current;
+      if (!drum || !section || !rollerContainer) return;
 
       // Start with the first 5 lines in the focal reading zone (lines 0-4 centered at line 2)
       const initialRotation = 2 * stepAngle;
-      // Stop symmetrically when the last 5 lines settle in the focal reading zone (lines 9-13 centered at line 11)
-      const totalRotation = (PARAGRAPH_LINES.length - 3) * stepAngle;
+      // Roll fully through all 14 lines and roll past the top edge out of the frame
+      const totalRotation = (PARAGRAPH_LINES.length + 3) * stepAngle;
 
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: `+=${Math.max(1000, PARAGRAPH_LINES.length * 60)}`,
+          end: `+=${Math.max(1600, PARAGRAPH_LINES.length * 105)}`,
           pin: true,
           scrub: 0.8,
           anticipatePin: 1,
@@ -119,34 +121,63 @@ export default function Overview() {
           onUpdate: (self) => {
             const p = self.progress;
 
-            // About me text particles stay assembled during the first half of the roller,
-            // then smoothly take flight and spread into the cosmic nebula starting in the middle.
-            // Phase A (0.0 -> 0.45): Roller starts and rolls through initial lines; "ABOUT ME" text stays assembled
-            // Phase B (0.45 -> 0.85): Starting in the middle of the roller, particles spread out into the cosmic nebula
-            // Phase C (0.85 -> 1.0): Fully dispersed as roller reaches final lines and settles
-            const spreadStart = 0.45;
-            const spreadEnd = 0.85;
+            // Phase 1: Early shatter & cosmic dispersal across the full screen (0.06 -> 0.24)
+            // Phase 2: Throughout the reading zone (0.24 -> 0.74), particles remain 100% SPREAD across the entire viewport
+            const spreadStart = 0.06;
+            const spreadEnd = 0.24;
 
             if (p < spreadStart) {
               particleBridge.overviewProgress = 0.0;
-            } else if (p > spreadEnd) {
-              particleBridge.overviewProgress = 1.0;
-            } else {
+            } else if (p < 0.74) {
               const spreadProgress = (p - spreadStart) / (spreadEnd - spreadStart);
               particleBridge.overviewProgress = Math.min(1.0, Math.max(0.0, spreadProgress));
+            } else {
+              particleBridge.overviewProgress = 1.0;
+            }
+
+            // Phase 3: Only AFTER the roller completes and disappears (at p >= 0.74),
+            // particles start merging into "SKILLS" and "</>" earlier!
+            const mergeStart = 0.74;
+            const mergeEnd = 0.90;
+
+            if (p < mergeStart) {
+              particleBridge.skillsProgress = 0.0;
+            } else if (p >= mergeEnd) {
+              particleBridge.skillsProgress = 1.0;
+            } else {
+              const mergeProgress = (p - mergeStart) / (mergeEnd - mergeStart);
+              particleBridge.skillsProgress = Math.min(1.0, Math.max(0.0, mergeProgress));
             }
           },
         },
       });
+
+      // 1. Full continuous roll through all lines out past the top
       tl.fromTo(
         drum,
         { rotateX: initialRotation },
         {
           rotateX: totalRotation,
           ease: "none",
-          duration: 0.9,
-        }
-      ).to({}, { duration: 0.1 }); // Hold resting state at the end before unpinning
+          duration: 0.74,
+        },
+        0
+      );
+
+      // 2. Disappear smoothly after the final lines finish rolling past
+      tl.fromTo(
+        rollerContainer,
+        { opacity: 1 },
+        {
+          opacity: 0,
+          ease: "power2.inOut",
+          duration: 0.08,
+        },
+        0.66
+      );
+
+      // 3. Resting hold so user enjoys the crisply assembled "SKILLS </>" before unpinning
+      tl.to({}, { duration: 0.26 }, 0.74);
 
       const refreshTimer = setTimeout(() => {
         ScrollTrigger.refresh();
@@ -166,6 +197,7 @@ export default function Overview() {
       <div className="w-full max-w-[94vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4">
         {/* 3D Rolling Drum Container - Shifted downward so while rolling it never intersects with the ABOUT ME constellation text */}
         <div
+          ref={rollerContainerRef}
           className="w-full relative select-none will-change-transform flex items-center justify-center mt-6 sm:mt-8 md:mt-10 translate-y-[55px] sm:translate-y-[75px] md:translate-y-[90px]"
           style={{
             perspective: "1150px",
