@@ -5,6 +5,7 @@ export interface TextMeshGeometries {
   about: THREE.BufferGeometry;
   me: THREE.BufferGeometry;
   skills: THREE.BufferGeometry;
+  code: THREE.BufferGeometry;
 }
 
 function subdivideAndProcess(geom: THREE.ShapeGeometry, maxEdge = 0.1): THREE.BufferGeometry {
@@ -133,7 +134,11 @@ export async function loadMeshFontGeometries(): Promise<TextMeshGeometries> {
     const geomSkills = new THREE.ShapeGeometry(shapesSkills);
     const skills = subdivideAndProcess(geomSkills, 0.1);
 
-    cachedGeometries = { about, me, skills };
+    const shapesCode = font.generateShapes("</>", 1);
+    const geomCode = new THREE.ShapeGeometry(shapesCode);
+    const code = subdivideAndProcess(geomCode, 0.07);
+
+    cachedGeometries = { about, me, skills, code };
     return cachedGeometries;
   })();
 

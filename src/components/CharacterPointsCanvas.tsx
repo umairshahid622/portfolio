@@ -247,14 +247,30 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
 
     // Skills Layout:
     const skillsCenterY = viewport.height * (viewport.width < 3.2 ? 0.34 : 0.32);
-    const skillsWidthRatio = viewport.width < 3.2 ? 0.44 : 0.28;
-    const skillsHeightRatio = viewport.width < 3.2 ? 0.09 : 0.12;
+    const skillsWidthRatio = viewport.width < 3.2 ? 0.68 : 0.44;
+    const skillsHeightRatio = viewport.width < 3.2 ? 0.10 : 0.13;
     const skillsTargetW = viewport.width * skillsWidthRatio;
     const skillsTargetH = viewport.height * skillsHeightRatio;
+
+    // Unscaled metrics for "</>" and "SKILLS"
+    // </>: w = 2.120, h = 0.986
+    // SKILLS: w = 4.953, h = 0.958
+    // Space between: 0.42
+    const baseWCode = 2.12;
     const baseWSkills = 4.953;
-    const skillsScale = Math.min(skillsTargetW / baseWSkills, skillsTargetH / baseH);
+    const baseSpaceSkills = 0.42;
+    const baseTotalSkills = baseWCode + baseSpaceSkills + baseWSkills; // ~7.493
+
+    const skillsScale = Math.min(skillsTargetW / baseTotalSkills, skillsTargetH / baseH);
+
+    const wCode = baseWCode * skillsScale;
+    const spaceSkillsW = baseSpaceSkills * skillsScale;
     const wSkills = baseWSkills * skillsScale;
+
+    // Left-aligned to the header content edge:
+    // [ SKILLS (White) ] [space] [ </> (Red) ]
     const xSkills = edges.left + wSkills * 0.5;
+    const xCode = edges.left + wSkills + spaceSkillsW + wCode * 0.5;
 
     return {
       overviewCenterY,
@@ -264,29 +280,43 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
       skillsCenterY,
       skillsScale,
       xSkills,
+      xCode,
     };
   }, [viewport.width, viewport.height, size.width]);
 
   // Mesh Materials
   const aboutMeshMat = useMemo(() => createBreakdownMeshMaterial("#fefae0"), []);
   const meMeshMat = useMemo(() => createBreakdownMeshMaterial("#bc6c25"), []);
+  const codeMeshMat = useMemo(() => createBreakdownMeshMaterial("#bc6c25"), []);
   const skillsMeshMat = useMemo(() => createBreakdownMeshMaterial("#fefae0"), []);
 
   // Point Node Materials
   const aboutPointsMat = useMemo(() => createBreakdownPointsMaterial("#fefae0"), []);
   const mePointsMat = useMemo(() => createBreakdownPointsMaterial("#bc6c25"), []);
+  const codePointsMat = useMemo(() => createBreakdownPointsMaterial("#bc6c25"), []);
   const skillsPointsMat = useMemo(() => createBreakdownPointsMaterial("#fefae0"), []);
 
   useEffect(() => {
     return () => {
       aboutMeshMat.dispose();
       meMeshMat.dispose();
+      codeMeshMat.dispose();
       skillsMeshMat.dispose();
       aboutPointsMat.dispose();
       mePointsMat.dispose();
+      codePointsMat.dispose();
       skillsPointsMat.dispose();
     };
-  }, [aboutMeshMat, meMeshMat, skillsMeshMat, aboutPointsMat, mePointsMat, skillsPointsMat]);
+  }, [
+    aboutMeshMat,
+    meMeshMat,
+    codeMeshMat,
+    skillsMeshMat,
+    aboutPointsMat,
+    mePointsMat,
+    codePointsMat,
+    skillsPointsMat,
+  ]);
 
   useFrame(() => {
     smoothOverviewProgress.current = THREE.MathUtils.lerp(
@@ -317,7 +347,7 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
 
     // Section 1 (ABOUT ME):
     // Opacity fades out if scrolling into Skills
-    const skillsHide = 1.0 - THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.0, 0.15);
+    const skillsHide = 1.0 - THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.0, 0.20);
     const aboutMeOpacity = smoothDarkActive.current * skillsHide;
     const aboutMeBreak = smoothOverviewProgress.current;
 
@@ -343,12 +373,24 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     mePointsMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
     mePointsMat.uniforms.uMouseActive.value = smoothMouseActive.current;
 
-    // Section 2 (SKILLS):
-    // 100% invisible in Overview. Fades in when entering Skills section.
-    const skillsOpacity = smoothDarkActive.current * THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.02, 0.35);
+    // Section 2 (SKILLS & CODE):
+    // 100% invisible in Overview. Fades in symmetrically when entering Skills section.
+    const skillsOpacity = smoothDarkActive.current * THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.0, 0.20);
     // Breaks down as user scrolls through horizontal cards towards the end
     const skillsBreak = THREE.MathUtils.clamp(1.0 - smoothSkillsProgress.current, 0.0, 1.0);
 
+    // CODE "</>" (Brand Red / Terracotta #bc6c25) uniforms:
+    codeMeshMat.uniforms.uScrollBreak.value = skillsBreak;
+    codeMeshMat.uniforms.uOpacity.value = skillsOpacity;
+    codeMeshMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
+    codeMeshMat.uniforms.uMouseActive.value = smoothMouseActive.current;
+
+    codePointsMat.uniforms.uScrollBreak.value = skillsBreak;
+    codePointsMat.uniforms.uOpacity.value = skillsOpacity;
+    codePointsMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
+    codePointsMat.uniforms.uMouseActive.value = smoothMouseActive.current;
+
+    // SKILLS (Brand White #fefae0) uniforms:
     skillsMeshMat.uniforms.uScrollBreak.value = skillsBreak;
     skillsMeshMat.uniforms.uOpacity.value = skillsOpacity;
     skillsMeshMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
@@ -409,6 +451,22 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
         material={skillsPointsMat}
         position={[textLayout.xSkills, textLayout.skillsCenterY, 0]}
         scale={[textLayout.skillsScale, textLayout.skillsScale, 1]}
+      />
+
+      {/* 4. Real 3D Clash Display typography mesh for "</>" (Brand Red #bc6c25) in front of SKILLS */}
+      <mesh
+        geometry={geometries.code}
+        material={codeMeshMat}
+        position={[textLayout.xCode, textLayout.skillsCenterY, 0.05]}
+        scale={[textLayout.skillsScale, textLayout.skillsScale, 1]}
+        renderOrder={2}
+      />
+      <points
+        geometry={geometries.code}
+        material={codePointsMat}
+        position={[textLayout.xCode, textLayout.skillsCenterY, 0.05]}
+        scale={[textLayout.skillsScale, textLayout.skillsScale, 1]}
+        renderOrder={2}
       />
     </group>
   );
