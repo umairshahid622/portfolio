@@ -64,27 +64,42 @@ export default function Header() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    if (targetId === "experience") {
+    if (targetId === "experience" || targetId === "projects") {
+      particleBridge.isDarkActive = true;
+      particleBridge.overviewProgress = 1.0;
+      particleBridge.skillsProgress = 0.0;
+      particleBridge.experienceProgress = 1.0;
+      particleBridge.experienceTitleYProgress = 1.0;
       const expSt = ScrollTrigger.getById("experience-timeline");
       if (expSt) {
+        // Scroll to the assembled Experience position (progress = 0.10) where title is at top and Card 0 is revealed
+        const targetScroll = expSt.start + (expSt.end - expSt.start) * 0.10;
         window.scrollTo({
-          top: expSt.start,
+          top: targetScroll,
           behavior: "smooth",
         });
         return;
       }
     }
     if (targetId === "skills") {
+      particleBridge.isDarkActive = true;
+      particleBridge.overviewProgress = 1.0;
+      particleBridge.skillsProgress = 1.0;
+      particleBridge.experienceProgress = 0.0;
       const skillsSt = ScrollTrigger.getById("skills-timeline");
       if (skillsSt) {
+        // Scroll directly to the assembled Skills entry point (progress = 0.142)
+        // where "SKILLS </>" is fully merged and the cards track is fully revealed
+        const targetScroll = skillsSt.start + (skillsSt.end - skillsSt.start) * 0.142;
         window.scrollTo({
-          top: skillsSt.start,
+          top: targetScroll,
           behavior: "smooth",
         });
         return;
       }
     }
     if (targetId === "about") {
+      particleBridge.isDarkActive = true;
       particleBridge.overviewProgress = 0;
       particleBridge.skillsProgress = 0;
       particleBridge.experienceProgress = 0;
@@ -177,7 +192,9 @@ export default function Header() {
               onClick={(e) => handleNavClick(e, "projects")}
               className={cn(
                 "transition-colors cursor-pointer py-1",
-                isOverDarkSection
+                (activeSection === "projects" || activeSection === "experience")
+                  ? "text-earth-cream font-medium"
+                  : isOverDarkSection
                   ? "hover:text-earth-cream"
                   : "hover:text-earth-forest dark:hover:text-earth-cream"
               )}

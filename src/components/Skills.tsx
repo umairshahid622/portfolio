@@ -172,6 +172,12 @@ export default function Skills() {
           scrub: 0.8,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onEnter: () => {
+            particleBridge.isDarkActive = true;
+          },
+          onEnterBack: () => {
+            particleBridge.isDarkActive = true;
+          },
           onLeaveBack: () => {
             particleBridge.skillsProgress = 0.0;
           },
