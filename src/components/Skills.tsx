@@ -258,25 +258,27 @@ export default function Skills() {
             <AppCard
               key={card.id}
               accent={card.accent ?? "moss"}
-              className="w-[320px] sm:w-[380px] md:w-[420px] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-earth-cream/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-earth-moss/10"
+              className="w-max max-w-[80vw] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-earth-cream/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-earth-moss/10"
             >
-              <div>
+              <div className="w-full min-w-0">
                 {/* Number & Heading */}
                 <div className="flex items-start sm:items-baseline justify-between gap-3 sm:gap-4 mb-1">
-                  <div className="flex items-baseline gap-3 sm:gap-4 min-w-0">
+                  <div className="flex items-baseline gap-3 sm:gap-4 min-w-0 whitespace-nowrap">
                     <AppCardNumber>{card.number}</AppCardNumber>
-                    <AppCardTitle>{card.heading}</AppCardTitle>
+                    <AppCardTitle className="whitespace-normal sm:whitespace-nowrap">
+                      {card.heading}
+                    </AppCardTitle>
                   </div>
                 </div>
 
                 {/* Role Summary with exact theme border-l-2 */}
-                <AppCardSummary className="mt-2.5 mb-3 line-clamp-3">
+                <AppCardSummary className="w-0 min-w-full mt-2.5 mb-3 line-clamp-3">
                   {card.summary}
                 </AppCardSummary>
               </div>
 
               {/* Core Skills Pill Cloud */}
-              <AppCardFooter>
+              <AppCardFooter className="w-0 min-w-full">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <span className="text-[11px] font-sans text-earth-cream/40 uppercase tracking-wider mr-1">
                     Skills:
