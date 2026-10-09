@@ -133,10 +133,10 @@ export default function Overview() {
           onUpdate: (self) => {
             const p = self.progress;
 
-            // Phase 1: As user begins scrolling the roller (0.18 -> 0.52), "ABOUT ME" gracefully shatters and spreads across the screen
-            // Phase 2: Throughout the rest of the scroll (0.52 -> 1.0), particles remain fully spread across the screen
-            const spreadStart = 0.18;
-            const spreadEnd = 0.52;
+            // Phase 1: As user begins scrolling the roller (0.08 -> 0.44), "ABOUT ME" shatters and spreads across the screen
+            // Phase 2: Throughout the rest of the scroll (0.44 -> 1.0), particles remain fully spread across the screen
+            const spreadStart = 0.08;
+            const spreadEnd = 0.44;
 
             if (p < spreadStart) {
               particleBridge.overviewProgress = 0.0;

@@ -5,6 +5,15 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { particleBridge } from "../utils/particleBridge";
 
 import { cn } from "../utils/cn";
+import {
+  AppCard,
+  AppCardNumber,
+  AppCardTitle,
+  AppCardBadge,
+  AppCardSummary,
+  AppCardPill,
+  AppCardFooter,
+} from "./AppCard";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -101,8 +110,12 @@ export default function WorkExperience() {
     () => {
       const section = sectionRef.current;
       const stackWrapper = stackWrapperRef.current;
-      const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
-      if (!section || !stackWrapper || cards.length === 0) return;
+      if (!section || !stackWrapper) return;
+
+      const cards = Array.from(
+        stackWrapper.querySelectorAll<HTMLDivElement>(".experience-card")
+      );
+      if (cards.length < WORK_EXPERIENCES.length) return;
 
       const isMobile = window.innerWidth < 640;
       const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
@@ -296,6 +309,7 @@ export default function WorkExperience() {
       tl.to({}, { duration: 0.12 }, 0.88);
 
       return () => {
+        tl.scrollTrigger?.kill();
         tl.kill();
       };
     },
@@ -315,40 +329,31 @@ export default function WorkExperience() {
           className="relative w-full h-[400px] xs:h-[410px] sm:h-[390px] md:h-[380px] will-change-transform"
         >
           {WORK_EXPERIENCES.map((item, index) => (
-            <div
+            <AppCard
               key={item.id}
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
+              accent="moss"
               className={cn(
-                "absolute top-0 left-0 w-full h-full rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-6 bg-earth-card border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between",
+                "experience-card absolute top-0 left-0 w-full h-full",
                 index === 0 && "z-10",
-                index === 1 && "z-[11]",
-                index === 2 && "z-[12]",
-                index === 3 && "z-[13]"
+                index === 1 && "z-20",
+                index === 2 && "z-30",
+                index === 3 && "z-40"
               )}
             >
-              {/* Top Accent Gradient Border */}
-              <div className="absolute top-0 left-0 right-0 h-[2px] opacity-80 bg-gradient-to-r from-transparent via-earth-moss to-transparent" />
-
-              {/* Ambient Accent Radial Glow */}
-              <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-3xl opacity-10 pointer-events-none bg-earth-moss" />
-
-              {/* Card Header */}
+              {/* Card Header & Content */}
               <div>
-                {/* Number & Company Name in Display Font */}
-                <div className="flex items-baseline gap-3 sm:gap-4 mb-1">
-                  <span className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight select-none text-earth-moss">
-                    {item.number}
-                  </span>
-                  <div className="flex flex-wrap items-baseline gap-2 sm:gap-2.5">
-                    <h3 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-earth-cream tracking-tight">
-                      {item.company}
-                    </h3>
-                    <span className="text-xs sm:text-sm font-sans text-earth-sand/75 font-normal">
-                      • {item.location}
-                    </span>
+                {/* Number & Company Name (Left) and Location (Right in Heading Font) */}
+                <div className="flex items-start sm:items-baseline justify-between gap-3 sm:gap-4 mb-1">
+                  <div className="flex items-baseline gap-3 sm:gap-4 min-w-0">
+                    <AppCardNumber>{item.number}</AppCardNumber>
+                    <AppCardTitle>{item.company}</AppCardTitle>
                   </div>
+                  <span className="font-heading text-xs sm:text-sm md:text-base font-medium tracking-normal text-earth-sand/85 shrink-0 text-right">
+                    {item.location}
+                  </span>
                 </div>
 
                 {/* Role */}
@@ -358,15 +363,13 @@ export default function WorkExperience() {
 
                 {/* Domain under Role */}
                 <div className="mt-1 mb-2.5 sm:mb-3">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-sans font-medium border bg-earth-moss/20 border-earth-moss/50 text-earth-moss">
-                    {item.domain}
-                  </span>
+                  <AppCardBadge>{item.domain}</AppCardBadge>
                 </div>
 
                 {/* Role Summary */}
-                <p className="text-xs sm:text-[13px] text-earth-cream/80 leading-relaxed mb-2.5 sm:mb-3 border-l-2 border-earth-moss pl-3 py-0.5">
+                <AppCardSummary className="mb-2.5 sm:mb-3">
                   {item.summary}
-                </p>
+                </AppCardSummary>
 
                 {/* Key Bullet Points from Resume */}
                 <ul className="space-y-1 sm:space-y-1.5 mb-3">
@@ -383,18 +386,13 @@ export default function WorkExperience() {
               </div>
 
               {/* Card Footer: Tech Stack & Date */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 pt-2.5 sm:pt-3 border-t border-earth-cream/10 mt-auto">
+              <AppCardFooter>
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <span className="text-[11px] font-sans text-earth-cream/40 uppercase tracking-wider mr-1">
                     Stack:
                   </span>
                   {item.skills.map((skill, sIdx) => (
-                    <span
-                      key={sIdx}
-                      className="text-[11px] sm:text-xs font-sans px-2.5 py-0.5 sm:py-1 rounded-md bg-earth-cream/[0.04] border border-earth-cream/10 text-earth-sand hover:text-earth-cream transition-colors"
-                    >
-                      {skill}
-                    </span>
+                    <AppCardPill key={sIdx}>{skill}</AppCardPill>
                   ))}
                 </div>
 
@@ -417,8 +415,8 @@ export default function WorkExperience() {
                     {item.period}
                   </span>
                 </div>
-              </div>
-            </div>
+              </AppCardFooter>
+            </AppCard>
           ))}
         </div>
       </div>

@@ -95,9 +95,12 @@ const BREAKDOWN_VERTEX_SHADER = `
     // Staggered threshold per triangle for natural organic flight
     float threshold = aRandom.w * 0.32;
 
-    float breakP = 0.0;
-    if (uOverviewBreak > 0.015) {
-      breakP = clamp((uOverviewBreak - 0.015 - threshold) / (1.0 - 0.015 - threshold + 0.0001), 0.0, 1.0);
+    float mergeOverviewP = 0.0;
+    if (uOverviewBreak <= 0.015) {
+      mergeOverviewP = 1.0;
+    } else {
+      float assembledP = 1.0 - uOverviewBreak;
+      mergeOverviewP = clamp((assembledP - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
     }
 
     float mergeSkillsP = 0.0;
@@ -133,12 +136,12 @@ const BREAKDOWN_VERTEX_SHADER = `
       currentLocal = mix(text1Local, text2Local, t);
       facetP = 1.0 - mergeSkillsP;
     } else {
-      // In Overview: Text 1 breaks apart and flies to screenTarget
-      float t = smoothstep(0.0, 1.0, breakP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
-      currentCenter = mix(text1Center, screenTarget, t) + arc;
+      // In Overview: Text 1 (ABOUT ME) breaks apart and flies to screenTarget identically to Skills and Work Experience
+      float t = smoothstep(0.0, 1.0, mergeOverviewP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeOverviewP) * 3.14159);
+      currentCenter = mix(screenTarget, text1Center, t) + arc;
       currentLocal = text1Local;
-      facetP = breakP;
+      facetP = 1.0 - mergeOverviewP;
     }
 
     // 3D rotation and scaling of facet when dispersed (smoothly eased once facet begins motion)
@@ -238,9 +241,12 @@ const POINTS_VERTEX_SHADER = `
     );
 
     float threshold = aRandom.w * 0.32;
-    float breakP = 0.0;
-    if (uOverviewBreak > 0.015) {
-      breakP = clamp((uOverviewBreak - 0.015 - threshold) / (1.0 - 0.015 - threshold + 0.0001), 0.0, 1.0);
+    float mergeOverviewP = 0.0;
+    if (uOverviewBreak <= 0.015) {
+      mergeOverviewP = 1.0;
+    } else {
+      float assembledP = 1.0 - uOverviewBreak;
+      mergeOverviewP = clamp((assembledP - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
     }
 
     float mergeSkillsP = 0.0;
@@ -274,11 +280,11 @@ const POINTS_VERTEX_SHADER = `
       currentLocal = mix(text1Local, text2Local, t);
       facetP = 1.0 - mergeSkillsP;
     } else {
-      float t = smoothstep(0.0, 1.0, breakP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
-      currentCenter = mix(text1Center, screenTarget, t) + arc;
+      float t = smoothstep(0.0, 1.0, mergeOverviewP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeOverviewP) * 3.14159);
+      currentCenter = mix(screenTarget, text1Center, t) + arc;
       currentLocal = text1Local;
-      facetP = breakP;
+      facetP = 1.0 - mergeOverviewP;
     }
 
     if (facetP > 0.01) {
@@ -527,6 +533,8 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     }
     if (smoothOverviewProgress.current < 0.005) {
       smoothOverviewProgress.current = 0.0;
+    } else if (smoothOverviewProgress.current > 0.995) {
+      smoothOverviewProgress.current = 1.0;
     }
 
     smoothSkillsProgress.current = THREE.MathUtils.lerp(

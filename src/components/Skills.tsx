@@ -1,9 +1,17 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { particleBridge } from "../utils/particleBridge";
-import { cn } from "../utils/cn";
+import {
+  AppCard,
+  AppCardNumber,
+  AppCardTitle,
+  AppCardSummary,
+  AppCardPill,
+  AppCardFooter,
+  type CardAccent,
+} from "./AppCard";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -13,7 +21,7 @@ export interface SkillCard {
   heading: string;
   summary: string;
   skills: string[];
-  accentClass: string;
+  accent?: CardAccent;
 }
 
 export const SKILL_CARDS: SkillCard[] = [
@@ -33,7 +41,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "HTML5 / CSS3",
       "Responsive UI/UX",
     ],
-    accentClass: "bg-earth-sand",
+    accent: "moss",
   },
   {
     id: "mobile",
@@ -50,7 +58,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Localization",
       "Dart Isolates",
     ],
-    accentClass: "bg-earth-terracotta",
+    accent: "moss",
   },
   {
     id: "backend",
@@ -67,7 +75,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Authentication (JWT)",
       "Supabase Auth",
     ],
-    accentClass: "bg-earth-moss",
+    accent: "moss",
   },
   {
     id: "state-management",
@@ -83,7 +91,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Zustand",
       "Reactive Streams",
     ],
-    accentClass: "bg-earth-copper",
+    accent: "moss",
   },
   {
     id: "database",
@@ -99,7 +107,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Supabase",
       "Data Modeling & Optimization",
     ],
-    accentClass: "bg-earth-yellow",
+    accent: "moss",
   },
   {
     id: "devops",
@@ -116,7 +124,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Version Control",
       "Codacy Static Analysis",
     ],
-    accentClass: "bg-earth-olive",
+    accent: "moss",
   },
   {
     id: "performance",
@@ -132,7 +140,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Unit Testing",
       "Code Reviews & Debugging",
     ],
-    accentClass: "bg-earth-rust",
+    accent: "moss",
   },
 ];
 
@@ -140,7 +148,6 @@ export default function Skills() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cardsWrapperRef = useRef<HTMLDivElement>(null);
-  const [, setHorizontalProgress] = useState(0);
 
   useGSAP(
     () => {
@@ -149,7 +156,7 @@ export default function Skills() {
       const cardsWrapper = cardsWrapperRef.current;
       if (!section || !cardsTrack || !cardsWrapper) return;
 
-      // Horizontal Cards Scroll: begins immediately when section reaches "top top" and pins
+      // Horizontal Cards Scroll: begins after skill text finishes merging
       const getTotalScroll = () => {
         const pad = window.innerWidth >= 768 ? 96 : window.innerWidth >= 640 ? 64 : 40;
         return Math.max(0, cardsTrack.scrollWidth - window.innerWidth + pad);
@@ -170,14 +177,13 @@ export default function Skills() {
           },
           onUpdate: (self) => {
             const p = self.progress;
-            setHorizontalProgress(p);
 
-            // Phase 1 (0.00 -> 0.12): As Skills enters, particles merge from screen-spread into "SKILLS </>"!
-            // Phase 2 (0.12 -> 0.50): Cards scroll horizontally; "SKILLS </>" stays assembled (skillsProgress = 1.0)
-            // Phase 3 (0.50 -> 0.85): While cards scroll through later cards, particles take flight into nebula (skillsProgress: 1.0 -> 0.0)
+            // Phase 1 (0.00 -> 0.14): As Skills enters, particles merge from screen-spread into "SKILLS </>"!
+            // Phase 2 (0.14 -> 0.55): Cards scroll horizontally; "SKILLS </>" stays assembled (skillsProgress = 1.0)
+            // Phase 3 (0.55 -> 0.85): While cards scroll through later cards, particles take flight into nebula (skillsProgress: 1.0 -> 0.0)
             // Phase 4 (0.85 -> 1.00): Cards reach final cards with particles fully dispersed
-            const mergeDuration = 0.12;
-            const spreadStart = 0.50;
+            const mergeDuration = 0.14;
+            const spreadStart = 0.55;
             const spreadEnd = 0.85;
 
             if (p < mergeDuration) {
@@ -196,7 +202,7 @@ export default function Skills() {
         },
       });
 
-      // 1. Cards container is immediately ready in view with constant scrolling and zero delay
+      // 1. Cards container fades into view at start
       tl.fromTo(
         cardsWrapper,
         { y: 30, opacity: 0 },
@@ -204,24 +210,24 @@ export default function Skills() {
           y: 0,
           opacity: 1,
           ease: "power2.out",
-          duration: 0.05,
+          duration: 0.06,
         },
         0.0
       );
 
-      // 2. Smooth, constant horizontal translation of cards across viewport with no delay (0.00 -> 0.90)
+      // 2. Horizontal translation begins strictly after skill text is merged (0.14 -> 0.88)
       tl.to(
         cardsTrack,
         {
           x: () => -getTotalScroll(),
           ease: "none",
-          duration: 0.90,
+          duration: 0.74,
         },
-        0.0
+        0.14
       );
 
-      // 3. Comfortable resting hold for final card before unpinning (0.90 -> 1.00)
-      tl.to({}, { duration: 0.10 }, 0.90);
+      // 3. Comfortable resting hold for final card before unpinning (0.88 -> 1.00)
+      tl.to({}, { duration: 0.12 }, 0.88);
 
       return () => {
         tl.kill();
@@ -249,42 +255,38 @@ export default function Skills() {
           className="flex flex-row items-stretch gap-5 sm:gap-7 md:gap-8 px-5 sm:px-8 md:px-12 w-max will-change-transform"
         >
           {SKILL_CARDS.map((card) => (
-            <div
+            <AppCard
               key={card.id}
-              className="w-[320px] sm:w-[380px] md:w-[420px] min-h-[270px] sm:min-h-[290px] shrink-0 rounded-2xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden backdrop-blur-2xl transition-all duration-300 group border bg-earth-dark/75 border-earth-cream/10 hover:border-earth-terracotta/40 hover:shadow-2xl hover:shadow-earth-terracotta/10"
+              accent={card.accent ?? "moss"}
+              className="w-[320px] sm:w-[380px] md:w-[420px] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-earth-cream/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-earth-moss/10"
             >
-              {/* Subtle Ambient Radial Glow */}
-              <div
-                className={cn(
-                  "absolute -top-24 -right-24 w-52 h-52 rounded-full blur-3xl transition-opacity duration-500 pointer-events-none opacity-20 group-hover:opacity-40",
-                  card.accentClass
-                )}
-              />
-
-              <div>                
-                {/* Heading & Summary */}
-                <div className="relative z-10 mt-3.5">
-                  <h3 className="font-heading text-2xl sm:text-3xl font-bold text-earth-cream group-hover:text-earth-sand transition-colors tracking-tight">
-                    {card.heading}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-earth-cream/70 leading-relaxed mt-2 line-clamp-3">
-                    {card.summary}
-                  </p>
+              <div>
+                {/* Number & Heading */}
+                <div className="flex items-start sm:items-baseline justify-between gap-3 sm:gap-4 mb-1">
+                  <div className="flex items-baseline gap-3 sm:gap-4 min-w-0">
+                    <AppCardNumber>{card.number}</AppCardNumber>
+                    <AppCardTitle>{card.heading}</AppCardTitle>
+                  </div>
                 </div>
+
+                {/* Role Summary with exact theme border-l-2 */}
+                <AppCardSummary className="mt-2.5 mb-3 line-clamp-3">
+                  {card.summary}
+                </AppCardSummary>
               </div>
 
               {/* Core Skills Pill Cloud */}
-              <div className="relative z-10 flex flex-wrap gap-1.5 mt-5 pt-4 border-t border-earth-cream/10">
-                {card.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="text-[11px] sm:text-xs font-sans px-2.5 py-0.5 rounded-md bg-earth-cream/5 text-earth-cream/90 border border-earth-cream/10 group-hover:border-earth-sand/25 transition-colors"
-                  >
-                    {skill}
+              <AppCardFooter>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-[11px] font-sans text-earth-cream/40 uppercase tracking-wider mr-1">
+                    Skills:
                   </span>
-                ))}
-              </div>
-            </div>
+                  {card.skills.map((skill, sIdx) => (
+                    <AppCardPill key={sIdx}>{skill}</AppCardPill>
+                  ))}
+                </div>
+              </AppCardFooter>
+            </AppCard>
           ))}
         </div>
       </div>
