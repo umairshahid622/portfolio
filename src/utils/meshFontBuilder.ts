@@ -82,7 +82,15 @@ function getTrianglesFromShapes(shapes: THREE.Shape[], maxEdge = 0.08): RawTrian
   return triangles;
 }
 
-function matchTriangleCount(arr: RawTriangle[], targetCount: number) {
+function matchTriangleCountCentroid(arr: RawTriangle[], targetCount: number) {
+  // If parity difference is odd, duplicate 1 smallest triangle so remaining count difference is even
+  if ((targetCount - arr.length) % 2 !== 0) {
+    arr.sort((a, b) => a.area - b.area);
+    const smallest = arr[0];
+    arr.push({ ...smallest });
+  }
+
+  // Sort descending by area to subdivide largest triangles first
   arr.sort((a, b) => b.area - a.area);
   let idx = 0;
   while (arr.length < targetCount) {
@@ -90,75 +98,46 @@ function matchTriangleCount(arr: RawTriangle[], targetCount: number) {
     const p1 = t.p1;
     const p2 = t.p2;
     const p3 = t.p3;
-    const d12 = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]);
-    const d23 = Math.hypot(p2[0] - p3[0], p2[1] - p3[1]);
-    const d31 = Math.hypot(p3[0] - p1[0], p3[1] - p1[1]);
-    let mid: [number, number, number];
-    let tA: RawTriangle;
-    let tB: RawTriangle;
-    if (d12 >= d23 && d12 >= d31) {
-      mid = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2, (p1[2] + p2[2]) / 2];
-      tA = {
-        p1,
-        p2: mid,
-        p3,
-        cx: (p1[0] + mid[0] + p3[0]) / 3,
-        cy: (p1[1] + mid[1] + p3[1]) / 3,
-        cz: (p1[2] + mid[2] + p3[2]) / 3,
-        area: t.area / 2,
-      };
-      tB = {
-        p1: mid,
-        p2,
-        p3,
-        cx: (mid[0] + p2[0] + p3[0]) / 3,
-        cy: (mid[1] + p2[1] + p3[1]) / 3,
-        cz: (mid[2] + p2[2] + p3[2]) / 3,
-        area: t.area / 2,
-      };
-    } else if (d23 >= d12 && d23 >= d31) {
-      mid = [(p2[0] + p3[0]) / 2, (p2[1] + p3[1]) / 2, (p2[2] + p3[2]) / 2];
-      tA = {
-        p1,
-        p2,
-        p3: mid,
-        cx: (p1[0] + p2[0] + mid[0]) / 3,
-        cy: (p1[1] + p2[1] + mid[1]) / 3,
-        cz: (p1[2] + p2[2] + mid[2]) / 3,
-        area: t.area / 2,
-      };
-      tB = {
-        p1,
-        p2: mid,
-        p3,
-        cx: (p1[0] + mid[0] + p3[0]) / 3,
-        cy: (p1[1] + mid[1] + p3[1]) / 3,
-        cz: (p1[2] + mid[2] + p3[2]) / 3,
-        area: t.area / 2,
-      };
-    } else {
-      mid = [(p3[0] + p1[0]) / 2, (p3[1] + p1[1]) / 2, (p3[2] + p1[2]) / 2];
-      tA = {
-        p1,
-        p2,
-        p3: mid,
-        cx: (p1[0] + p2[0] + mid[0]) / 3,
-        cy: (p1[1] + p2[1] + mid[1]) / 3,
-        cz: (p1[2] + p2[2] + mid[2]) / 3,
-        area: t.area / 2,
-      };
-      tB = {
-        p1: p2,
-        p2: p3,
-        p3: mid,
-        cx: (p2[0] + p3[0] + mid[0]) / 3,
-        cy: (p2[1] + p3[1] + mid[1]) / 3,
-        cz: (p2[2] + p3[2] + mid[2]) / 3,
-        area: t.area / 2,
-      };
-    }
+    // Centroid subdivision:
+    // Partition triangle into 3 sub-triangles meeting at centroid.
+    // Boundary edges (p1-p2, p2-p3, p3-p1) are 100% preserved with zero edge cuts.
+    // This guarantees ZERO T-junctions across the entire font mesh, keeping it completely watertight under mouse vertex displacement!
+    const c: [number, number, number] = [
+      (p1[0] + p2[0] + p3[0]) / 3,
+      (p1[1] + p2[1] + p3[1]) / 3,
+      (p1[2] + p2[2] + p3[2]) / 3,
+    ];
+    const subArea = t.area / 3;
+    const tA: RawTriangle = {
+      p1,
+      p2,
+      p3: c,
+      cx: (p1[0] + p2[0] + c[0]) / 3,
+      cy: (p1[1] + p2[1] + c[1]) / 3,
+      cz: (p1[2] + p2[2] + c[2]) / 3,
+      area: subArea,
+    };
+    const tB: RawTriangle = {
+      p1: p2,
+      p2: p3,
+      p3: c,
+      cx: (p2[0] + p3[0] + c[0]) / 3,
+      cy: (p2[1] + p3[1] + c[1]) / 3,
+      cz: (p2[2] + p3[2] + c[2]) / 3,
+      area: subArea,
+    };
+    const tC: RawTriangle = {
+      p1: p3,
+      p2: p1,
+      p3: c,
+      cx: (p3[0] + p1[0] + c[0]) / 3,
+      cy: (p3[1] + p1[1] + c[1]) / 3,
+      cz: (p3[2] + p1[2] + c[2]) / 3,
+      area: subArea,
+    };
     arr[idx - 1] = tA;
     arr.push(tB);
+    arr.push(tC);
   }
 }
 
@@ -167,8 +146,8 @@ function buildMorphableGeometry(
   t2: RawTriangle[]
 ): THREE.BufferGeometry {
   const targetCount = Math.max(t1.length, t2.length);
-  matchTriangleCount(t1, targetCount);
-  matchTriangleCount(t2, targetCount);
+  matchTriangleCountCentroid(t1, targetCount);
+  matchTriangleCountCentroid(t2, targetCount);
 
   // Sort along X to align natural typographic flow
   t1.sort((a, b) => a.cx - b.cx || a.cy - b.cy);

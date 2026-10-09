@@ -126,11 +126,10 @@ export default function Overview() {
           onUpdate: (self) => {
             const p = self.progress;
 
-            // Phase 1: Throughout the reading zone (0.0 -> 0.65), "ABOUT ME" remains 100% solid, crisp, and watertight
-            // Phase 2: As the drum roller finishes rolling past and disappears (0.65 -> 0.85),
-            // particles break apart and disperse across the screen, ready to merge into "SKILLS </>" at top of Skills
-            const spreadStart = 0.65;
-            const spreadEnd = 0.85;
+            // Phase 1: As user begins scrolling the roller (0.18 -> 0.52), "ABOUT ME" gracefully shatters and spreads across the screen
+            // Phase 2: Throughout the rest of the scroll (0.52 -> 1.0), particles remain fully spread across the screen
+            const spreadStart = 0.18;
+            const spreadEnd = 0.52;
 
             if (p < spreadStart) {
               particleBridge.overviewProgress = 0.0;
@@ -158,7 +157,7 @@ export default function Overview() {
         0
       );
 
-      // 2. Disappear smoothly as the final lines finish rolling past (0.65 -> 0.85)
+      // 2. Disappear smoothly as the final lines finish rolling past (0.70 -> 0.90)
       tl.fromTo(
         rollerContainer,
         { opacity: 1 },
@@ -167,7 +166,7 @@ export default function Overview() {
           ease: "power2.inOut",
           duration: 0.20,
         },
-        0.65
+        0.70
       );
 
       const refreshTimer = setTimeout(() => {
