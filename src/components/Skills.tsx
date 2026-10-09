@@ -171,13 +171,13 @@ export default function Skills() {
             const p = self.progress;
             setHorizontalProgress(p);
 
-            // Phase 1 (0.0 -> 0.18): As Skills enters, particles merge from screen-spread into "SKILLS </>"!
-            // Phase 2 (0.18 -> 0.48): Cards scroll horizontally; "SKILLS </>" stays assembled (skillsProgress = 1.0)
-            // Phase 3 (0.48 -> 0.82): While cards scroll through later cards, particles take flight into nebula (skillsProgress: 1.0 -> 0.0)
-            // Phase 4 (0.82 -> 1.0): Cards reach final cards with particles fully dispersed
-            const mergeDuration = 0.18;
-            const spreadStart = 0.48;
-            const spreadEnd = 0.82;
+            // Phase 1 (0.00 -> 0.12): As Skills enters, particles merge from screen-spread into "SKILLS </>"!
+            // Phase 2 (0.12 -> 0.50): Cards scroll horizontally; "SKILLS </>" stays assembled (skillsProgress = 1.0)
+            // Phase 3 (0.50 -> 0.85): While cards scroll through later cards, particles take flight into nebula (skillsProgress: 1.0 -> 0.0)
+            // Phase 4 (0.85 -> 1.00): Cards reach final cards with particles fully dispersed
+            const mergeDuration = 0.12;
+            const spreadStart = 0.50;
+            const spreadEnd = 0.85;
 
             if (p < mergeDuration) {
               particleBridge.skillsProgress = p / mergeDuration;
@@ -195,35 +195,32 @@ export default function Skills() {
         },
       });
 
-      // 1. As particles visibly pull together into "SKILLS </>" (0.0 -> 0.18), the skills cards emerge and arrive in view as the text finishes merging
+      // 1. Cards container is immediately ready in view with constant scrolling and zero delay
       tl.fromTo(
         cardsWrapper,
-        { y: 120, opacity: 0 },
+        { y: 30, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          ease: "power1.inOut",
-          duration: 0.12,
+          ease: "power2.out",
+          duration: 0.05,
         },
-        0.06
+        0.0
       );
 
-      // Brief settling hold so user sees cards and assembled "SKILLS </>" in place before horizontal scroll (0.18 -> 0.22)
-      tl.to({}, { duration: 0.04 }, 0.18);
-
-      // 2. Smooth horizontal translation of cards across viewport (0.22 -> 0.86)
+      // 2. Smooth, constant horizontal translation of cards across viewport with no delay (0.00 -> 0.90)
       tl.to(
         cardsTrack,
         {
           x: () => -getTotalScroll(),
           ease: "none",
-          duration: 0.64,
+          duration: 0.90,
         },
-        0.22
+        0.0
       );
 
-      // 3. Comfortable resting hold for final card before unpinning (0.86 -> 1.0)
-      tl.to({}, { duration: 0.14 }, 0.86);
+      // 3. Comfortable resting hold for final card before unpinning (0.90 -> 1.00)
+      tl.to({}, { duration: 0.10 }, 0.90);
 
       return () => {
         tl.kill();

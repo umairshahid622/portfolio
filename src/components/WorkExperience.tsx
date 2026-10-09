@@ -6,20 +6,122 @@ import { particleBridge } from "../utils/particleBridge";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+export interface WorkExperienceItem {
+  id: string;
+  number: string;
+  role: string;
+  company: string;
+  location: string;
+  period: string;
+  domain: string;
+  summary: string;
+  bullets: string[];
+  skills: string[];
+}
+
+export const PALETTE_GREEN = "#606c38";
+
+export const WORK_EXPERIENCES: WorkExperienceItem[] = [
+  {
+    id: "axian-group",
+    number: "01",
+    role: "Junior Flutter Developer",
+    company: "Axian Group",
+    location: "Islamabad, Pakistan",
+    period: "Oct 2025 – Mar 2026",
+    domain: "Fintech & Mobile Development",
+    summary:
+      "Engineered scalable cross-platform fintech mobile solutions with real-time transaction processing, secure authentication boundaries, and responsive state architecture.",
+    bullets: [
+      "Developed a cross-platform fintech mobile application using Flutter, ensuring scalability, performance, and seamless user experience.",
+      "Integrated secure RESTful APIs supporting financial transactions, authentication, and real-time synchronization across platforms.",
+      "Implemented state management using GetX, along with validations and optimized UI rendering, improving performance, security, and overall stability.",
+    ],
+    skills: ["Flutter", "Dart", "GetX", "RESTful APIs", "Fintech", "Security", "Real-Time Sync"],
+  },
+  {
+    id: "bx-technologies",
+    number: "02",
+    role: "Front-End Developer",
+    company: "BX Technologies",
+    location: "Islamabad, Pakistan",
+    period: "Apr 2024 – Oct 2024",
+    domain: "Interactive Web & Motion UI",
+    summary:
+      "Built high-performance, responsive React web applications featuring fluid Framer Motion animations and rigorous render-tree performance optimizations.",
+    bullets: [
+      "Developed high-performance web applications using React.js with modern libraries ensuring scalability and responsive interfaces.",
+      "Implemented Framer Motion animations delivering smooth transitions, enhancing user engagement and application interactivity.",
+      "Optimized performance through lazy loading, code splitting, and efficient rendering improving speed and user experience.",
+    ],
+    skills: ["React.js", "TypeScript", "JavaScript", "Framer Motion", "Lazy Loading", "Code Splitting", "Responsive UI"],
+  },
+  {
+    id: "tecklogics",
+    number: "03",
+    role: "Front-End Developer",
+    company: "Tecklogics",
+    location: "Islamabad, Pakistan",
+    period: "Jan 2024 – Mar 2024",
+    domain: "Enterprise Systems & UI Architecture",
+    summary:
+      "Developed modular Angular enterprise applications with a robust design system built on Tailwind CSS, Grid, and Flexbox, integrated with live REST APIs.",
+    bullets: [
+      "Built responsive web applications using Angular framework ensuring scalability, optimization, and cross-device compatibility.",
+      "Developed reusable UI components using Tailwind CSS, Grid, and Flexbox improving consistency and maintainability.",
+      "Integrated RESTful APIs enabling real-time data synchronization ensuring smooth functionality and enhanced user experience.",
+    ],
+    skills: ["Angular", "TypeScript", "Tailwind CSS", "Component Architecture", "RESTful APIs", "CSS Grid", "Flexbox"],
+  },
+  {
+    id: "cyber-reconnaissance",
+    number: "04",
+    role: "Front-End Developer",
+    company: "Cyber Reconnaissance & Combat",
+    location: "Islamabad, Pakistan",
+    period: "Aug 2022 – Dec 2022",
+    domain: "Web Security & Defense Systems",
+    summary:
+      "Engineered secure, mission-critical web applications in Angular with robust authentication systems, access control boundaries, and optimized state management.",
+    bullets: [
+      "Developed secure and scalable web applications using Angular with modern UI libraries and frameworks.",
+      "Implemented authentication systems enhancing application security, improving access control, and ensuring safe user interactions.",
+      "Optimized performance using state management, lazy loading, and efficient rendering improving scalability and responsiveness.",
+    ],
+    skills: ["Angular", "TypeScript", "Web Security", "Authentication", "Access Control", "State Management", "Performance"],
+  },
+];
+
 export default function WorkExperience() {
   const sectionRef = useRef<HTMLElement>(null);
+  const stackWrapperRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useGSAP(
     () => {
       const section = sectionRef.current;
-      if (!section) return;
+      const stackWrapper = stackWrapperRef.current;
+      const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
+      if (!section || !stackWrapper || cards.length === 0) return;
+
+      const isMobile = window.innerWidth < 640;
+      const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
+      const stepY = isMobile ? 52 : isTablet ? 60 : 68;
+
+      // Initial state:
+      // Cards container starts invisible until title moves to top
+      gsap.set(stackWrapper, { opacity: 0, y: 40 });
+      gsap.set(cards[0], { yPercent: 0, y: 0, scale: 1, opacity: 1, transformOrigin: "center top" });
+      for (let i = 1; i < cards.length; i++) {
+        gsap.set(cards[i], { yPercent: 125, y: 0, scale: 1, opacity: 0, transformOrigin: "center top" });
+      }
 
       const tl = gsap.timeline({
         scrollTrigger: {
           id: "experience-timeline",
           trigger: section,
           start: "top top",
-          end: "+=1600",
+          end: "+=4400",
           pin: true,
           scrub: 0.8,
           anticipatePin: 1,
@@ -30,25 +132,172 @@ export default function WorkExperience() {
           onEnterBack: () => {
             particleBridge.isDarkActive = true;
           },
+          onLeave: () => {
+            particleBridge.experienceProgress = 0.0;
+            particleBridge.experienceTitleYProgress = 1.0;
+          },
           onLeaveBack: () => {
             particleBridge.experienceProgress = 0.0;
+            particleBridge.experienceTitleYProgress = 0.0;
           },
           onUpdate: (self) => {
             const p = self.progress;
 
-            // Phase 1 (0.0 -> 0.30): As section pins, triangles merge from screen-spread into "Work Experience" in the middle
-            // Phase 2 (0.30 -> 1.0): "Work Experience" stays assembled in the middle with the content space empty
-            const mergeDuration = 0.30;
-            if (p < mergeDuration) {
-              particleBridge.experienceProgress = p / mergeDuration;
-            } else {
+            // Phase 1 (0.00 -> 0.05): Triangles merge into "Work Experience" in exact center
+            // Phase 2 (0.05 -> 0.10): Title glides up to top position
+            // Phase 3 (0.10 -> 0.36): Card 1 (02 BX Technologies - 2nd card) stacks on Card 0
+            // Phase 4 (0.36 -> 0.62): Card 2 (03 Tecklogics - 3rd card) stacks on Card 1
+            // Phase 5 (0.62 -> 0.88): Card 3 (04 Cyber Reconnaissance & Combat - 4th card) stacks AND TRIANGLES SPREAD AT THE EXACT SAME TIME!
+            // Phase 6 (0.88 -> 1.00): Fully stacked resting deck with dispersed triangles in background
+            if (p < 0.05) {
+              particleBridge.experienceProgress = p / 0.05;
+              particleBridge.experienceTitleYProgress = 0.0;
+            } else if (p < 0.10) {
               particleBridge.experienceProgress = 1.0;
+              particleBridge.experienceTitleYProgress = (p - 0.05) / 0.05;
+            } else if (p <= 0.62) {
+              // Title stays completely assembled at top while Card 1 (02) and Card 2 (03) stack!
+              particleBridge.experienceProgress = 1.0;
+              particleBridge.experienceTitleYProgress = 1.0;
+            } else if (p <= 0.88) {
+              // 4th card and triangle spreading happen at the EXACT SAME TIME!
+              const spreadP = (p - 0.62) / (0.88 - 0.62);
+              particleBridge.experienceProgress = Math.max(0.0, Math.min(1.0, 1.0 - spreadP));
+              particleBridge.experienceTitleYProgress = 1.0;
+            } else {
+              // Triangles remain dispersed in background while all 4 cards rest
+              particleBridge.experienceProgress = 0.0;
+              particleBridge.experienceTitleYProgress = 1.0;
             }
 
             particleBridge.isDarkActive = true;
           },
         },
       });
+
+      // 1. Reveal stack container & Card 0 as title reaches top (0.05 -> 0.10)
+      tl.to(
+        stackWrapper,
+        {
+          opacity: 1,
+          y: 0,
+          ease: "power2.out",
+          duration: 0.05,
+        },
+        0.05
+      );
+
+      // 2. Card 1 (02 BX Technologies - 2nd card) stacks on Card 0 (0.10 -> 0.36)
+      tl.to(
+        cards[0],
+        {
+          y: -stepY,
+          scale: 0.96,
+          opacity: 0.88,
+          ease: "power1.inOut",
+          duration: 0.26,
+        },
+        0.10
+      );
+      tl.to(
+        cards[1],
+        {
+          yPercent: 0,
+          y: 0,
+          scale: 1.0,
+          opacity: 1,
+          ease: "power1.out",
+          duration: 0.26,
+        },
+        0.10
+      );
+
+      // 3. Card 2 (03 Tecklogics - 3rd card) stacks on Card 1 (0.36 -> 0.62)
+      tl.to(
+        cards[0],
+        {
+          y: -stepY * 2,
+          scale: 0.92,
+          opacity: 0.78,
+          ease: "power1.inOut",
+          duration: 0.26,
+        },
+        0.36
+      );
+      tl.to(
+        cards[1],
+        {
+          y: -stepY,
+          scale: 0.96,
+          opacity: 0.88,
+          ease: "power1.inOut",
+          duration: 0.26,
+        },
+        0.36
+      );
+      tl.to(
+        cards[2],
+        {
+          yPercent: 0,
+          y: 0,
+          scale: 1.0,
+          opacity: 1,
+          ease: "power1.out",
+          duration: 0.26,
+        },
+        0.36
+      );
+
+      // 4. Card 3 (04 Cyber Reconnaissance & Combat - 4th card) stacks AND triangles spread AT THE EXACT SAME TIME (0.62 -> 0.88)
+      // All previous cards are neatly tabbed: 01, 02, 03 all visible above 04!
+      tl.to(
+        cards[0],
+        {
+          y: Math.round(-stepY * 2.85),
+          scale: 0.88,
+          opacity: 0.70,
+          ease: "power1.inOut",
+          duration: 0.26,
+        },
+        0.62
+      );
+      tl.to(
+        cards[1],
+        {
+          y: -stepY * 2,
+          scale: 0.92,
+          opacity: 0.78,
+          ease: "power1.inOut",
+          duration: 0.26,
+        },
+        0.62
+      );
+      tl.to(
+        cards[2],
+        {
+          y: -stepY,
+          scale: 0.96,
+          opacity: 0.88,
+          ease: "power1.inOut",
+          duration: 0.26,
+        },
+        0.62
+      );
+      tl.to(
+        cards[3],
+        {
+          yPercent: 0,
+          y: 0,
+          scale: 1.0,
+          opacity: 1,
+          ease: "power1.out",
+          duration: 0.26,
+        },
+        0.62
+      );
+
+      // 5. Final comfortable resting pause for completed stack (0.88 -> 1.00)
+      tl.to({}, { duration: 0.12 }, 0.88);
 
       return () => {
         tl.kill();
@@ -61,7 +310,142 @@ export default function WorkExperience() {
     <section
       ref={sectionRef}
       id="experience"
-      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent overflow-hidden select-none pointer-events-none"
-    />
+      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-end pb-5 sm:pb-8 md:pb-10 pointer-events-auto"
+    >
+      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
+        {/* Full-width Stacked Cards Track */}
+        <div
+          ref={stackWrapperRef}
+          className="relative w-full h-[450px] xs:h-[460px] sm:h-[440px] md:h-[430px] will-change-transform"
+        >
+          {WORK_EXPERIENCES.map((item, index) => (
+            <div
+              key={item.id}
+              ref={(el) => {
+                cardRefs.current[index] = el;
+              }}
+              style={{
+                zIndex: index + 10,
+              }}
+              className="absolute top-0 left-0 w-full rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-7 bg-[#161412] border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between"
+            >
+              {/* Top Accent Gradient Border */}
+              <div
+                className="absolute top-0 left-0 right-0 h-[2px] opacity-80"
+                style={{
+                  background: `linear-gradient(90deg, transparent, ${PALETTE_GREEN}, transparent)`,
+                }}
+              />
+
+              {/* Ambient Accent Radial Glow */}
+              <div
+                className="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-3xl opacity-10 pointer-events-none"
+                style={{ backgroundColor: PALETTE_GREEN }}
+              />
+
+              {/* Card Header */}
+              <div>
+                {/* Number & Company Name in Display Font */}
+                <div className="flex items-baseline gap-3 sm:gap-4 mb-1">
+                  <span
+                    className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight select-none"
+                    style={{ color: PALETTE_GREEN }}
+                  >
+                    {item.number}
+                  </span>
+                  <div className="flex flex-wrap items-baseline gap-2 sm:gap-2.5">
+                    <h3 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-earth-cream tracking-tight">
+                      {item.company}
+                    </h3>
+                    <span className="text-xs sm:text-sm font-sans text-earth-sand/75 font-normal">
+                      • {item.location}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Role */}
+                <h4 className="text-base sm:text-lg md:text-xl font-bold text-earth-cream tracking-tight">
+                  {item.role}
+                </h4>
+
+                {/* Domain under Role */}
+                <div className="mt-1.5 mb-3">
+                  <span
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-mono font-medium border"
+                    style={{
+                      backgroundColor: `${PALETTE_GREEN}20`,
+                      borderColor: `${PALETTE_GREEN}50`,
+                      color: "#9db458",
+                    }}
+                  >
+                    {item.domain}
+                  </span>
+                </div>
+
+                {/* Role Summary */}
+                <p className="text-xs sm:text-[13px] text-earth-cream/80 leading-relaxed mb-3.5 border-l-2 pl-3 py-0.5"
+                   style={{ borderColor: PALETTE_GREEN }}
+                >
+                  {item.summary}
+                </p>
+
+                {/* Key Bullet Points from Resume */}
+                <ul className="space-y-1.5 sm:space-y-2 mb-4">
+                  {item.bullets.map((bullet, bIdx) => (
+                    <li
+                      key={bIdx}
+                      className="text-[12px] sm:text-[13px] text-earth-sand/90 leading-relaxed flex items-start gap-2.5"
+                    >
+                      <span
+                        className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ backgroundColor: PALETTE_GREEN }}
+                      />
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Card Footer: Tech Stack & Date */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 pt-3 border-t border-earth-cream/10 mt-auto">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-[11px] font-mono text-earth-cream/40 uppercase tracking-wider mr-1">
+                    Stack:
+                  </span>
+                  {item.skills.map((skill, sIdx) => (
+                    <span
+                      key={sIdx}
+                      className="text-[11px] sm:text-xs font-mono px-2.5 py-0.5 sm:py-1 rounded-md bg-earth-cream/[0.04] border border-earth-cream/10 text-earth-sand hover:text-earth-cream transition-colors"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Date / Period in Footer */}
+                <div className="shrink-0 self-start sm:self-auto">
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs px-3 py-1 rounded-full bg-earth-cream/[0.05] border border-earth-cream/10 text-earth-sand font-medium">
+                    <svg
+                      className="w-3.5 h-3.5 opacity-60"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    {item.period}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -219,7 +219,7 @@ const POINTS_VERTEX_SHADER = `
     vec3 text2Center = uTargetOffset + aTargetCenter * uTargetScale;
     vec3 text2Local = (aTargetPos - aTargetCenter) * uTargetScale;
 
-    vec3 text3Center = uTarget3Offset + aTarget3Center * uTargetScale;
+    vec3 text3Center = uTarget3Offset + aTarget3Center * uTarget3Scale;
     vec3 text3Local = (aTarget3Pos - aTarget3Center) * uTarget3Scale;
 
     float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
@@ -378,6 +378,7 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
   const smoothOverviewProgress = useRef(0);
   const smoothSkillsProgress = useRef(0);
   const smoothExperienceProgress = useRef(0);
+  const smoothExperienceTitleYProgress = useRef(0);
   const smoothDarkActive = useRef(0);
   const smoothMouseWorld = useRef(new THREE.Vector2(0, 0));
   const smoothMouseActive = useRef(0.0);
@@ -437,7 +438,8 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     const xSkills = edges.left + wSkills * 0.5;
     const xCode = edges.left + wSkills + spaceSkillsW + wCode * 0.5;
 
-    // Work Experience Layout: Centered horizontally and vertically in the middle of the viewport
+    // Work Experience Layout:
+    // Initial center position (Y = 0.0):
     const expTargetW = viewport.width * (viewport.width < 3.2 ? 0.90 : 0.72);
     const expTargetH = viewport.height * (viewport.width < 3.2 ? 0.12 : 0.16);
 
@@ -447,8 +449,8 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     // Space between: 0.45
     const baseWWork = 4.054;
     const baseWExp = 8.061;
-    const baseSpaceExp = 0.45;
-    const baseTotalExp = baseWWork + baseSpaceExp + baseWExp; // ~12.565
+    const baseSpaceExp = 0.52;
+    const baseTotalExp = baseWWork + baseSpaceExp + baseWExp; // ~12.635
     const baseExpH = 1.167;
 
     const expScale = Math.min(expTargetW / baseTotalExp, expTargetH / baseExpH);
@@ -461,6 +463,15 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     const xWork = -(wExperience + spaceExpW) * 0.5;
     const xExperience = +(wWork + spaceExpW) * 0.5;
     const expCenterY = 0.0;
+
+    // Top title coordinates when cards are stacked below:
+    const expTopY = viewport.height * (viewport.width < 3.2 ? 0.40 : 0.38);
+    const expTopScale = expScale * (viewport.width < 3.2 ? 0.78 : 0.72);
+    const wWorkTop = baseWWork * expTopScale;
+    const wExpTop = baseWExp * expTopScale;
+    const spaceExpWTop = baseSpaceExp * expTopScale;
+    const xWorkTop = -(wExpTop + spaceExpWTop) * 0.5;
+    const xExperienceTop = +(wWorkTop + spaceExpWTop) * 0.5;
 
     return {
       overviewCenterY,
@@ -475,6 +486,10 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
       expScale,
       xWork,
       xExperience,
+      expTopY,
+      expTopScale,
+      xWorkTop,
+      xExperienceTop,
     };
   }, [viewport.width, viewport.height, size.width]);
 
@@ -534,6 +549,15 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
       smoothExperienceProgress.current = 1.0;
     }
 
+    smoothExperienceTitleYProgress.current = THREE.MathUtils.lerp(
+      smoothExperienceTitleYProgress.current,
+      particleBridge.experienceTitleYProgress,
+      0.15
+    );
+    if (Math.abs(smoothExperienceTitleYProgress.current - particleBridge.experienceTitleYProgress) < 0.002) {
+      smoothExperienceTitleYProgress.current = particleBridge.experienceTitleYProgress;
+    }
+
     smoothDarkActive.current = THREE.MathUtils.lerp(
       smoothDarkActive.current,
       particleBridge.isDarkActive ? 1.0 : 0.0,
@@ -560,6 +584,21 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     const skProgress = smoothSkillsProgress.current;
     const expProgress = smoothExperienceProgress.current;
 
+    const titleP = smoothExperienceTitleYProgress.current;
+    const currentExpY = THREE.MathUtils.lerp(textLayout.expCenterY, textLayout.expTopY, titleP);
+    const currentExpScale = THREE.MathUtils.lerp(textLayout.expScale, textLayout.expTopScale, titleP);
+    const currentXWork = THREE.MathUtils.lerp(textLayout.xWork, textLayout.xWorkTop, titleP);
+    const currentXExperience = THREE.MathUtils.lerp(textLayout.xExperience, textLayout.xExperienceTop, titleP);
+
+    // Exact typographic baseline & cap-height alignment:
+    // In Clash Display, "Work" center is at Y = 0.4585, while "Experience" (with 'p' descender) center is at Y = 0.3475.
+    // By offsetting Work by +0.0555 * scale and Experience by -0.0555 * scale:
+    // Both share the exact same baseline at currentExpY - 0.4030 * scale
+    // Both share the exact same cap-height ('W' & 'E') at currentExpY + 0.5280 * scale!
+    const yAlignOffset = 0.0555 * currentExpScale;
+    const currentExpYWork = currentExpY + yAlignOffset;
+    const currentExpYExperience = currentExpY - yAlignOffset;
+
     // White Mesh & Points (Morphs ABOUT -> Spread Screen Triangles -> SKILLS -> Work)
     const whiteMats = [whiteMeshMat, whitePointsMat];
     for (const mat of whiteMats) {
@@ -571,8 +610,8 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
       mat.uniforms.uOriginScale.value = textLayout.scale;
       mat.uniforms.uTargetOffset.value.set(textLayout.xSkills, textLayout.skillsCenterY, 0);
       mat.uniforms.uTargetScale.value = textLayout.skillsScale;
-      mat.uniforms.uTarget3Offset.value.set(textLayout.xWork, textLayout.expCenterY, 0);
-      mat.uniforms.uTarget3Scale.value = textLayout.expScale;
+      mat.uniforms.uTarget3Offset.value.set(currentXWork, currentExpYWork, 0);
+      mat.uniforms.uTarget3Scale.value = currentExpScale;
       mat.uniforms.uOpacity.value = opacity;
       mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       mat.uniforms.uMouseActive.value = smoothMouseActive.current;
@@ -589,8 +628,8 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
       mat.uniforms.uOriginScale.value = textLayout.scale;
       mat.uniforms.uTargetOffset.value.set(textLayout.xCode, textLayout.skillsCenterY, 0.05);
       mat.uniforms.uTargetScale.value = textLayout.skillsScale;
-      mat.uniforms.uTarget3Offset.value.set(textLayout.xExperience, textLayout.expCenterY, 0);
-      mat.uniforms.uTarget3Scale.value = textLayout.expScale;
+      mat.uniforms.uTarget3Offset.value.set(currentXExperience, currentExpYExperience, 0);
+      mat.uniforms.uTarget3Scale.value = currentExpScale;
       mat.uniforms.uOpacity.value = opacity;
       mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       mat.uniforms.uMouseActive.value = smoothMouseActive.current;
