@@ -106,11 +106,12 @@ export default function WorkExperience() {
 
       const isMobile = window.innerWidth < 640;
       const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
-      const stepY = isMobile ? 52 : isTablet ? 60 : 68;
+      const stepY = isMobile ? 44 : isTablet ? 50 : 56;
+      const halfStep = Math.round(stepY / 2);
 
       // Initial state:
       // Cards container starts invisible until title moves to top
-      gsap.set(stackWrapper, { opacity: 0, y: 40 });
+      gsap.set(stackWrapper, { opacity: 0, y: 30 });
       gsap.set(cards[0], { yPercent: 0, y: 0, scale: 1, opacity: 1, transformOrigin: "center top" });
       for (let i = 1; i < cards.length; i++) {
         gsap.set(cards[i], { yPercent: 125, y: 0, scale: 1, opacity: 0, transformOrigin: "center top" });
@@ -188,12 +189,12 @@ export default function WorkExperience() {
       );
 
       // 2. Card 1 (02 BX Technologies - 2nd card) stacks on Card 0 (0.10 -> 0.36)
+      // Symmetrical centering: Card 0 moves to -halfStep, Card 1 lands at +halfStep
+      // Center remains Y = 0 (middle of the screen)
       tl.to(
         cards[0],
         {
-          y: -stepY,
-          scale: 0.96,
-          opacity: 0.88,
+          y: -halfStep,
           ease: "power1.inOut",
           duration: 0.26,
         },
@@ -203,8 +204,7 @@ export default function WorkExperience() {
         cards[1],
         {
           yPercent: 0,
-          y: 0,
-          scale: 1.0,
+          y: halfStep,
           opacity: 1,
           ease: "power1.out",
           duration: 0.26,
@@ -213,12 +213,12 @@ export default function WorkExperience() {
       );
 
       // 3. Card 2 (03 Tecklogics - 3rd card) stacks on Card 1 (0.36 -> 0.62)
+      // Symmetrical centering: Card 0 moves to -stepY, Card 1 moves to 0, Card 2 lands at +stepY
+      // Center remains Y = 0 (middle of the screen)
       tl.to(
         cards[0],
         {
-          y: -stepY * 2,
-          scale: 0.92,
-          opacity: 0.78,
+          y: -stepY,
           ease: "power1.inOut",
           duration: 0.26,
         },
@@ -227,9 +227,7 @@ export default function WorkExperience() {
       tl.to(
         cards[1],
         {
-          y: -stepY,
-          scale: 0.96,
-          opacity: 0.88,
+          y: 0,
           ease: "power1.inOut",
           duration: 0.26,
         },
@@ -239,8 +237,7 @@ export default function WorkExperience() {
         cards[2],
         {
           yPercent: 0,
-          y: 0,
-          scale: 1.0,
+          y: stepY,
           opacity: 1,
           ease: "power1.out",
           duration: 0.26,
@@ -249,13 +246,17 @@ export default function WorkExperience() {
       );
 
       // 4. Card 3 (04 Cyber Reconnaissance & Combat - 4th card) stacks AND triangles spread AT THE EXACT SAME TIME (0.62 -> 0.88)
+      // Symmetrical centering:
+      // Card 0 -> -halfStep * 3 (-84px)
+      // Card 1 -> -halfStep     (-28px)
+      // Card 2 -> +halfStep     (+28px)
+      // Card 3 -> +halfStep * 3 (+84px)
       // All previous cards are neatly tabbed: 01, 02, 03 all visible above 04!
+      // Center remains Y = 0 (middle of the screen)
       tl.to(
         cards[0],
         {
-          y: Math.round(-stepY * 2.85),
-          scale: 0.88,
-          opacity: 0.70,
+          y: -halfStep * 3,
           ease: "power1.inOut",
           duration: 0.26,
         },
@@ -264,9 +265,7 @@ export default function WorkExperience() {
       tl.to(
         cards[1],
         {
-          y: -stepY * 2,
-          scale: 0.92,
-          opacity: 0.78,
+          y: -halfStep,
           ease: "power1.inOut",
           duration: 0.26,
         },
@@ -275,9 +274,7 @@ export default function WorkExperience() {
       tl.to(
         cards[2],
         {
-          y: -stepY,
-          scale: 0.96,
-          opacity: 0.88,
+          y: halfStep,
           ease: "power1.inOut",
           duration: 0.26,
         },
@@ -287,8 +284,7 @@ export default function WorkExperience() {
         cards[3],
         {
           yPercent: 0,
-          y: 0,
-          scale: 1.0,
+          y: halfStep * 3,
           opacity: 1,
           ease: "power1.out",
           duration: 0.26,
@@ -310,13 +306,13 @@ export default function WorkExperience() {
     <section
       ref={sectionRef}
       id="experience"
-      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-end pb-5 sm:pb-8 md:pb-10 pointer-events-auto"
+      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-center items-center pt-14 sm:pt-16 pb-4 pointer-events-auto"
     >
       <div className="w-full max-w-5xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
         {/* Full-width Stacked Cards Track */}
         <div
           ref={stackWrapperRef}
-          className="relative w-full h-[450px] xs:h-[460px] sm:h-[440px] md:h-[430px] will-change-transform"
+          className="relative w-full h-[400px] xs:h-[410px] sm:h-[390px] md:h-[380px] will-change-transform"
         >
           {WORK_EXPERIENCES.map((item, index) => (
             <div
@@ -327,7 +323,7 @@ export default function WorkExperience() {
               style={{
                 zIndex: index + 10,
               }}
-              className="absolute top-0 left-0 w-full rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-7 bg-[#161412] border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between"
+              className="absolute top-0 left-0 w-full h-full rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-6 bg-[#161412] border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between"
             >
               {/* Top Accent Gradient Border */}
               <div
@@ -369,7 +365,7 @@ export default function WorkExperience() {
                 </h4>
 
                 {/* Domain under Role */}
-                <div className="mt-1.5 mb-3">
+                <div className="mt-1 mb-2.5 sm:mb-3">
                   <span
                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-mono font-medium border"
                     style={{
@@ -383,14 +379,14 @@ export default function WorkExperience() {
                 </div>
 
                 {/* Role Summary */}
-                <p className="text-xs sm:text-[13px] text-earth-cream/80 leading-relaxed mb-3.5 border-l-2 pl-3 py-0.5"
+                <p className="text-xs sm:text-[13px] text-earth-cream/80 leading-relaxed mb-2.5 sm:mb-3 border-l-2 pl-3 py-0.5"
                    style={{ borderColor: PALETTE_GREEN }}
                 >
                   {item.summary}
                 </p>
 
                 {/* Key Bullet Points from Resume */}
-                <ul className="space-y-1.5 sm:space-y-2 mb-4">
+                <ul className="space-y-1 sm:space-y-1.5 mb-3">
                   {item.bullets.map((bullet, bIdx) => (
                     <li
                       key={bIdx}
@@ -407,7 +403,7 @@ export default function WorkExperience() {
               </div>
 
               {/* Card Footer: Tech Stack & Date */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 pt-3 border-t border-earth-cream/10 mt-auto">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 pt-2.5 sm:pt-3 border-t border-earth-cream/10 mt-auto">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <span className="text-[11px] font-mono text-earth-cream/40 uppercase tracking-wider mr-1">
                     Stack:
