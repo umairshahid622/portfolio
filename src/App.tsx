@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Overview from "./components/Overview";
 import Skills from "./components/Skills";
+import WorkExperience from "./components/WorkExperience";
 import ParticleExperienceWrapper from "./components/ParticleExperienceWrapper";
 import SmoothCursor from "./components/SmoothCursor";
 import CurtainLoader from "./components/CurtainLoader";
@@ -40,10 +41,11 @@ export default function App() {
           {/* Hero section is completely standalone */}
           <Hero />
 
-          {/* Unified particle experience wrapper for Overview & Skills */}
+          {/* Unified particle experience wrapper for Overview, Skills & Work Experience */}
           <ParticleExperienceWrapper>
             <Overview />
             <Skills />
+            <WorkExperience />
           </ParticleExperienceWrapper>
         </main>
         <SmoothCursor />

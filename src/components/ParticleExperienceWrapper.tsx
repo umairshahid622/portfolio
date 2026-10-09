@@ -63,6 +63,7 @@ export default function ParticleExperienceWrapper({
           particleBridge.isDarkActive = false;
           particleBridge.overviewProgress = 0;
           particleBridge.skillsProgress = 0;
+          particleBridge.experienceProgress = 0;
         },
       });
     },

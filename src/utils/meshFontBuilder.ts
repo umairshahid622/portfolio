@@ -143,26 +143,36 @@ function matchTriangleCountCentroid(arr: RawTriangle[], targetCount: number) {
 
 function buildMorphableGeometry(
   t1: RawTriangle[],
-  t2: RawTriangle[]
+  t2: RawTriangle[],
+  t3?: RawTriangle[]
 ): THREE.BufferGeometry {
-  const targetCount = Math.max(t1.length, t2.length);
+  const targetCount = Math.max(t1.length, t2.length, t3 ? t3.length : 0);
   matchTriangleCountCentroid(t1, targetCount);
   matchTriangleCountCentroid(t2, targetCount);
+  if (t3) {
+    matchTriangleCountCentroid(t3, targetCount);
+  }
 
   // Sort along X to align natural typographic flow
   t1.sort((a, b) => a.cx - b.cx || a.cy - b.cy);
   t2.sort((a, b) => a.cx - b.cx || a.cy - b.cy);
+  if (t3) {
+    t3.sort((a, b) => a.cx - b.cx || a.cy - b.cy);
+  }
 
   const totalVertices = targetCount * 3;
   const positions = new Float32Array(totalVertices * 3);
   const centers = new Float32Array(totalVertices * 3);
   const targetPositions = new Float32Array(totalVertices * 3);
   const targetCenters = new Float32Array(totalVertices * 3);
+  const target3Positions = new Float32Array(totalVertices * 3);
+  const target3Centers = new Float32Array(totalVertices * 3);
   const randoms = new Float32Array(totalVertices * 4);
 
   for (let i = 0; i < targetCount; i++) {
     const tri1 = t1[i];
     const tri2 = t2[i];
+    const tri3 = t3 ? t3[i] : null;
 
     // Deterministic pseudo-random seed based on triangle center
     const s1 = Math.sin(tri1.cx * 12.9898 + tri1.cy * 78.233) * 43758.5453;
@@ -180,6 +190,7 @@ function buildMorphableGeometry(
 
     const pts1 = [tri1.p1, tri1.p2, tri1.p3];
     const pts2 = [tri2.p1, tri2.p2, tri2.p3];
+    const pts3 = tri3 ? [tri3.p1, tri3.p2, tri3.p3] : pts2;
 
     for (let v = 0; v < 3; v++) {
       const vIdx = (i * 3 + v) * 3;
@@ -201,6 +212,14 @@ function buildMorphableGeometry(
       targetCenters[vIdx + 1] = tri2.cy;
       targetCenters[vIdx + 2] = tri2.cz;
 
+      target3Positions[vIdx] = pts3[v][0];
+      target3Positions[vIdx + 1] = pts3[v][1];
+      target3Positions[vIdx + 2] = pts3[v][2];
+
+      target3Centers[vIdx] = tri3 ? tri3.cx : tri2.cx;
+      target3Centers[vIdx + 1] = tri3 ? tri3.cy : tri2.cy;
+      target3Centers[vIdx + 2] = tri3 ? tri3.cz : tri2.cz;
+
       randoms[rIdx] = nx;
       randoms[rIdx + 1] = ny;
       randoms[rIdx + 2] = nz;
@@ -213,6 +232,8 @@ function buildMorphableGeometry(
   geom.setAttribute("aCenter", new THREE.BufferAttribute(centers, 3));
   geom.setAttribute("aTargetPos", new THREE.BufferAttribute(targetPositions, 3));
   geom.setAttribute("aTargetCenter", new THREE.BufferAttribute(targetCenters, 3));
+  geom.setAttribute("aTarget3Pos", new THREE.BufferAttribute(target3Positions, 3));
+  geom.setAttribute("aTarget3Center", new THREE.BufferAttribute(target3Centers, 3));
   geom.setAttribute("aRandom", new THREE.BufferAttribute(randoms, 4));
   geom.computeBoundingBox();
   return geom;
@@ -235,16 +256,20 @@ export async function loadMeshFontGeometries(): Promise<TextMeshGeometries> {
 
     const shapesAbout = font.generateShapes("ABOUT", 1);
     const shapesSkills = font.generateShapes("SKILLS", 1);
+    const shapesWork = font.generateShapes("Work", 1);
     const white = buildMorphableGeometry(
-      getTrianglesFromShapes(shapesAbout, 0.08),
-      getTrianglesFromShapes(shapesSkills, 0.08)
+      getTrianglesFromShapes(shapesAbout, 0.16),
+      getTrianglesFromShapes(shapesSkills, 0.17),
+      getTrianglesFromShapes(shapesWork, 0.12)
     );
 
     const shapesMe = font.generateShapes("ME", 1);
     const shapesCode = font.generateShapes("</>", 1);
+    const shapesExperience = font.generateShapes("Experience", 1);
     const red = buildMorphableGeometry(
       getTrianglesFromShapes(shapesMe, 0.06),
-      getTrianglesFromShapes(shapesCode, 0.06)
+      getTrianglesFromShapes(shapesCode, 0.06),
+      getTrianglesFromShapes(shapesExperience, 0.20)
     );
 
     cachedGeometries = { white, red };

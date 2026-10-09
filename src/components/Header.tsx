@@ -11,9 +11,14 @@ export default function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const headerThreshold = 75;
+      const expSt = ScrollTrigger.getById("experience-timeline");
       const skillsSt = ScrollTrigger.getById("skills-timeline");
       const aboutSt = ScrollTrigger.getById("about-timeline");
 
+      if (expSt && window.scrollY >= expSt.start && window.scrollY <= expSt.end) {
+        setActiveSection("experience");
+        return;
+      }
       if (skillsSt && window.scrollY >= skillsSt.start && window.scrollY <= skillsSt.end) {
         setActiveSection("skills");
         return;
@@ -47,7 +52,7 @@ export default function Header() {
     };
   }, []);
 
-  const isOverDarkSection = activeSection === "about" || activeSection === "skills";
+  const isOverDarkSection = activeSection === "about" || activeSection === "skills" || activeSection === "experience";
 
   const handleNavClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -57,6 +62,16 @@ export default function Header() {
     if (targetId === "hero") {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
+    }
+    if (targetId === "experience") {
+      const expSt = ScrollTrigger.getById("experience-timeline");
+      if (expSt) {
+        window.scrollTo({
+          top: expSt.start,
+          behavior: "smooth",
+        });
+        return;
+      }
     }
     if (targetId === "skills") {
       const skillsSt = ScrollTrigger.getById("skills-timeline");
@@ -71,6 +86,7 @@ export default function Header() {
     if (targetId === "about") {
       particleBridge.overviewProgress = 0;
       particleBridge.skillsProgress = 0;
+      particleBridge.experienceProgress = 0;
       const aboutSt = ScrollTrigger.getById("about-timeline");
       if (aboutSt) {
         window.scrollTo({
