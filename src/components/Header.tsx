@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useTheme } from "../context/ThemeContext";
 import AppButton from "./AppButton";
 
@@ -8,8 +9,20 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Detect which section is currently underneath the navbar
       const headerThreshold = 75;
+      const skillsSt = ScrollTrigger.getById("skills-timeline");
+      const aboutSt = ScrollTrigger.getById("about-timeline");
+
+      if (skillsSt && window.scrollY >= skillsSt.start && window.scrollY <= skillsSt.end) {
+        setActiveSection("skills");
+        return;
+      }
+      if (aboutSt && window.scrollY >= aboutSt.start && window.scrollY < aboutSt.end) {
+        setActiveSection("about");
+        return;
+      }
+
+      // Detect which section is currently underneath the navbar
       const sections = document.querySelectorAll<HTMLElement>("section[id]");
       let current = "hero";
 
@@ -43,6 +56,26 @@ export default function Header() {
     if (targetId === "hero") {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
+    }
+    if (targetId === "skills") {
+      const skillsSt = ScrollTrigger.getById("skills-timeline");
+      if (skillsSt) {
+        window.scrollTo({
+          top: skillsSt.start,
+          behavior: "smooth",
+        });
+        return;
+      }
+    }
+    if (targetId === "about") {
+      const aboutSt = ScrollTrigger.getById("about-timeline");
+      if (aboutSt) {
+        window.scrollTo({
+          top: aboutSt.start,
+          behavior: "smooth",
+        });
+        return;
+      }
     }
     const el = document.getElementById(targetId);
     if (el) {

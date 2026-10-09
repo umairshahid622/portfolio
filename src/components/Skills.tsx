@@ -6,7 +6,7 @@ import { particleBridge } from "../utils/particleBridge";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-interface SkillCard {
+export interface SkillCard {
   id: string;
   number: string;
   heading: string;
@@ -15,7 +15,7 @@ interface SkillCard {
   accentColor: string;
 }
 
-const SKILL_CARDS: SkillCard[] = [
+export const SKILL_CARDS: SkillCard[] = [
   {
     id: "frontend",
     number: "01",
@@ -138,28 +138,17 @@ const SKILL_CARDS: SkillCard[] = [
 export default function Skills() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const cardsWrapperRef = useRef<HTMLDivElement>(null);
   const [, setHorizontalProgress] = useState(0);
 
   useGSAP(
     () => {
       const section = sectionRef.current;
       const cardsTrack = trackRef.current;
-      if (!section || !cardsTrack) return;
+      const cardsWrapper = cardsWrapperRef.current;
+      if (!section || !cardsTrack || !cardsWrapper) return;
 
-      // 1. Ensure particles stay merged into "SKILLS" and "</>" upon entering section
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top bottom",
-        end: "top top",
-        onEnter: () => {
-          particleBridge.skillsProgress = 1.0;
-        },
-        onEnterBack: () => {
-          particleBridge.skillsProgress = 1.0;
-        },
-      });
-
-      // 2. Horizontal Cards Scroll: begins when section reaches "top top" and pins
+      // Horizontal Cards Scroll: begins immediately when section reaches "top top" and pins
       const getTotalScroll = () => {
         const pad = window.innerWidth >= 768 ? 96 : window.innerWidth >= 640 ? 64 : 40;
         return Math.max(0, cardsTrack.scrollWidth - window.innerWidth + pad);
@@ -167,49 +156,71 @@ export default function Skills() {
 
       const tl = gsap.timeline({
         scrollTrigger: {
+          id: "skills-timeline",
           trigger: section,
           start: "top top",
           end: () => `+=${Math.max(3000, getTotalScroll() * 1.6)}`,
           pin: true,
-          scrub: 1,
+          scrub: 0.8,
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             const p = self.progress;
             setHorizontalProgress(p);
 
-            // Start spreading before cards scroll ends:
-            // Phase A (0.0 -> 0.42): Cards scroll horizontally; "SKILLS" & "</>" stay crisp and assembled (skillsProgress = 1.0)
-            // Phase B (0.42 -> 0.82): While cards are still scrolling, particles take flight and spread out into cosmic nebula (skillsProgress: 1.0 -> 0.0)
-            // Phase C (0.82 -> 1.0): Cards reach final cards with particles fully dispersed and reactive to cursor
-            const spreadStart = 0.42;
+            // Phase 1 (0.0 -> 0.16): As Skills enters, particles merge from screen-spread into "SKILLS </>"!
+            // Phase 2 (0.16 -> 0.48): Cards scroll horizontally; "SKILLS </>" stays assembled (skillsProgress = 1.0)
+            // Phase 3 (0.48 -> 0.82): While cards scroll through later cards, particles take flight into nebula (skillsProgress: 1.0 -> 0.0)
+            // Phase 4 (0.82 -> 1.0): Cards reach final cards with particles fully dispersed
+            const mergeDuration = 0.16;
+            const spreadStart = 0.48;
             const spreadEnd = 0.82;
 
-            if (p < spreadStart) {
+            if (p < mergeDuration) {
+              particleBridge.skillsProgress = p / mergeDuration;
+            } else if (p < spreadStart) {
               particleBridge.skillsProgress = 1.0;
             } else if (p > spreadEnd) {
               particleBridge.skillsProgress = 0.0;
             } else {
               const spreadProgress = (p - spreadStart) / (spreadEnd - spreadStart);
-              // Smoothly transition from 1.0 (assembled) down to 0.0 (fully spread out into nebula)
               particleBridge.skillsProgress = Math.max(0.0, Math.min(1.0, 1.0 - spreadProgress));
             }
 
-            // Ensure particles remain visible throughout
             particleBridge.isDarkActive = true;
           },
         },
       });
 
-      // 1. Smooth horizontal translation of cards across viewport (0.0 -> 0.85)
-      tl.to(cardsTrack, {
-        x: () => -getTotalScroll(),
-        ease: "none",
-        duration: 0.85,
-      });
+      // 1. As particles merge into "SKILLS </>" (0.0 -> 0.16), the skills cards glide up into view in perfect sync
+      tl.fromTo(
+        cardsWrapper,
+        { y: 130, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          ease: "power2.out",
+          duration: 0.16,
+        },
+        0
+      );
 
-      // 2. Comfortable resting hold for final card before unpinning (0.85 -> 1.0)
-      tl.to({}, { duration: 0.15 });
+      // Brief settling hold so user sees cards and assembled "SKILLS </>" in place before horizontal scroll (0.16 -> 0.20)
+      tl.to({}, { duration: 0.04 }, 0.16);
+
+      // 2. Smooth horizontal translation of cards across viewport (0.20 -> 0.86)
+      tl.to(
+        cardsTrack,
+        {
+          x: () => -getTotalScroll(),
+          ease: "none",
+          duration: 0.66,
+        },
+        0.20
+      );
+
+      // 3. Comfortable resting hold for final card before unpinning (0.86 -> 1.0)
+      tl.to({}, { duration: 0.14 }, 0.86);
 
       return () => {
         tl.kill();
@@ -222,13 +233,16 @@ export default function Skills() {
     <section
       ref={sectionRef}
       id="skills"
-      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent text-earth-cream transition-colors duration-300 flex flex-col justify-end overflow-hidden select-none"
+      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent text-earth-cream transition-colors duration-300 flex flex-col justify-end overflow-hidden select-none -mt-[100vh]"
     >
       {/* Accessible Section Heading */}
       <h2 className="sr-only">Skills — Core Technical Domains</h2>
 
       {/* Horizontal Cards Track Container */}
-      <div className="w-full overflow-visible mt-auto mb-[105px] sm:mb-[125px] md:mb-[135px] relative z-20">
+      <div
+        ref={cardsWrapperRef}
+        className="w-full overflow-visible mt-auto mb-[105px] sm:mb-[125px] md:mb-[135px] relative z-20 will-change-transform"
+      >
         <div
           ref={trackRef}
           className="flex flex-row items-stretch gap-5 sm:gap-7 md:gap-8 px-5 sm:px-8 md:px-12 w-max will-change-transform"

@@ -111,9 +111,10 @@ export default function Overview() {
 
       const tl = gsap.timeline({
         scrollTrigger: {
+          id: "about-timeline",
           trigger: section,
           start: "top top",
-          end: `+=${Math.max(1600, PARAGRAPH_LINES.length * 105)}`,
+          end: `+=${Math.max(1400, PARAGRAPH_LINES.length * 95)}`,
           pin: true,
           scrub: 0.8,
           anticipatePin: 1,
@@ -121,63 +122,49 @@ export default function Overview() {
           onUpdate: (self) => {
             const p = self.progress;
 
-            // Phase 1: Early shatter & cosmic dispersal across the full screen (0.06 -> 0.24)
-            // Phase 2: Throughout the reading zone (0.24 -> 0.74), particles remain 100% SPREAD across the entire viewport
+            // Phase 1: Early shatter & cosmic dispersal across the full screen (0.06 -> 0.22)
+            // Phase 2: Throughout the reading zone (0.22 -> 1.0), particles remain 100% SPREAD across the entire viewport
             const spreadStart = 0.06;
-            const spreadEnd = 0.24;
+            const spreadEnd = 0.22;
 
             if (p < spreadStart) {
               particleBridge.overviewProgress = 0.0;
-            } else if (p < 0.74) {
+            } else if (p < 0.90) {
               const spreadProgress = (p - spreadStart) / (spreadEnd - spreadStart);
               particleBridge.overviewProgress = Math.min(1.0, Math.max(0.0, spreadProgress));
             } else {
               particleBridge.overviewProgress = 1.0;
             }
 
-            // Phase 3: Only AFTER the roller completes and disappears (at p >= 0.74),
-            // particles start merging into "SKILLS" and "</>" earlier!
-            const mergeStart = 0.74;
-            const mergeEnd = 0.90;
-
-            if (p < mergeStart) {
-              particleBridge.skillsProgress = 0.0;
-            } else if (p >= mergeEnd) {
-              particleBridge.skillsProgress = 1.0;
-            } else {
-              const mergeProgress = (p - mergeStart) / (mergeEnd - mergeStart);
-              particleBridge.skillsProgress = Math.min(1.0, Math.max(0.0, mergeProgress));
-            }
+            // While in Overview, skillsProgress remains 0.0 until roller finishes and section transitions
+            particleBridge.skillsProgress = 0.0;
           },
         },
       });
 
-      // 1. Full continuous roll through all lines out past the top
+      // 1. Drum continuous roll through all lines out past the top (0.0 -> 0.96)
       tl.fromTo(
         drum,
         { rotateX: initialRotation },
         {
           rotateX: totalRotation,
           ease: "none",
-          duration: 0.74,
+          duration: 0.96,
         },
         0
       );
 
-      // 2. Disappear smoothly after the final lines finish rolling past
+      // 2. Disappear smoothly as the final lines finish rolling past (0.80 -> 1.00)
       tl.fromTo(
         rollerContainer,
         { opacity: 1 },
         {
           opacity: 0,
           ease: "power2.inOut",
-          duration: 0.08,
+          duration: 0.20,
         },
-        0.66
+        0.80
       );
-
-      // 3. Resting hold so user enjoys the crisply assembled "SKILLS </>" before unpinning
-      tl.to({}, { duration: 0.26 }, 0.74);
 
       const refreshTimer = setTimeout(() => {
         ScrollTrigger.refresh();
@@ -194,11 +181,11 @@ export default function Overview() {
       id="about"
       className="relative w-full h-screen h-[100dvh] max-h-screen py-6 sm:py-8 md:py-10 px-4 sm:px-6 md:px-8 bg-transparent text-earth-cream transition-colors duration-300 flex items-center justify-center overflow-hidden select-none"
     >
-      <div className="w-full max-w-[94vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4">
-        {/* 3D Rolling Drum Container - Shifted downward so while rolling it never intersects with the ABOUT ME constellation text */}
+      <div className="w-full max-w-[94vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4 pointer-events-none">
+        {/* 3D Rolling Drum Container */}
         <div
           ref={rollerContainerRef}
-          className="w-full relative select-none will-change-transform flex items-center justify-center mt-6 sm:mt-8 md:mt-10 translate-y-[55px] sm:translate-y-[75px] md:translate-y-[90px]"
+          className="w-full relative select-none will-change-transform flex items-center justify-center mt-6 sm:mt-8 md:mt-10 translate-y-[55px] sm:translate-y-[75px] md:translate-y-[90px] pointer-events-auto"
           style={{
             perspective: "1150px",
             perspectiveOrigin: "center center",
