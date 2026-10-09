@@ -119,21 +119,25 @@ export default function Overview() {
           scrub: 0.8,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onLeaveBack: () => {
+            particleBridge.overviewProgress = 0.0;
+            particleBridge.skillsProgress = 0.0;
+          },
           onUpdate: (self) => {
             const p = self.progress;
 
-            // Phase 1: Early shatter & cosmic dispersal across the full screen (0.06 -> 0.22)
-            // Phase 2: Throughout the reading zone (0.22 -> 1.0), particles remain 100% SPREAD across the entire viewport
-            const spreadStart = 0.06;
-            const spreadEnd = 0.22;
+            // Phase 1: Throughout the reading zone (0.0 -> 0.65), "ABOUT ME" remains 100% solid, crisp, and watertight
+            // Phase 2: As the drum roller finishes rolling past and disappears (0.65 -> 0.85),
+            // particles break apart and disperse across the screen, ready to merge into "SKILLS </>" at top of Skills
+            const spreadStart = 0.65;
+            const spreadEnd = 0.85;
 
             if (p < spreadStart) {
               particleBridge.overviewProgress = 0.0;
-            } else if (p < 0.90) {
-              const spreadProgress = (p - spreadStart) / (spreadEnd - spreadStart);
-              particleBridge.overviewProgress = Math.min(1.0, Math.max(0.0, spreadProgress));
-            } else {
+            } else if (p >= spreadEnd) {
               particleBridge.overviewProgress = 1.0;
+            } else {
+              particleBridge.overviewProgress = (p - spreadStart) / (spreadEnd - spreadStart);
             }
 
             // While in Overview, skillsProgress remains 0.0 until roller finishes and section transitions
@@ -154,7 +158,7 @@ export default function Overview() {
         0
       );
 
-      // 2. Disappear smoothly as the final lines finish rolling past (0.80 -> 1.00)
+      // 2. Disappear smoothly as the final lines finish rolling past (0.65 -> 0.85)
       tl.fromTo(
         rollerContainer,
         { opacity: 1 },
@@ -163,7 +167,7 @@ export default function Overview() {
           ease: "power2.inOut",
           duration: 0.20,
         },
-        0.80
+        0.65
       );
 
       const refreshTimer = setTimeout(() => {

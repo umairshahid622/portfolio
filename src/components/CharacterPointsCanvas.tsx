@@ -29,76 +29,113 @@ const globalMouseState = {
 };
 
 // =========================================================================
-// 3D MESH NODE BREAKDOWN SHADERS
-// Physically shatters and disperses mesh polygon facets and nodes on scroll!
+// UNIFIED MORPHABLE TRIANGLE MESH SHADERS
+// The spreaded particles ARE the spreaded triangles of the text mesh!
+// They morph seamlessly from Text 1 -> Spread Screen Facets -> Text 2 without
+// ever disappearing or creating separate meshes.
 // =========================================================================
 const BREAKDOWN_VERTEX_SHADER = `
-  uniform float uScrollBreak;
+  uniform float uOverviewBreak;
+  uniform float uSkillsProgress;
+  uniform vec3 uOriginOffset;
+  uniform float uOriginScale;
+  uniform vec3 uTargetOffset;
+  uniform float uTargetScale;
+
   uniform vec2 uMouseWorld;
   uniform float uMouseActive;
   uniform float uRadius;
   uniform vec2 uViewport;
 
   attribute vec3 aCenter;
+  attribute vec3 aTargetPos;
+  attribute vec3 aTargetCenter;
   attribute vec4 aRandom;
 
   varying vec3 vWorldPos;
   varying float vBreakProgress;
 
   void main() {
-    vec4 worldCenter4 = modelMatrix * vec4(aCenter, 1.0);
-    vec3 worldCenter = worldCenter4.xyz;
+    // 1. Text 1 World Coordinates (ABOUT or ME)
+    vec3 text1Center = uOriginOffset + aCenter * uOriginScale;
+    vec3 text1Local = (position - aCenter) * uOriginScale;
+    vec3 text1Pos = text1Center + text1Local;
 
-    // Relative vector from triangle center to this vertex in world space
-    vec3 localVec = (modelMatrix * vec4(position - aCenter, 0.0)).xyz;
+    // 2. Text 2 World Coordinates (SKILLS or </>)
+    vec3 text2Center = uTargetOffset + aTargetCenter * uTargetScale;
+    vec3 text2Local = (aTargetPos - aTargetCenter) * uTargetScale;
+    vec3 text2Pos = text2Center + text2Local;
 
-    // Staggered breakdown start per triangle
-    float threshold = aRandom.w * 0.35;
-    float breakP = clamp((uScrollBreak - threshold) / (1.0 - threshold + 0.0001), 0.0, 1.0);
+    // 3. Screen Spread Target (distributed evenly across visible viewport)
+    float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
+    float s2 = cos(aCenter.x * 93.9898 + aCenter.y * 67.345 + aRandom.y * 24.634) * 24634.6345;
+    float s3 = sin(aCenter.x * 43.1234 + aCenter.y * 19.876 + aRandom.z * 58.392) * 58392.1234;
 
-    vec3 finalWorldPos = worldCenter + localVec;
+    float r1 = fract(abs(s1));
+    float r2 = fract(abs(s2));
+    float r3 = fract(abs(s3));
 
-    if (breakP > 0.0) {
-      // Deterministic spread target evenly distributed across visible viewport
-      float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
-      float s2 = cos(aCenter.x * 93.9898 + aCenter.y * 67.345 + aRandom.y * 24.634) * 24634.6345;
-      float s3 = sin(aCenter.x * 43.1234 + aCenter.y * 19.876 + aRandom.z * 58.392) * 58392.1234;
+    vec3 screenTarget = vec3(
+      (r1 - 0.5) * uViewport.x * 0.92,
+      (r2 - 0.5) * uViewport.y * 0.90,
+      (r3 - 0.5) * 1.6
+    );
 
-      float r1 = fract(abs(s1));
-      float r2 = fract(abs(s2));
-      float r3 = fract(abs(s3));
+    // Staggered threshold per triangle for natural organic flight
+    float threshold = aRandom.w * 0.32;
 
-      // Target position distributed evenly across screen boundaries
-      vec3 screenTarget = vec3(
-        (r1 - 0.5) * uViewport.x * 0.92,
-        (r2 - 0.5) * uViewport.y * 0.90,
-        (r3 - 0.5) * 1.6
-      );
-
-      // Node shrinkage & separation as it breaks apart into geometric facet
-      float scale = max(0.18, 1.0 - pow(breakP, 0.65) * 0.65);
-
-      // 3D rotation of the facet around its own random axis
-      float angle = breakP * 8.0 * (aRandom.x > 0.0 ? 1.0 : -1.0);
-      vec3 axis = normalize(aRandom.xyz + vec3(0.001));
-      localVec = localVec * cos(angle) + cross(axis, localVec) * sin(angle) + axis * dot(axis, localVec) * (1.0 - cos(angle));
-      localVec *= scale;
-
-      float t = smoothstep(0.0, 1.0, breakP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
-
-      vec3 currentCenter = mix(worldCenter, screenTarget, t) + arc;
-      finalWorldPos = currentCenter + localVec;
+    float breakP = 0.0;
+    if (uOverviewBreak > 0.015) {
+      breakP = clamp((uOverviewBreak - 0.015 - threshold) / (1.0 - 0.015 - threshold + 0.0001), 0.0, 1.0);
     }
 
-    // Interactive mouse repulsion on world position
+    float mergeP = 0.0;
+    if (uSkillsProgress >= 0.985) {
+      mergeP = 1.0;
+    } else {
+      mergeP = clamp((uSkillsProgress - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
+    }
+
+    vec3 currentCenter;
+    vec3 currentLocal;
+    float facetP;
+
+    if (uSkillsProgress < 0.01) {
+      // In Overview: Text 1 breaks apart and flies to screenTarget
+      float t = smoothstep(0.0, 1.0, breakP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
+      currentCenter = mix(text1Center, screenTarget, t) + arc;
+      currentLocal = text1Local;
+      facetP = breakP;
+    } else {
+      // In Skills: Fly directly from screenTarget to Text 2
+      float t = smoothstep(0.0, 1.0, mergeP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeP) * 3.14159);
+      currentCenter = mix(screenTarget, text2Center, t) + arc;
+      currentLocal = mix(text1Local, text2Local, t);
+      facetP = 1.0 - mergeP;
+    }
+
+    // 3D rotation and scaling of facet when dispersed (smoothly eased once facet begins motion)
+    if (facetP > 0.01) {
+      float motionP = smoothstep(0.01, 0.12, facetP);
+      float scale = max(0.20, 1.0 - pow(facetP, 0.65) * 0.65 * motionP);
+      float angle = facetP * 8.0 * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
+      vec3 axis = normalize(aRandom.xyz + vec3(0.001));
+      currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
+      currentLocal *= scale;
+    }
+
+    vec3 finalWorldPos = currentCenter + currentLocal;
+
+    // Interactive mouse repulsion
     float d = length(finalWorldPos.xy - uMouseWorld);
     float repel = smoothstep(uRadius, 0.03, d) * uMouseActive * 0.085;
     vec2 repelDir = normalize(finalWorldPos.xy - uMouseWorld + vec2(0.0001));
     finalWorldPos.xy += repelDir * repel;
     finalWorldPos.z -= repel * 0.3;
 
-    vBreakProgress = breakP;
+    vBreakProgress = facetP;
     vWorldPos = finalWorldPos;
     gl_Position = projectionMatrix * viewMatrix * vec4(finalWorldPos, 1.0);
   }
@@ -113,13 +150,13 @@ const BREAKDOWN_FRAGMENT_SHADER = `
   void main() {
     vec3 col = uColor;
 
-    // As nodes break down, their edges catch subtle luminous energy
+    // Luminous energy when floating as facets
     if (vBreakProgress > 0.0) {
       col += vec3(0.18, 0.12, 0.06) * sin(vBreakProgress * 3.14159);
     }
 
     // Alpha stays visible when dispersed across the screen
-    float alpha = uOpacity * max(0.35, 1.0 - vBreakProgress * 0.45);
+    float alpha = uOpacity * max(0.40, 1.0 - vBreakProgress * 0.40);
     if (alpha < 0.005) discard;
 
     gl_FragColor = vec4(col, alpha);
@@ -127,57 +164,96 @@ const BREAKDOWN_FRAGMENT_SHADER = `
 `;
 
 const POINTS_VERTEX_SHADER = `
-  uniform float uScrollBreak;
+  uniform float uOverviewBreak;
+  uniform float uSkillsProgress;
+  uniform vec3 uOriginOffset;
+  uniform float uOriginScale;
+  uniform vec3 uTargetOffset;
+  uniform float uTargetScale;
+
   uniform vec2 uMouseWorld;
   uniform float uMouseActive;
   uniform float uRadius;
   uniform vec2 uViewport;
 
   attribute vec3 aCenter;
+  attribute vec3 aTargetPos;
+  attribute vec3 aTargetCenter;
   attribute vec4 aRandom;
 
   varying float vBreakProgress;
 
   void main() {
-    vec4 worldCenter4 = modelMatrix * vec4(aCenter, 1.0);
-    vec3 worldCenter = worldCenter4.xyz;
+    vec3 text1Center = uOriginOffset + aCenter * uOriginScale;
+    vec3 text1Local = (position - aCenter) * uOriginScale;
 
-    float threshold = aRandom.w * 0.35;
-    float breakP = clamp((uScrollBreak - threshold) / (1.0 - threshold + 0.0001), 0.0, 1.0);
+    vec3 text2Center = uTargetOffset + aTargetCenter * uTargetScale;
+    vec3 text2Local = (aTargetPos - aTargetCenter) * uTargetScale;
 
-    vec4 localPos4 = modelMatrix * vec4(position, 1.0);
-    vec3 finalWorldPos = localPos4.xyz;
+    float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
+    float s2 = cos(aCenter.x * 93.9898 + aCenter.y * 67.345 + aRandom.y * 24.634) * 24634.6345;
+    float s3 = sin(aCenter.x * 43.1234 + aCenter.y * 19.876 + aRandom.z * 58.392) * 58392.1234;
 
-    if (breakP > 0.0) {
-      float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
-      float s2 = cos(aCenter.x * 93.9898 + aCenter.y * 67.345 + aRandom.y * 24.634) * 24634.6345;
-      float s3 = sin(aCenter.x * 43.1234 + aCenter.y * 19.876 + aRandom.z * 58.392) * 58392.1234;
+    float r1 = fract(abs(s1));
+    float r2 = fract(abs(s2));
+    float r3 = fract(abs(s3));
 
-      float r1 = fract(abs(s1));
-      float r2 = fract(abs(s2));
-      float r3 = fract(abs(s3));
+    vec3 screenTarget = vec3(
+      (r1 - 0.5) * uViewport.x * 0.92,
+      (r2 - 0.5) * uViewport.y * 0.90,
+      (r3 - 0.5) * 1.6
+    );
 
-      vec3 screenTarget = vec3(
-        (r1 - 0.5) * uViewport.x * 0.92,
-        (r2 - 0.5) * uViewport.y * 0.90,
-        (r3 - 0.5) * 1.6
-      );
-
-      float t = smoothstep(0.0, 1.0, breakP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
-
-      finalWorldPos = mix(worldCenter, screenTarget, t) + arc;
+    float threshold = aRandom.w * 0.32;
+    float breakP = 0.0;
+    if (uOverviewBreak > 0.015) {
+      breakP = clamp((uOverviewBreak - 0.015 - threshold) / (1.0 - 0.015 - threshold + 0.0001), 0.0, 1.0);
     }
 
-    // Mouse repulsion on final world position
+    float mergeP = 0.0;
+    if (uSkillsProgress >= 0.985) {
+      mergeP = 1.0;
+    } else {
+      mergeP = clamp((uSkillsProgress - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
+    }
+
+    vec3 currentCenter;
+    vec3 currentLocal;
+    float facetP;
+
+    if (uSkillsProgress < 0.01) {
+      float t = smoothstep(0.0, 1.0, breakP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin(breakP * 3.14159);
+      currentCenter = mix(text1Center, screenTarget, t) + arc;
+      currentLocal = text1Local;
+      facetP = breakP;
+    } else {
+      float t = smoothstep(0.0, 1.0, mergeP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeP) * 3.14159);
+      currentCenter = mix(screenTarget, text2Center, t) + arc;
+      currentLocal = mix(text1Local, text2Local, t);
+      facetP = 1.0 - mergeP;
+    }
+
+    if (facetP > 0.01) {
+      float motionP = smoothstep(0.01, 0.12, facetP);
+      float scale = max(0.20, 1.0 - pow(facetP, 0.65) * 0.65 * motionP);
+      float angle = facetP * 8.0 * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
+      vec3 axis = normalize(aRandom.xyz + vec3(0.001));
+      currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
+      currentLocal *= scale;
+    }
+
+    vec3 finalWorldPos = currentCenter + currentLocal;
+
     float d = length(finalWorldPos.xy - uMouseWorld);
     float repel = smoothstep(uRadius, 0.03, d) * uMouseActive * 0.085;
     vec2 repelDir = normalize(finalWorldPos.xy - uMouseWorld + vec2(0.0001));
     finalWorldPos.xy += repelDir * repel;
     finalWorldPos.z -= repel * 0.3;
 
-    vBreakProgress = breakP;
-    gl_PointSize = clamp(breakP * 4.5, 0.0, 6.0);
+    vBreakProgress = facetP;
+    gl_PointSize = clamp(facetP * 4.5, 0.0, 6.0);
     gl_Position = projectionMatrix * viewMatrix * vec4(finalWorldPos, 1.0);
   }
 `;
@@ -191,7 +267,7 @@ const POINTS_FRAGMENT_SHADER = `
     if (vBreakProgress < 0.01) discard;
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
-    float alpha = uOpacity * max(0.35, 1.0 - vBreakProgress * 0.35) * (1.0 - dist * 2.0);
+    float alpha = uOpacity * max(0.40, 1.0 - vBreakProgress * 0.35) * (1.0 - dist * 2.0);
     gl_FragColor = vec4(uColor + vec3(0.2), alpha);
   }
 `;
@@ -204,7 +280,12 @@ function createBreakdownMeshMaterial(colorHex: string, radius = 0.40) {
     depthWrite: false,
     side: THREE.DoubleSide,
     uniforms: {
-      uScrollBreak: { value: 0.0 },
+      uOverviewBreak: { value: 0.0 },
+      uSkillsProgress: { value: 0.0 },
+      uOriginOffset: { value: new THREE.Vector3(0, 0, 0) },
+      uOriginScale: { value: 1.0 },
+      uTargetOffset: { value: new THREE.Vector3(0, 0, 0) },
+      uTargetScale: { value: 1.0 },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
       uRadius: { value: radius },
@@ -223,7 +304,12 @@ function createBreakdownPointsMaterial(colorHex: string, radius = 0.40) {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     uniforms: {
-      uScrollBreak: { value: 0.0 },
+      uOverviewBreak: { value: 0.0 },
+      uSkillsProgress: { value: 0.0 },
+      uOriginOffset: { value: new THREE.Vector3(0, 0, 0) },
+      uOriginScale: { value: 1.0 },
+      uTargetOffset: { value: new THREE.Vector3(0, 0, 0) },
+      uTargetScale: { value: 1.0 },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
       uRadius: { value: radius },
@@ -311,56 +397,56 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     };
   }, [viewport.width, viewport.height, size.width]);
 
-  // Mesh Materials
-  const aboutMeshMat = useMemo(() => createBreakdownMeshMaterial("#fefae0"), []);
-  const meMeshMat = useMemo(() => createBreakdownMeshMaterial("#bc6c25"), []);
-  const codeMeshMat = useMemo(() => createBreakdownMeshMaterial("#bc6c25"), []);
-  const skillsMeshMat = useMemo(() => createBreakdownMeshMaterial("#fefae0"), []);
-
-  // Point Node Materials
-  const aboutPointsMat = useMemo(() => createBreakdownPointsMaterial("#fefae0"), []);
-  const mePointsMat = useMemo(() => createBreakdownPointsMaterial("#bc6c25"), []);
-  const codePointsMat = useMemo(() => createBreakdownPointsMaterial("#bc6c25"), []);
-  const skillsPointsMat = useMemo(() => createBreakdownPointsMaterial("#fefae0"), []);
+  // Mesh & Point Materials (White and Red)
+  const whiteMeshMat = useMemo(() => createBreakdownMeshMaterial("#fefae0"), []);
+  const whitePointsMat = useMemo(() => createBreakdownPointsMaterial("#fefae0"), []);
+  const redMeshMat = useMemo(() => createBreakdownMeshMaterial("#bc6c25"), []);
+  const redPointsMat = useMemo(() => createBreakdownPointsMaterial("#bc6c25"), []);
 
   useEffect(() => {
     return () => {
-      aboutMeshMat.dispose();
-      meMeshMat.dispose();
-      codeMeshMat.dispose();
-      skillsMeshMat.dispose();
-      aboutPointsMat.dispose();
-      mePointsMat.dispose();
-      codePointsMat.dispose();
-      skillsPointsMat.dispose();
+      whiteMeshMat.dispose();
+      whitePointsMat.dispose();
+      redMeshMat.dispose();
+      redPointsMat.dispose();
     };
-  }, [
-    aboutMeshMat,
-    meMeshMat,
-    codeMeshMat,
-    skillsMeshMat,
-    aboutPointsMat,
-    mePointsMat,
-    codePointsMat,
-    skillsPointsMat,
-  ]);
+  }, [whiteMeshMat, whitePointsMat, redMeshMat, redPointsMat]);
 
   useFrame(() => {
     smoothOverviewProgress.current = THREE.MathUtils.lerp(
       smoothOverviewProgress.current,
       particleBridge.overviewProgress,
-      0.12
+      0.15
     );
+    if (Math.abs(smoothOverviewProgress.current - particleBridge.overviewProgress) < 0.002) {
+      smoothOverviewProgress.current = particleBridge.overviewProgress;
+    }
+    if (smoothOverviewProgress.current < 0.005) {
+      smoothOverviewProgress.current = 0.0;
+    }
+
     smoothSkillsProgress.current = THREE.MathUtils.lerp(
       smoothSkillsProgress.current,
       particleBridge.skillsProgress,
-      0.12
+      0.15
     );
+    if (Math.abs(smoothSkillsProgress.current - particleBridge.skillsProgress) < 0.002) {
+      smoothSkillsProgress.current = particleBridge.skillsProgress;
+    }
+    if (smoothSkillsProgress.current < 0.005) {
+      smoothSkillsProgress.current = 0.0;
+    } else if (smoothSkillsProgress.current > 0.995) {
+      smoothSkillsProgress.current = 1.0;
+    }
+
     smoothDarkActive.current = THREE.MathUtils.lerp(
       smoothDarkActive.current,
       particleBridge.isDarkActive ? 1.0 : 0.0,
-      0.12
+      0.15
     );
+    if (Math.abs(smoothDarkActive.current - (particleBridge.isDarkActive ? 1.0 : 0.0)) < 0.002) {
+      smoothDarkActive.current = particleBridge.isDarkActive ? 1.0 : 0.0;
+    }
 
     smoothMouseWorld.current.lerp(
       new THREE.Vector2(globalMouseState.worldX, globalMouseState.worldY),
@@ -372,72 +458,41 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
       0.15
     );
 
-    // Section 1 (ABOUT ME):
-    // Opacity fades out once merging into Skills begins
-    const skillsHide = 1.0 - THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.0, 0.25);
-    const aboutMeOpacity = smoothDarkActive.current * skillsHide;
-    const aboutMeBreak = smoothOverviewProgress.current;
-
     const vW = viewport.width;
     const vH = viewport.height;
+    const opacity = smoothDarkActive.current;
+    const ovBreak = smoothOverviewProgress.current;
+    const skProgress = smoothSkillsProgress.current;
 
-    // ABOUT Mesh & Points uniforms:
-    aboutMeshMat.uniforms.uViewport.value.set(vW, vH);
-    aboutMeshMat.uniforms.uScrollBreak.value = aboutMeBreak;
-    aboutMeshMat.uniforms.uOpacity.value = aboutMeOpacity;
-    aboutMeshMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    aboutMeshMat.uniforms.uMouseActive.value = smoothMouseActive.current;
+    // White Mesh & Points (Morphs ABOUT -> Spread Screen Triangles -> SKILLS)
+    const whiteMats = [whiteMeshMat, whitePointsMat];
+    for (const mat of whiteMats) {
+      mat.uniforms.uViewport.value.set(vW, vH);
+      mat.uniforms.uOverviewBreak.value = ovBreak;
+      mat.uniforms.uSkillsProgress.value = skProgress;
+      mat.uniforms.uOriginOffset.value.set(textLayout.xAbout, textLayout.overviewCenterY, 0);
+      mat.uniforms.uOriginScale.value = textLayout.scale;
+      mat.uniforms.uTargetOffset.value.set(textLayout.xSkills, textLayout.skillsCenterY, 0);
+      mat.uniforms.uTargetScale.value = textLayout.skillsScale;
+      mat.uniforms.uOpacity.value = opacity;
+      mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
+      mat.uniforms.uMouseActive.value = smoothMouseActive.current;
+    }
 
-    aboutPointsMat.uniforms.uViewport.value.set(vW, vH);
-    aboutPointsMat.uniforms.uScrollBreak.value = aboutMeBreak;
-    aboutPointsMat.uniforms.uOpacity.value = aboutMeOpacity;
-    aboutPointsMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    aboutPointsMat.uniforms.uMouseActive.value = smoothMouseActive.current;
-
-    // ME Mesh & Points uniforms:
-    meMeshMat.uniforms.uViewport.value.set(vW, vH);
-    meMeshMat.uniforms.uScrollBreak.value = aboutMeBreak;
-    meMeshMat.uniforms.uOpacity.value = aboutMeOpacity;
-    meMeshMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    meMeshMat.uniforms.uMouseActive.value = smoothMouseActive.current;
-
-    mePointsMat.uniforms.uViewport.value.set(vW, vH);
-    mePointsMat.uniforms.uScrollBreak.value = aboutMeBreak;
-    mePointsMat.uniforms.uOpacity.value = aboutMeOpacity;
-    mePointsMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    mePointsMat.uniforms.uMouseActive.value = smoothMouseActive.current;
-
-    // Section 2 (SKILLS & CODE):
-    // 100% invisible in Overview. Fades in symmetrically when entering Skills section.
-    const skillsOpacity = smoothDarkActive.current * THREE.MathUtils.smoothstep(smoothSkillsProgress.current, 0.0, 0.20);
-    // Breaks down as user scrolls through horizontal cards towards the end
-    const skillsBreak = THREE.MathUtils.clamp(1.0 - smoothSkillsProgress.current, 0.0, 1.0);
-
-    // CODE "</>" (Brand Red / Terracotta #bc6c25) uniforms:
-    codeMeshMat.uniforms.uViewport.value.set(vW, vH);
-    codeMeshMat.uniforms.uScrollBreak.value = skillsBreak;
-    codeMeshMat.uniforms.uOpacity.value = skillsOpacity;
-    codeMeshMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    codeMeshMat.uniforms.uMouseActive.value = smoothMouseActive.current;
-
-    codePointsMat.uniforms.uViewport.value.set(vW, vH);
-    codePointsMat.uniforms.uScrollBreak.value = skillsBreak;
-    codePointsMat.uniforms.uOpacity.value = skillsOpacity;
-    codePointsMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    codePointsMat.uniforms.uMouseActive.value = smoothMouseActive.current;
-
-    // SKILLS (Brand White #fefae0) uniforms:
-    skillsMeshMat.uniforms.uViewport.value.set(vW, vH);
-    skillsMeshMat.uniforms.uScrollBreak.value = skillsBreak;
-    skillsMeshMat.uniforms.uOpacity.value = skillsOpacity;
-    skillsMeshMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    skillsMeshMat.uniforms.uMouseActive.value = smoothMouseActive.current;
-
-    skillsPointsMat.uniforms.uViewport.value.set(vW, vH);
-    skillsPointsMat.uniforms.uScrollBreak.value = skillsBreak;
-    skillsPointsMat.uniforms.uOpacity.value = skillsOpacity;
-    skillsPointsMat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
-    skillsPointsMat.uniforms.uMouseActive.value = smoothMouseActive.current;
+    // Red Mesh & Points (Morphs ME -> Spread Screen Triangles -> </>)
+    const redMats = [redMeshMat, redPointsMat];
+    for (const mat of redMats) {
+      mat.uniforms.uViewport.value.set(vW, vH);
+      mat.uniforms.uOverviewBreak.value = ovBreak;
+      mat.uniforms.uSkillsProgress.value = skProgress;
+      mat.uniforms.uOriginOffset.value.set(textLayout.xMe, textLayout.overviewCenterY, 0);
+      mat.uniforms.uOriginScale.value = textLayout.scale;
+      mat.uniforms.uTargetOffset.value.set(textLayout.xCode, textLayout.skillsCenterY, 0.05);
+      mat.uniforms.uTargetScale.value = textLayout.skillsScale;
+      mat.uniforms.uOpacity.value = opacity;
+      mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
+      mat.uniforms.uMouseActive.value = smoothMouseActive.current;
+    }
 
     // 3D Perspective Tilt on Group
     if (groupRef.current) {
@@ -449,63 +504,13 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
 
   return (
     <group ref={groupRef}>
-      {/* 1. Real 3D Clash Display typography mesh for "ABOUT" (Brand White #fefae0) */}
-      <mesh
-        geometry={geometries.about}
-        material={aboutMeshMat}
-        position={[textLayout.xAbout, textLayout.overviewCenterY, 0]}
-        scale={[textLayout.scale, textLayout.scale, 1]}
-      />
-      <points
-        geometry={geometries.about}
-        material={aboutPointsMat}
-        position={[textLayout.xAbout, textLayout.overviewCenterY, 0]}
-        scale={[textLayout.scale, textLayout.scale, 1]}
-      />
+      {/* 1. White Unified Mesh & Nodes: Morphs from "ABOUT" -> Spread Screen Triangles -> "SKILLS" */}
+      <mesh geometry={geometries.white} material={whiteMeshMat} />
+      <points geometry={geometries.white} material={whitePointsMat} />
 
-      {/* 2. Real 3D Clash Display typography mesh for "ME" (Brand Red #bc6c25) */}
-      <mesh
-        geometry={geometries.me}
-        material={meMeshMat}
-        position={[textLayout.xMe, textLayout.overviewCenterY, 0]}
-        scale={[textLayout.scale, textLayout.scale, 1]}
-      />
-      <points
-        geometry={geometries.me}
-        material={mePointsMat}
-        position={[textLayout.xMe, textLayout.overviewCenterY, 0]}
-        scale={[textLayout.scale, textLayout.scale, 1]}
-      />
-
-      {/* 3. Real 3D Clash Display typography mesh for "SKILLS" (Brand White #fefae0) */}
-      <mesh
-        geometry={geometries.skills}
-        material={skillsMeshMat}
-        position={[textLayout.xSkills, textLayout.skillsCenterY, 0]}
-        scale={[textLayout.skillsScale, textLayout.skillsScale, 1]}
-      />
-      <points
-        geometry={geometries.skills}
-        material={skillsPointsMat}
-        position={[textLayout.xSkills, textLayout.skillsCenterY, 0]}
-        scale={[textLayout.skillsScale, textLayout.skillsScale, 1]}
-      />
-
-      {/* 4. Real 3D Clash Display typography mesh for "</>" (Brand Red #bc6c25) in front of SKILLS */}
-      <mesh
-        geometry={geometries.code}
-        material={codeMeshMat}
-        position={[textLayout.xCode, textLayout.skillsCenterY, 0.05]}
-        scale={[textLayout.skillsScale, textLayout.skillsScale, 1]}
-        renderOrder={2}
-      />
-      <points
-        geometry={geometries.code}
-        material={codePointsMat}
-        position={[textLayout.xCode, textLayout.skillsCenterY, 0.05]}
-        scale={[textLayout.skillsScale, textLayout.skillsScale, 1]}
-        renderOrder={2}
-      />
+      {/* 2. Red Unified Mesh & Nodes: Morphs from "ME" -> Spread Screen Triangles -> "</>" in front of Skills */}
+      <mesh geometry={geometries.red} material={redMeshMat} renderOrder={2} />
+      <points geometry={geometries.red} material={redPointsMat} renderOrder={2} />
     </group>
   );
 }
@@ -525,48 +530,21 @@ export default function CharacterPointsCanvas({
   }, []);
 
   useEffect(() => {
-    let lastClientX = -9999;
-    let lastClientY = -9999;
-
-    const updateMouse = (clientX: number, clientY: number) => {
+    const handleMouseMove = (e: MouseEvent) => {
       const container = containerRef.current;
       if (!container) return;
 
       const rect = container.getBoundingClientRect();
-      const isInside =
-        clientX >= rect.left &&
-        clientX <= rect.right &&
-        clientY >= rect.top &&
-        clientY <= rect.bottom;
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
 
-      if (!isInside) {
-        globalMouseState.active = 0;
-        return;
-      }
+      const fovRad = (45 * Math.PI) / 180;
+      const vhAtDist = 2 * Math.tan(fovRad / 2) * 5;
+      const vwAtDist = vhAtDist * (rect.width / rect.height);
 
-      const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
-      const ny = -(((clientY - rect.top) / rect.height) * 2 - 1);
-
-      const aspect = rect.width / (rect.height || 1);
-      const fovRad = (42 * Math.PI) / 180;
-      const vHeight = 2 * Math.tan(fovRad / 2) * 5.0;
-      const vWidth = vHeight * aspect;
-
-      globalMouseState.worldX = nx * (vWidth * 0.5);
-      globalMouseState.worldY = ny * (vHeight * 0.5);
+      globalMouseState.worldX = (x * vwAtDist) / 2;
+      globalMouseState.worldY = (y * vhAtDist) / 2;
       globalMouseState.active = 1;
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      lastClientX = e.clientX;
-      lastClientY = e.clientY;
-      updateMouse(e.clientX, e.clientY);
-    };
-
-    const handleScroll = () => {
-      if (lastClientX !== -9999) {
-        updateMouse(lastClientX, lastClientY);
-      }
     };
 
     const handleMouseLeave = () => {
@@ -574,32 +552,31 @@ export default function CharacterPointsCanvas({
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    document.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("mouseleave", handleMouseLeave, { passive: true });
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("scroll", handleScroll);
-      document.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full relative select-none pointer-events-none ${className}`}
-      style={{ pointerEvents: "none" }}
+      className={`absolute inset-0 pointer-events-none select-none ${className}`}
+      style={{ width: "100%", height: "100%" }}
     >
       <Canvas
-        camera={{ position: [0, 0, 5.0], fov: 42 }}
-        dpr={[1, Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 2, 2)]}
+        camera={{ position: [0, 0, 5], fov: 45 }}
+        dpr={[1, 2]}
         gl={{
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
+          depth: false,
+          stencil: false,
         }}
-        className="w-full h-full pointer-events-none"
-        style={{ pointerEvents: "none" }}
+        style={{ width: "100%", height: "100%", pointerEvents: "none" }}
       >
         {geometries && <UnifiedCelestialMesh geometries={geometries} />}
       </Canvas>

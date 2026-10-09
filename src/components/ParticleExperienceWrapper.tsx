@@ -61,6 +61,8 @@ export default function ParticleExperienceWrapper({
         onLeaveBack: () => {
           // Only fade out when scrolling all the way back up to Hero
           particleBridge.isDarkActive = false;
+          particleBridge.overviewProgress = 0;
+          particleBridge.skillsProgress = 0;
         },
       });
     },

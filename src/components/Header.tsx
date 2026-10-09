@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useTheme } from "../context/ThemeContext";
 import AppButton from "./AppButton";
+import { particleBridge } from "../utils/particleBridge";
 
 export default function Header() {
   const { isDark, toggleTheme } = useTheme();
@@ -68,6 +69,8 @@ export default function Header() {
       }
     }
     if (targetId === "about") {
+      particleBridge.overviewProgress = 0;
+      particleBridge.skillsProgress = 0;
       const aboutSt = ScrollTrigger.getById("about-timeline");
       if (aboutSt) {
         window.scrollTo({
