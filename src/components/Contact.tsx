@@ -11,6 +11,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -22,23 +23,26 @@ export default function Contact() {
   useGSAP(
     () => {
       const section = sectionRef.current;
+      const rightCol = rightColRef.current;
       if (!section) return;
 
-      const existingSt = ScrollTrigger.getById("contact-particle-trigger");
+      const existingSt = ScrollTrigger.getById("contact-timeline");
       if (existingSt) {
         existingSt.kill(true);
       }
+      const existingLead = ScrollTrigger.getById("contact-particle-lead-in");
+      if (existingLead) {
+        existingLead.kill(true);
+      }
 
+      // Lead-in trigger: morph particles as contact section enters viewport
       ScrollTrigger.create({
-        id: "contact-particle-trigger",
+        id: "contact-particle-lead-in",
         trigger: section,
         start: "top 80%",
-        end: "top 20%",
+        end: "top top",
         scrub: 0.8,
         onEnter: () => {
-          particleBridge.isDarkActive = true;
-        },
-        onEnterBack: () => {
           particleBridge.isDarkActive = true;
         },
         onLeaveBack: () => {
@@ -49,6 +53,49 @@ export default function Contact() {
           particleBridge.isDarkActive = true;
         },
       });
+
+      const isDesktop = window.innerWidth >= 1024;
+
+      if (isDesktop && rightCol) {
+        // Desktop pinned scroll:
+        // Left side ("Let's Get In Touch" + contact cards) stays stuck in place
+        // Right side (Contact Form) scrolls up into the center of the screen
+        gsap.set(rightCol, { y: 440, opacity: 0.25 });
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            id: "contact-timeline",
+            trigger: section,
+            start: "top top",
+            end: "+=1200",
+            pin: true,
+            scrub: 0.8,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onEnter: () => {
+              particleBridge.isDarkActive = true;
+              particleBridge.contactProgress = 1.0;
+            },
+            onEnterBack: () => {
+              particleBridge.isDarkActive = true;
+              particleBridge.contactProgress = 1.0;
+            },
+            onLeaveBack: () => {
+              particleBridge.contactProgress = 0.0;
+            },
+            onUpdate: () => {
+              particleBridge.isDarkActive = true;
+              particleBridge.contactProgress = 1.0;
+            },
+          },
+        });
+
+        tl.to(rightCol, {
+          y: 0,
+          opacity: 1,
+          ease: "power1.out",
+        });
+      }
     },
     { scope: sectionRef }
   );
@@ -80,7 +127,7 @@ export default function Contact() {
     <section
       ref={sectionRef}
       id="contact"
-      className="relative w-full min-h-screen pt-24 sm:pt-32 md:pt-36 pb-32 sm:pb-40 md:pb-48 px-5 sm:px-8 md:px-12 bg-transparent text-earth-cream overflow-hidden flex items-center justify-center"
+      className="relative w-full min-h-screen px-5 sm:px-8 md:px-12 bg-transparent text-earth-cream overflow-hidden flex items-center justify-center py-10 lg:py-0"
     >
       {/* Ambient background glows */}
       <div
@@ -94,19 +141,71 @@ export default function Contact() {
 
       <div className="w-full max-w-7xl mx-auto relative z-10">      
 
-        {/* Two-Column Grid: Left (3D Particle Text) & Right (Form) */}
+        {/* Two-Column Grid: Left (Stuck 3D Particle Text & Contact Cards) & Right (Scrolling Form) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 xl:gap-16 items-center">
-          {/* Left Column: Reserved space for 3D particles "Let's Get In Touch" */}
-          <div
-            className="w-full min-h-[160px] sm:min-h-[240px] lg:min-h-[460px] flex items-center justify-center relative pointer-events-none"
-            aria-label="Let's Get in touch particle text area"
-          >
-            {/* The 3D CharacterPointsCanvas renders "Let's Get in touch" right here */}
+          {/* Left Column: Stuck at the left side */}
+          <div className="w-full flex flex-col justify-center items-center lg:items-start relative z-10 space-y-4 sm:space-y-6">
+            {/* Upper Area: Reserved space for 3D particles "Let's Get In Touch" */}
+            <div
+              className="w-full min-h-[210px] sm:min-h-[220px] lg:min-h-[220px] flex items-center justify-center relative pointer-events-none"
+              aria-label="Let's Get in touch particle text area"
+            >
+              {/* The 3D CharacterPointsCanvas renders "Let's Get in touch" right here */}
+            </div>
+
+            {/* Email & Phone Contact Information */}
+            <div className="w-full flex flex-col sm:flex-row lg:flex-col gap-3 sm:gap-3.5 max-w-md pointer-events-auto">
+              {/* Email */}
+              <a
+                href="mailto:shahidumair622@gmail.com"
+                className="group flex items-center justify-between gap-3.5 p-3 sm:p-3.5 rounded-2xl bg-earth-card/80 hover:bg-earth-card border border-earth-cream/10 hover:border-earth-sand/40 transition-all duration-300 shadow-md hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-earth-sand/15 group-hover:bg-earth-sand/25 border border-earth-sand/30 flex items-center justify-center text-earth-sand transition-all shrink-0">
+                    <AppIcon icon="mail" className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col min-w-0 text-left">
+                    <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-earth-sand/80">
+                      Email
+                    </span>
+                    <span className="text-sm sm:text-base font-medium text-earth-cream group-hover:text-earth-sand transition-colors truncate">
+                      shahidumair622@gmail.com
+                    </span>
+                  </div>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-earth-sand pr-1 shrink-0">
+                  <AppIcon icon="arrow-up-right" className="w-4 h-4" />
+                </div>
+              </a>
+
+              {/* Phone */}
+              <a
+                href="tel:+923215215701"
+                className="group flex items-center justify-between gap-3.5 p-3 sm:p-3.5 rounded-2xl bg-earth-card/80 hover:bg-earth-card border border-earth-cream/10 hover:border-earth-sand/40 transition-all duration-300 shadow-md hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-earth-sand/15 group-hover:bg-earth-sand/25 border border-earth-sand/30 flex items-center justify-center text-earth-sand transition-all shrink-0">
+                    <AppIcon icon="phone" className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col min-w-0 text-left">
+                    <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-earth-sand/80">
+                      Phone
+                    </span>
+                    <span className="text-sm sm:text-base font-medium text-earth-cream group-hover:text-earth-sand transition-colors truncate">
+                      +92-321-5215701
+                    </span>
+                  </div>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-earth-sand pr-1 shrink-0">
+                  <AppIcon icon="arrow-up-right" className="w-4 h-4" />
+                </div>
+              </a>
+            </div>
           </div>
 
-          {/* Right Column: Contact Form */}
-          <div className="w-full">
-            <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 bg-earth-card border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden">
+          {/* Right Column: Contact Form (Scrolls) */}
+          <div ref={rightColRef} className="w-full will-change-transform">
+            <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 bg-earth-card border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden">
               {/* Subtle top golden accent line */}
               <div
                 className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-earth-sand/60 to-transparent pointer-events-none"
@@ -136,7 +235,7 @@ export default function Contact() {
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                   
                     <h3 className="text-xl sm:text-2xl font-bold font-heading text-earth-cream tracking-tight mb-1">
                       Send a Message
@@ -170,7 +269,7 @@ export default function Contact() {
                   {/* Message */}
                   <AppInput
                     multiline
-                    rows={5}
+                    rows={4}
                     id="message"
                     name="message"
                     label="Message"

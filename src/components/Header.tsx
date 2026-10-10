@@ -114,19 +114,11 @@ export default function Header() {
       particleBridge.skillsProgress = 0.0;
       particleBridge.experienceProgress = 0.0;
       particleBridge.contactProgress = 1.0;
-      const contactTrigger = ScrollTrigger.getById("contact-particle-trigger");
-      if (contactTrigger) {
-        window.scrollTo({
-          top: contactTrigger.end + (window.innerWidth < 640 ? 100 : 0),
-          behavior: "smooth",
-        });
-        return;
-      }
-      const el = document.getElementById("contact");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-        return;
-      }
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      });
+      return;
     }
     const el = document.getElementById(targetId);
     if (el) {

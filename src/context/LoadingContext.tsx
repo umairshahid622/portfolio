@@ -10,12 +10,11 @@ const LoadingContext = createContext<
 >(undefined);
 
 export function LoadingProvider({ children }: { children: React.ReactNode }) {
-  const [avatarReady, setAvatarReady] = useState(false);
   const [curtainParting, setCurtainParting] = useState(false);
   const [isCurtainComplete, setIsCurtainComplete] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const isLoaded = avatarReady && progress >= 100;
+  const isLoaded = progress >= 100;
 
   return (
     <LoadingContext.Provider
@@ -23,10 +22,10 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
         isLoaded,
         isCurtainComplete,
         curtainParting,
-        avatarReady,
-        setAvatarReady,
         progress,
         setProgress,
+        avatarReady: true,
+        setAvatarReady: () => {},
         setIsCurtainComplete,
         setCurtainParting,
       }}

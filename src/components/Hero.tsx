@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useLoading } from "../context/LoadingContext";
-import AvatarCanvas from "./AvatarCanvas";
 import TextSpiralWrap from "./TextSpiralWrap";
 import AtmosphericVeils from "./AtmosphericVeils";
 import AppButton from "./AppButton";
@@ -13,142 +12,14 @@ export default function Hero() {
   const containerRef = useRef<HTMLElement>(null);
 
   let curtainParting = true;
-  let isCurtainComplete = false;
   try {
     const loading = useLoading();
     curtainParting = loading.curtainParting;
-    isCurtainComplete = loading.isCurtainComplete;
   } catch {
     // Graceful fallback when outside LoadingProvider
   }
 
   const hasAnimatedRef = useRef(false);
-  const hasReunitedRef = useRef(false);
-
-  // Helper to calculate the shift needed to unite Umair & Shahid with an optimal word space
-  const calculateReuniteShift = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return 0;
-    const umairEl = container.querySelector<HTMLElement>(".hero-popout-umair");
-    const shahidEl = container.querySelector<HTMLElement>(".hero-popout-shahid");
-    if (!umairEl || !shahidEl) return 0;
-
-    // Temporarily measure untransformed gap
-    const prevUX = gsap.getProperty(umairEl, "x") as number;
-    const prevSX = gsap.getProperty(shahidEl, "x") as number;
-    gsap.set([umairEl, shahidEl], { x: 0 });
-    const uRect = umairEl.getBoundingClientRect();
-    const sRect = shahidEl.getBoundingClientRect();
-    gsap.set(umairEl, { x: prevUX });
-    gsap.set(shahidEl, { x: prevSX });
-
-    const rawGap = Math.max(0, sRect.left - uRect.right);
-    const wordGap = Math.min(24, Math.max(12, uRect.height * 0.24));
-    return Math.max(0, (rawGap - wordGap) / 2);
-  }, []);
-
-  // Handler triggered when the avatar entrance animation completes
-  const handleAnimationComplete = useCallback(() => {
-    if (hasReunitedRef.current) return;
-    hasReunitedRef.current = true;
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    const umairEl = container.querySelector<HTMLElement>(".hero-popout-umair");
-    const shahidEl = container.querySelector<HTMLElement>(".hero-popout-shahid");
-    const roleEl = container.querySelector<HTMLElement>(".hero-popout-role");
-    const taglineEl = container.querySelector<HTMLElement>(".hero-popout-tagline");
-    const ctasEl = container.querySelector<HTMLElement>(".hero-popout-ctas");
-
-    if (!umairEl || !shahidEl) return;
-
-    const finalShiftX = calculateReuniteShift();
-
-    const reunionTl = gsap.timeline({
-      defaults: { ease: "power3.out" },
-    });
-
-    // 1: Umair & Shahid reunite into 1 unified heading
-    reunionTl.to(umairEl, {
-      x: finalShiftX,
-      duration: 0.95,
-      ease: "power3.inOut",
-    });
-
-    reunionTl.to(
-      shahidEl,
-      {
-        x: -finalShiftX,
-        duration: 0.95,
-        ease: "power3.inOut",
-      },
-      "<" // reunite simultaneously
-    );
-
-    // 2: Reveal "Full-stack Developer" below "Umair Shahid"
-    if (roleEl) {
-      reunionTl.to(
-        roleEl,
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 0.6,
-          ease: "back.out(1.8)",
-        },
-        "-=0.3"
-      );
-    }
-
-    // 3: Reveal "Developing Modern Full-Stack Applications" tagline below role
-    if (taglineEl) {
-      reunionTl.to(
-        taglineEl,
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          ease: "power2.out",
-        },
-        "-=0.2"
-      );
-    }
-
-    // 4: Reveal "Contact Me" and "Download Resume" buttons
-    if (ctasEl) {
-      reunionTl.to(
-        ctasEl,
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 0.55,
-          ease: "back.out(1.6)",
-        },
-        "-=0.2"
-      );
-    }
-  }, [calculateReuniteShift]);
-
-  // Keep reunited title position mathematically centered across browser resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (!hasReunitedRef.current || !containerRef.current) return;
-      const umairEl = containerRef.current.querySelector<HTMLElement>(".hero-popout-umair");
-      const shahidEl = containerRef.current.querySelector<HTMLElement>(".hero-popout-shahid");
-      if (!umairEl || !shahidEl) return;
-
-      const finalShiftX = calculateReuniteShift();
-      gsap.set(umairEl, { x: finalShiftX });
-      gsap.set(shahidEl, { x: -finalShiftX });
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [calculateReuniteShift]);
 
   // Entrance animations using GSAP
   useGSAP(
@@ -165,82 +36,109 @@ export default function Hero() {
 
       if (!umairEl || !shahidEl) return;
 
-      if (prefersReducedMotion || hasAnimatedRef.current) {
+      if (prefersReducedMotion) {
         hasAnimatedRef.current = true;
-        hasReunitedRef.current = true;
-        const finalShiftX = calculateReuniteShift();
-        gsap.set(umairEl, { opacity: 1, scale: 1, x: finalShiftX });
-        gsap.set(shahidEl, { opacity: 1, scale: 1, x: -finalShiftX });
+        gsap.set([umairEl, shahidEl], { opacity: 1, scale: 1, y: 0 });
         if (roleEl) gsap.set(roleEl, { opacity: 1, scale: 1, y: 0 });
         if (taglineEl) gsap.set(taglineEl, { opacity: 1, y: 0 });
-        if (ctasEl) gsap.set(ctasEl, { opacity: 1, scale: 1, y: 0 });
-        gsap.set(".hero-main-content", { zIndex: 30 });
+        if (ctasEl) gsap.set(ctasEl, { opacity: 1, y: 0 });
+        return;
+      }
+
+      // If already started or animated, never restart or interrupt the timeline
+      if (hasAnimatedRef.current) {
         return;
       }
 
       // Keep hidden until curtain begins parting
       if (!curtainParting) {
         gsap.set([umairEl, shahidEl], {
-          x: 0,
           opacity: 0,
-          scale: 0.85,
+          scale: 0.88,
+          y: 28,
         });
-        if (roleEl) gsap.set(roleEl, { opacity: 0, scale: 0.8, y: 25 });
-        if (taglineEl) gsap.set(taglineEl, { opacity: 0, y: 20 });
-        if (ctasEl) gsap.set(ctasEl, { opacity: 0, scale: 0.85, y: 20 });
+        if (roleEl) gsap.set(roleEl, { opacity: 0, scale: 0.9, y: 22 });
+        if (taglineEl) gsap.set(taglineEl, { opacity: 0, y: 18 });
+        if (ctasEl) gsap.set(ctasEl, { opacity: 0, y: 20 });
         return;
       }
 
       hasAnimatedRef.current = true;
 
-      // Synchronize with curtain reveal: start as curtains open wide enough (~0.75s after parting start)
-      // or immediately if curtain is already complete
-      const startDelay = isCurtainComplete ? 0.1 : 0.75;
-
       const tl = gsap.timeline({
-        delay: startDelay,
+        delay: 0.45,
+        defaults: { ease: "power3.out" },
       });
 
       if (typeof window !== "undefined") {
         (window as any).__heroTimeline = tl;
       }
 
-      // Initialize at timeline time 0:
-      // Umair and Shahid start directly in their natural flanking positions, hidden
-      tl.set(
-        [umairEl, shahidEl],
-        {
-          x: 0,
-          scale: 0.85,
-          opacity: 0,
-          transformOrigin: "center center",
-        },
-        0
-      );
-
-      if (roleEl) tl.set(roleEl, { opacity: 0, scale: 0.8, y: 25 }, 0);
-      if (taglineEl) tl.set(taglineEl, { opacity: 0, y: 20 }, 0);
-      if (ctasEl) tl.set(ctasEl, { opacity: 0, scale: 0.85, y: 20 }, 0);
-
-      // Reveal Umair and Shahid directly at their flanking positions (no initial splitting)
+      // 1: Umair & Shahid entrance with scale & bounce
       tl.to([umairEl, shahidEl], {
-        scale: 1,
         opacity: 1,
-        duration: 0.65,
+        scale: 1,
+        y: 0,
+        duration: 0.85,
+        stagger: 0.12,
         ease: "back.out(1.8)",
+        clearProps: "transform",
       });
 
-      // Promote text layer above character layer
-      tl.set(".hero-main-content", { zIndex: 30 });
+      // 2: Reveal "Full-stack Developer"
+      if (roleEl) {
+        tl.to(
+          roleEl,
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.65,
+            ease: "back.out(1.6)",
+            clearProps: "transform",
+          },
+          "-=0.4"
+        );
+      }
+
+      // 3: Reveal tagline
+      if (taglineEl) {
+        tl.to(
+          taglineEl,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            ease: "power2.out",
+            clearProps: "transform",
+          },
+          "-=0.3"
+        );
+      }
+
+      // 4: Reveal CTA buttons smoothly with slide-up and fade-in (no scale pop)
+      if (ctasEl) {
+        tl.to(
+          ctasEl,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            clearProps: "transform",
+          },
+          "-=0.25"
+        );
+      }
     },
-    { scope: containerRef, dependencies: [curtainParting, calculateReuniteShift, handleAnimationComplete] }
+    { scope: containerRef, dependencies: [curtainParting] }
   );
 
   return (
     <section
       ref={containerRef}
       id="hero"
-      className="relative z-20 w-full min-h-screen flex flex-col justify-center items-center py-16 px-5 sm:px-8 md:px-12 overflow-hidden bg-earth-forest text-earth-cream"
+      className="relative z-20 w-full min-h-screen flex flex-col justify-center items-center py-20 px-5 sm:px-8 md:px-12 overflow-hidden bg-earth-forest text-earth-cream"
     >
       {/* Subtle grid pattern overlay */}
       <div className="hero-grid-pattern absolute inset-0 pointer-events-none -z-10 opacity-[0.03]" />
@@ -248,50 +146,33 @@ export default function Hero() {
       {/* Atmospheric SVG Veils, Self-Drawing Bubble Spirals & Randomly Popping GSAP Bubbles */}
       <AtmosphericVeils className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* 3D Avatar Character Layer - z-20 so inner letters are behind the character during popout */}
-      <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
-        <AvatarCanvas
-          onWalkComplete={handleAnimationComplete}
-        />
-      </div>
-
-      {/* Main Hero Content - z-10 so it emerges from behind the 3D character */}
+      {/* Main Hero Content */}
       <div className="hero-main-content w-full max-w-7xl mx-auto flex-1 flex flex-col items-center justify-center my-auto z-10 px-4 sm:px-6 md:px-8 pointer-events-none">
-        {/* Central Anchor: stays in the exact middle of the screen */}
-        <div className="relative w-full flex flex-col items-center justify-center">
-          <h1 className="w-full flex items-center justify-between select-none pointer-events-none">
-            {/* Left Wing: Umair */}
-            <div className="flex-1 flex justify-end overflow-visible pr-2 sm:pr-4 md:pr-8 lg:pr-10 pointer-events-none">
-              <span className="hero-popout-umair opacity-0 block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-cream leading-none text-right will-change-transform pointer-events-auto">
-                <TextSpiralWrap>Umair</TextSpiralWrap>
-              </span>
-            </div>
-
-            {/* Central Corridor for 3D Character */}
-            <div
-              className="w-36 shrink-0 pointer-events-none"
-              aria-hidden="true"
-            />
-
-            {/* Right Wing: Shahid */}
-            <div className="flex-1 flex justify-start overflow-visible pl-2 sm:pl-4 md:pl-8 lg:pl-10 pointer-events-none">
-              <span className="hero-popout-shahid opacity-0 block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-earth-sand leading-none text-left will-change-transform pointer-events-auto">
-                <TextSpiralWrap>Shahid</TextSpiralWrap>
-              </span>
-            </div>
+        <div className="relative w-full flex flex-col items-center justify-center text-center">
+          {/* Main Title: Umair Shahid */}
+          <h1 className="w-full flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-6 md:gap-x-8 gap-y-2 select-none pointer-events-none text-center">
+            <span className="hero-popout-umair opacity-0 inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-earth-cream leading-none will-change-transform pointer-events-auto">
+              <TextSpiralWrap>Umair</TextSpiralWrap>
+            </span>
+            <span className="hero-popout-shahid opacity-0 inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-earth-sand leading-none will-change-transform pointer-events-auto">
+              <TextSpiralWrap>Shahid</TextSpiralWrap>
+            </span>
           </h1>
 
-          {/* Revealed Content: positioned directly below H1 */}
-          <div className="absolute top-full left-0 right-0 pt-3 sm:pt-4 flex flex-col items-center justify-center text-center space-y-2 sm:space-y-2.5 pointer-events-none">
-            <h2 className="hero-popout-role opacity-0 text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-earth-cream/90 tracking-tight text-center will-change-transform pointer-events-auto">
+          {/* Subcontent: Role, Tagline, CTAs */}
+          <div className="pt-4 sm:pt-6 md:pt-8 flex flex-col items-center justify-center text-center space-y-3 sm:space-y-4 pointer-events-none">
+            <h2 className="hero-popout-role opacity-0 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-earth-cream/90 tracking-tight text-center will-change-transform pointer-events-auto">
               <TextSpiralWrap strokeWidth={2}>Full-stack Developer</TextSpiralWrap>
             </h2>
 
-            <p className="hero-popout-tagline opacity-0 text-xs sm:text-sm md:text-base text-earth-cream/75 max-w-lg font-medium tracking-wide text-center will-change-transform pointer-events-auto px-4">
+            <p className="hero-popout-tagline opacity-0 text-sm sm:text-base md:text-lg text-earth-cream/75 max-w-xl font-medium tracking-wide text-center will-change-transform pointer-events-auto px-4">
               Engineering scalable solutions across web & mobile
             </p>
 
-            <div className="hero-popout-ctas opacity-0 flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-1 sm:pt-1.5 will-change-transform pointer-events-auto">
+            <div
+              className="hero-popout-ctas flex flex-wrap items-center justify-center gap-3.5 sm:gap-4 pt-2 sm:pt-3 will-change-transform pointer-events-auto"
+              style={{ opacity: 0 }}
+            >
               <AppButton
                 href="#contact"
                 variant="primary"

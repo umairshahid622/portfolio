@@ -561,7 +561,9 @@ function UnifiedCelestialMesh({
     const xContact = isContactMobile ? 0.0 : edges.left * 0.52;
 
     const contactLineGap = 0.28 * contactScale;
-    const yContactCenter = isContactMobile ? viewport.height * 0.30 : 0.0;
+    const yContactCenter = isContactMobile
+      ? viewport.height * 0.37
+      : viewport.height * 0.08;
 
     const yContactWhite =
       yContactCenter + metrics.hWhite * 0.5 * contactScale + contactLineGap * 0.5;

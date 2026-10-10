@@ -8,7 +8,7 @@ import { cn } from "../utils/cn";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function CurtainLoader() {
-  const { avatarReady, isCurtainComplete, setIsCurtainComplete, setCurtainParting } = useLoading();
+  const { isCurtainComplete, setIsCurtainComplete, setCurtainParting } = useLoading();
   const { progress: dreiProgress } = useProgress();
 
   const [displayProgress, setDisplayProgress] = useState(0);
@@ -23,13 +23,7 @@ export default function CurtainLoader() {
 
   // Smoothly increment displayProgress towards target progress
   useEffect(() => {
-    // If avatar is not yet ready, cap smooth progression at 90%
-    const maxAllowed = avatarReady ? 100 : 90;
-    let target = Math.min(Math.max(10, Math.round(dreiProgress)), maxAllowed);
-
-    if (avatarReady) {
-      target = 100;
-    }
+    const target = Math.min(Math.max(20, Math.round(dreiProgress)), 100);
 
     const interval = setInterval(() => {
       setDisplayProgress((prev) => {
@@ -37,16 +31,16 @@ export default function CurtainLoader() {
           if (prev >= 100) clearInterval(interval);
           return prev;
         }
-        // Smooth progression: 1 to 2 percent per tick
+        // Smooth progression
         const diff = target - prev;
-        const step = diff > 30 ? 2 : 1;
+        const step = diff > 20 ? 3 : 1;
         const next = Math.min(prev + step, target);
         return next;
       });
-    }, 24);
+    }, 20);
 
     return () => clearInterval(interval);
-  }, [dreiProgress, avatarReady]);
+  }, [dreiProgress]);
 
   // Safety fallback: Never lock user out if network or WebGL hangs
   useEffect(() => {
@@ -111,10 +105,10 @@ export default function CurtainLoader() {
     }
   }, [isCurtainComplete]);
 
-  // Trigger curtain split reveal when both displayProgress is 100 and avatar is ready
+  // Trigger curtain split reveal when displayProgress is 100
   useEffect(() => {
     if (isOpeningRef.current) return;
-    if (displayProgress >= 100 && avatarReady) {
+    if (displayProgress >= 100) {
       isOpeningRef.current = true;
 
       const prefersReducedMotion =
@@ -211,7 +205,7 @@ export default function CurtainLoader() {
 
       return () => clearTimeout(delayTimer);
     }
-  }, [displayProgress, avatarReady, setCurtainParting, setIsCurtainComplete]);
+  }, [displayProgress, setCurtainParting, setIsCurtainComplete]);
 
   return (
     <div
