@@ -54,7 +54,7 @@ const LABEL_DURATION = 0.22;
 const LABEL_DELAY = 0.12;
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "app-btn-primary shadow-lg shadow-earth-terracotta/25 dark:shadow-earth-sand/20",
+  primary: "app-btn-primary shadow-lg shadow-earth-sand/20",
   secondary: "app-btn-secondary shadow-sm",
   outline: "app-btn-outline shadow-sm",
   ghost: "app-btn-ghost",

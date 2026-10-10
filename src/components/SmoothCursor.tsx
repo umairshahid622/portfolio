@@ -60,7 +60,7 @@ export default function SmoothCursor() {
             <img
               src="${logo.src}"
               alt="${logo.name}"
-              class="w-full h-full object-contain ${logo.isMonochrome ? "dark:invert" : ""}"
+              class="w-full h-full object-contain ${logo.isMonochrome ? "invert" : ""}"
             />
           </div>
         `;
@@ -291,7 +291,7 @@ export default function SmoothCursor() {
       {/* Smooth Cursor Follower Ring */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 size-8 rounded-full border-2 border-terracotta/40 dark:border-sand/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
+        className="fixed top-0 left-0 size-8 rounded-full border-2 border-earth-sand/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
       />
     </div>
   );

@@ -2,8 +2,6 @@ import arrowRight from "./arrow-right.svg";
 import arrowUpRight from "./arrow-up-right.svg";
 import download from "./download.svg";
 import externalLink from "./external-link.svg";
-import sun from "./sun.svg";
-import moon from "./moon.svg";
 import mail from "./mail.svg";
 import phone from "./phone.svg";
 import code from "./code.svg";
@@ -22,8 +20,6 @@ export const Icons = {
   "download": download,
   "external-link": externalLink,
   "externalLink": externalLink,
-  "sun": sun,
-  "moon": moon,
   "mail": mail,
   "phone": phone,
   "code": code,
@@ -43,8 +39,6 @@ export {
   arrowUpRight,
   download,
   externalLink,
-  sun,
-  moon,
   mail,
   phone,
   code,

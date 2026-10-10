@@ -148,8 +148,8 @@ samp,
  */
 
 .app-btn {
-  --accent: var(--color-terracotta);
-  --accent-contrast: var(--color-cream);
+  --accent: var(--color-sand);
+  --accent-contrast: var(--color-forest);
   --btn-ring: var(--accent);
   background-color: var(--accent);
   color: var(--accent-contrast);
@@ -161,13 +161,6 @@ samp,
 
 /* Primary Variant */
 .app-btn-primary {
-  --accent: var(--color-terracotta);
-  --accent-contrast: var(--color-cream);
-  --btn-ring: var(--color-terracotta);
-  background-color: var(--accent);
-  color: var(--accent-contrast);
-}
-:where(.dark, .dark *) .app-btn-primary {
   --accent: var(--color-sand);
   --accent-contrast: var(--color-forest);
   --btn-ring: var(--color-sand);
@@ -180,13 +173,6 @@ samp,
 
 /* Secondary Variant */
 .app-btn-secondary {
-  --accent: var(--color-cream);
-  --accent-contrast: var(--color-forest);
-  --btn-ring: color-mix(in srgb, var(--color-forest) 25%, transparent);
-  background-color: color-mix(in srgb, var(--color-forest) 5%, transparent);
-  color: var(--color-forest);
-}
-:where(.dark, .dark *) .app-btn-secondary {
   --accent: var(--color-forest);
   --accent-contrast: var(--color-sand);
   --btn-ring: color-mix(in srgb, var(--color-sand) 35%, transparent);
@@ -199,13 +185,6 @@ samp,
 
 /* Outline Variant */
 .app-btn-outline {
-  --accent: var(--color-cream);
-  --accent-contrast: var(--color-terracotta);
-  --btn-ring: color-mix(in srgb, var(--color-moss) 40%, transparent);
-  background-color: color-mix(in srgb, var(--color-moss) 8%, transparent);
-  color: var(--color-forest);
-}
-:where(.dark, .dark *) .app-btn-outline {
   --accent: var(--color-forest);
   --accent-contrast: var(--color-sand);
   --btn-ring: color-mix(in srgb, var(--color-sand) 40%, transparent);
@@ -218,13 +197,6 @@ samp,
 
 /* Ghost Variant */
 .app-btn-ghost {
-  --accent: var(--color-terracotta);
-  --accent-contrast: color-mix(in srgb, var(--color-forest) 8%, transparent);
-  --btn-ring: transparent;
-  background-color: transparent;
-  color: var(--color-forest);
-}
-:where(.dark, .dark *) .app-btn-ghost {
   --accent: var(--color-sand);
   --accent-contrast: color-mix(in srgb, var(--color-cream) 10%, transparent);
   --btn-ring: transparent;
@@ -237,25 +209,13 @@ samp,
 
 /* Icon Variant */
 .app-btn-icon {
-  --accent: var(--color-terracotta);
-  --btn-ring: color-mix(in srgb, var(--color-forest) 18%, transparent);
-  background-color: color-mix(in srgb, var(--color-forest) 6%, transparent);
-  color: var(--color-terracotta);
-  transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-}
-.app-btn-icon:hover {
-  background-color: color-mix(in srgb, var(--color-terracotta) 14%, transparent);
-  color: var(--color-terracotta);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--color-terracotta) 22%, transparent);
-  --btn-ring: color-mix(in srgb, var(--color-terracotta) 45%, transparent);
-}
-:where(.dark, .dark *) .app-btn-icon {
   --accent: var(--color-sand);
   --btn-ring: color-mix(in srgb, var(--color-cream) 20%, transparent);
   background-color: color-mix(in srgb, var(--color-cream) 8%, transparent);
   color: var(--color-sand);
+  transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
-:where(.dark, .dark *) .app-btn-icon:hover {
+.app-btn-icon:hover {
   background-color: color-mix(in srgb, var(--color-sand) 18%, transparent);
   color: var(--color-cream);
   box-shadow: 0 0 16px color-mix(in srgb, var(--color-sand) 30%, transparent);

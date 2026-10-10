@@ -136,7 +136,6 @@ function AvatarModel({
 useGLTF.preload("/my3DAvatar.glb");
 
 interface AvatarCanvasProps {
-  isDark?: boolean;
   className?: string;
   onWalkComplete?: () => void;
   onAnimationComplete?: () => void;
@@ -144,7 +143,6 @@ interface AvatarCanvasProps {
 }
 
 export default function AvatarCanvas({
-  isDark = true,
   className = "",
   onWalkComplete,
   onAnimationComplete,
@@ -178,20 +176,16 @@ export default function AvatarCanvas({
       >
         {/* Soft hemispheric light for rich ambient atmosphere */}
         <hemisphereLight
-          args={[
-            isDark ? creamColor : "#ffffff",
-            isDark ? forestColor : sandColor,
-            isDark ? 0.95 : 0.75,
-          ]}
+          args={[creamColor, forestColor, 0.95]}
         />
 
         {/* Ambient base lighting */}
-        <ambientLight intensity={isDark ? 1.0 : 1.2} />
+        <ambientLight intensity={1.0} />
 
         {/* Key Light: Crisp warm front-top light */}
         <directionalLight
           position={[2.5, 4.5, 3.5]}
-          intensity={isDark ? 2.2 : 1.8}
+          intensity={2.2}
           castShadow
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}
@@ -207,22 +201,22 @@ export default function AvatarCanvas({
         {/* Fill Light: Soft sand tone on the left */}
         <directionalLight
           position={[-3, 2, 2]}
-          intensity={isDark ? 1.2 : 0.9}
-          color={isDark ? sandColor : terracottaColor}
+          intensity={1.2}
+          color={sandColor}
         />
 
         {/* Rim / Back Light: Terracotta edge lighting that outlines the silhouette */}
         <directionalLight
           position={[0, 3, -3]}
-          intensity={isDark ? 2.2 : 1.5}
-          color={isDark ? terracottaColor : sandColor}
+          intensity={2.2}
+          color={terracottaColor}
         />
 
         {/* Ground bounce light for subtle chin/torso fill */}
         <directionalLight
           position={[0, -2, 1]}
           intensity={0.4}
-          color={isDark ? mossColor : creamColor}
+          color={mossColor}
         />
 
         <Suspense fallback={null}>

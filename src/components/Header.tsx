@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useTheme } from "../context/ThemeContext";
 import AppButton from "./AppButton";
 import { particleBridge } from "../utils/particleBridge";
 import { cn } from "../utils/cn";
 
 export default function Header() {
-  const { isDark, toggleTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<string>("hero");
 
   useEffect(() => {
@@ -52,12 +50,6 @@ export default function Header() {
       window.removeEventListener("resize", handleScroll);
     };
   }, []);
-
-  const isOverDarkSection =
-    activeSection === "about" ||
-    activeSection === "skills" ||
-    activeSection === "experience" ||
-    activeSection === "contact";
 
   const handleNavClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -156,33 +148,18 @@ export default function Header() {
             <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
           </div>
           <div className="flex flex-col">
-            <span
-              className={cn(
-                "font-semibold text-sm sm:text-base tracking-tight leading-tight transition-colors duration-300",
-                isOverDarkSection ? "text-earth-cream" : "text-earth-forest dark:text-earth-cream"
-              )}
-            >
+            <span className="font-semibold text-sm sm:text-base tracking-tight leading-tight text-earth-cream">
               Umair Shahid
             </span>
-            <span
-              className={cn(
-                "text-[11px] font-sans font-medium uppercase tracking-wider leading-tight transition-colors duration-300",
-                isOverDarkSection ? "text-earth-sand" : "text-earth-moss dark:text-earth-sand"
-              )}
-            >
+            <span className="text-[11px] font-sans font-medium uppercase tracking-wider leading-tight text-earth-sand">
               Full-Stack Developer
             </span>
           </div>
         </a>
 
-        {/* Navigation & Theme Switcher */}
+        {/* Navigation */}
         <div className="flex items-center gap-3 sm:gap-6">
-          <nav
-            className={cn(
-              "hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium transition-colors duration-300",
-              isOverDarkSection ? "text-earth-sand/90" : "text-earth-moss dark:text-earth-sand/90"
-            )}
-          >
+          <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-earth-sand/90">
             <a
               href="#about"
               onClick={(e) => handleNavClick(e, "about")}
@@ -190,9 +167,7 @@ export default function Header() {
                 "transition-colors cursor-pointer py-1 whitespace-nowrap",
                 activeSection === "about"
                   ? "text-earth-cream font-medium"
-                  : isOverDarkSection
-                  ? "hover:text-earth-cream"
-                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+                  : "text-earth-sand/80 hover:text-earth-cream"
               )}
             >
               About me
@@ -204,9 +179,7 @@ export default function Header() {
                 "transition-colors cursor-pointer py-1 whitespace-nowrap",
                 activeSection === "skills"
                   ? "text-earth-cream font-medium"
-                  : isOverDarkSection
-                  ? "hover:text-earth-cream"
-                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+                  : "text-earth-sand/80 hover:text-earth-cream"
               )}
             >
               Skills
@@ -218,27 +191,23 @@ export default function Header() {
                 "transition-colors cursor-pointer py-1 whitespace-nowrap",
                 activeSection === "experience"
                   ? "text-earth-cream font-medium"
-                  : isOverDarkSection
-                  ? "hover:text-earth-cream"
-                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+                  : "text-earth-sand/80 hover:text-earth-cream"
               )}
             >
               Work Experience
             </a>
-            <a
+            {/* <a
               href="#projects"
               onClick={(e) => handleNavClick(e, "projects")}
               className={cn(
                 "transition-colors cursor-pointer py-1 whitespace-nowrap",
                 activeSection === "projects"
                   ? "text-earth-cream font-medium"
-                  : isOverDarkSection
-                  ? "hover:text-earth-cream"
-                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+                  : "text-earth-sand/80 hover:text-earth-cream"
               )}
             >
               Projects
-            </a>
+            </a> */}
             <a
               href="#contact"
               onClick={(e) => handleNavClick(e, "contact")}
@@ -246,9 +215,7 @@ export default function Header() {
                 "transition-colors cursor-pointer py-1 whitespace-nowrap",
                 activeSection === "contact"
                   ? "text-earth-cream font-medium"
-                  : isOverDarkSection
-                  ? "hover:text-earth-cream"
-                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+                  : "text-earth-sand/80 hover:text-earth-cream"
               )}
             >
               Contact
@@ -260,26 +227,11 @@ export default function Header() {
               size="sm"
               icon="external-link"
               iconPosition="right"
-              className={cn(
-                isOverDarkSection &&
-                  "!text-earth-sand !border-earth-sand/30 hover:!text-earth-cream hover:!border-earth-sand/60"
-              )}
+              className="!text-earth-sand !border-earth-sand/30 hover:!text-earth-cream hover:!border-earth-sand/60"
             >
               Resume
             </AppButton>
           </nav>
-
-          {/* Theme Toggle Button */}
-          <AppButton
-            variant="icon"
-            onClick={toggleTheme}
-            aria-label="Toggle Theme"
-            icon={isDark ? "sun" : "moon"}
-            className={cn(
-              isOverDarkSection &&
-                "!text-earth-sand hover:!text-earth-cream !bg-white/10 hover:!bg-white/20 !ring-earth-sand/30 hover:!ring-earth-sand/60"
-            )}
-          />
         </div>
       </div>
     </header>

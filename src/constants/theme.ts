@@ -8,7 +8,7 @@ export const THEME_PALETTE: ThemePalette = {
   terracotta: "var(--color-terracotta)",
 } as const;
 
-export const THEME_COLORS: Record<"dark" | "light", ThemeColors> = {
+export const THEME_COLORS: Record<"dark", ThemeColors> = {
   dark: {
     background: "var(--color-forest)",
     surface: "var(--color-onyx)",
@@ -18,15 +18,4 @@ export const THEME_COLORS: Record<"dark" | "light", ThemeColors> = {
     primary: "var(--color-moss)",
     ...THEME_PALETTE,
   },
-  light: {
-    background: "var(--color-cream)",
-    surface: "var(--color-sand)",
-    text: "var(--color-forest)",
-    textMuted: "var(--color-moss)",
-    accent: "var(--color-terracotta)",
-    primary: "var(--color-sand)",
-    ...THEME_PALETTE,
-  },
 } as const;
-
-export const STORAGE_KEY = "portfolio-theme";

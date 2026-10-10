@@ -36,7 +36,7 @@ export default function App() {
   return (
     <LoadingProvider>
       <CurtainLoader />
-      <div className="min-h-screen w-full relative bg-earth-cream dark:bg-earth-forest text-earth-forest dark:text-earth-cream transition-colors duration-300 overflow-x-clip selection:bg-earth-terracotta selection:text-earth-cream">
+      <div className="dark min-h-screen w-full relative bg-earth-forest text-earth-cream overflow-x-clip selection:bg-earth-terracotta selection:text-earth-cream">
         <Header />
         <main className="w-full relative z-10">
           {/* Hero section is completely standalone */}

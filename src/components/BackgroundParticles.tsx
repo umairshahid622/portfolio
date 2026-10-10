@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useTheme } from "../context/ThemeContext";
 import { cn } from "../utils/cn";
 
 interface Particle {
@@ -59,7 +58,6 @@ export default function BackgroundParticles({
   showAmbientGlows = true,
 }: BackgroundParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { isDark } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -80,12 +78,8 @@ export default function BackgroundParticles({
     const terracottaRgb = getRgbPrefixFromVar("--color-terracotta", "rgba(188, 108, 37,");
     const mossRgb = getRgbPrefixFromVar("--color-moss", "rgba(96, 108, 56,");
     const sandRgb = getRgbPrefixFromVar("--color-sand", "rgba(221, 161, 94,");
-    const forestRgb = getRgbPrefixFromVar("--color-forest", "rgba(40, 54, 24,");
 
-    const colorsDark = [creamRgb, sandRgb];
-    const colorsLight = [terracottaRgb, mossRgb, sandRgb, forestRgb];
-
-    const activeColors = isDark ? colorsDark : colorsLight;
+    const activeColors = [creamRgb, sandRgb];
 
     // Mouse tracking for subtle interactive parallax
     let mouseX = width / 2;
@@ -127,8 +121,8 @@ export default function BackgroundParticles({
         amplitude: 45,
         wavelength: 0.0018,
         speed: 0.0003,
-        color: isDark ? mossRgb : terracottaRgb,
-        alpha: isDark ? 0.09 : 0.05,
+        color: mossRgb,
+        alpha: 0.09,
         offset: 0,
       },
       {
@@ -136,8 +130,8 @@ export default function BackgroundParticles({
         amplitude: 65,
         wavelength: 0.0012,
         speed: -0.00025,
-        color: isDark ? sandRgb : mossRgb,
-        alpha: isDark ? 0.06 : 0.04,
+        color: sandRgb,
+        alpha: 0.06,
         offset: 2.5,
       },
       {
@@ -145,8 +139,8 @@ export default function BackgroundParticles({
         amplitude: 50,
         wavelength: 0.0015,
         speed: 0.0002,
-        color: isDark ? terracottaRgb : sandRgb,
-        alpha: isDark ? 0.05 : 0.03,
+        color: terracottaRgb,
+        alpha: 0.05,
         offset: 4.1,
       },
     ];
@@ -156,9 +150,7 @@ export default function BackgroundParticles({
 
     const createParticle = (spawnY?: number): Particle => {
       const radius = 1.0 + Math.random() * 1.5;
-      const baseAlpha = isDark
-        ? 0.35 + Math.random() * 0.45
-        : 0.25 + Math.random() * 0.35;
+      const baseAlpha = 0.35 + Math.random() * 0.45;
 
       const colorPrefix =
         activeColors[Math.floor(Math.random() * activeColors.length)];
@@ -278,14 +270,14 @@ export default function BackgroundParticles({
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", handleResize);
     };
-  }, [isDark, count]);
+  }, [count]);
 
   return (
     <div
       className={cn("pointer-events-none", className || "absolute inset-0 z-0")}
       aria-hidden="true"
     >
-      {showAmbientGlows && isDark && (
+      {showAmbientGlows && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
           {/* Unified ambient background glows - single consistent lighting source */}
           <div
