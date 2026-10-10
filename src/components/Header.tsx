@@ -53,7 +53,11 @@ export default function Header() {
     };
   }, []);
 
-  const isOverDarkSection = activeSection === "about" || activeSection === "skills" || activeSection === "experience";
+  const isOverDarkSection =
+    activeSection === "about" ||
+    activeSection === "skills" ||
+    activeSection === "experience" ||
+    activeSection === "contact";
 
   const handleNavClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -214,6 +218,20 @@ export default function Header() {
               )}
             >
               Projects
+            </a>
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, "contact")}
+              className={cn(
+                "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                activeSection === "contact"
+                  ? "text-earth-cream font-medium"
+                  : isOverDarkSection
+                  ? "hover:text-earth-cream"
+                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+              )}
+            >
+              Contact
             </a>
             <AppButton
               href="/Resume.pdf"

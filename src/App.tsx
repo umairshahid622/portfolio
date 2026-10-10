@@ -6,6 +6,7 @@ import Hero from "./components/Hero";
 import Overview from "./components/Overview";
 import Skills from "./components/Skills";
 import WorkExperience from "./components/WorkExperience";
+import Contact from "./components/Contact";
 import ParticleExperienceWrapper from "./components/ParticleExperienceWrapper";
 import SmoothCursor from "./components/SmoothCursor";
 import CurtainLoader from "./components/CurtainLoader";
@@ -47,6 +48,9 @@ export default function App() {
             <Skills />
             <WorkExperience />
           </ParticleExperienceWrapper>
+
+          {/* Contact Us Section */}
+          <Contact />
         </main>
         <SmoothCursor />
       </div>
