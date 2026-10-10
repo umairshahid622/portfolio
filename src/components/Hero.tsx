@@ -184,8 +184,9 @@ export default function Hero() {
       // Keep hidden until curtain begins parting
       if (!curtainParting) {
         gsap.set([umairEl, shahidEl], {
+          x: 0,
           opacity: 0,
-          scale: 0.2,
+          scale: 0.85,
         });
         if (roleEl) gsap.set(roleEl, { opacity: 0, scale: 0.8, y: 25 });
         if (taglineEl) gsap.set(taglineEl, { opacity: 0, y: 20 });
@@ -194,12 +195,6 @@ export default function Hero() {
       }
 
       hasAnimatedRef.current = true;
-
-      // Measure gap between elements to achieve exact 0px space between them at center
-      gsap.set([umairEl, shahidEl], { x: 0, scale: 1 });
-      const umairRect = umairEl.getBoundingClientRect();
-      const shahidRect = shahidEl.getBoundingClientRect();
-      const shiftX = Math.max(0, (shahidRect.left - umairRect.right) / 2);
 
       // Synchronize with curtain reveal: start as curtains open wide enough (~0.75s after parting start)
       // or immediately if curtain is already complete
@@ -214,23 +209,12 @@ export default function Hero() {
       }
 
       // Initialize at timeline time 0:
-      // Umair and Shahid start joined at the center with 0 space between them, hidden
+      // Umair and Shahid start directly in their natural flanking positions, hidden
       tl.set(
-        umairEl,
+        [umairEl, shahidEl],
         {
-          x: shiftX,
-          scale: 0.2,
-          opacity: 0,
-          transformOrigin: "center center",
-        },
-        0
-      );
-
-      tl.set(
-        shahidEl,
-        {
-          x: -shiftX,
-          scale: 0.2,
+          x: 0,
+          scale: 0.85,
           opacity: 0,
           transformOrigin: "center center",
         },
@@ -241,37 +225,15 @@ export default function Hero() {
       if (taglineEl) tl.set(taglineEl, { opacity: 0, y: 20 }, 0);
       if (ctasEl) tl.set(ctasEl, { opacity: 0, scale: 0.85, y: 20 }, 0);
 
-      // 1: The Text Popout with 0 space between them at the center (behind 3D character)
+      // Reveal Umair and Shahid directly at their flanking positions (no initial splitting)
       tl.to([umairEl, shahidEl], {
         scale: 1,
         opacity: 1,
-        duration: 0.6,
-        ease: "back.out(2.2)",
+        duration: 0.65,
+        ease: "back.out(1.8)",
       });
 
-      // Brief hold so user appreciates the connected name
-      tl.to({}, { duration: 0.3 });
-
-      // 2: Both Umair and Shahid separate to their flanking positions for the avatar to emerge
-      tl.to(
-        umairEl,
-        {
-          x: 0,
-          duration: 0.85,
-          ease: "power3.inOut",
-        }
-      );
-      tl.to(
-        shahidEl,
-        {
-          x: 0,
-          duration: 0.85,
-          ease: "power3.inOut",
-        },
-        "<" // Part symmetrically at the exact same moment
-      );
-
-      // Once separation completes, promote text layer above character layer
+      // Promote text layer above character layer
       tl.set(".hero-main-content", { zIndex: 30 });
     },
     { scope: containerRef, dependencies: [curtainParting, calculateReuniteShift, handleAnimationComplete] }

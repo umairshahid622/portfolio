@@ -64,7 +64,7 @@ export default function Header() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    if (targetId === "experience" || targetId === "projects") {
+    if (targetId === "experience") {
       particleBridge.isDarkActive = true;
       particleBridge.overviewProgress = 1.0;
       particleBridge.skillsProgress = 0.0;
@@ -155,7 +155,7 @@ export default function Header() {
         <div className="flex items-center gap-3 sm:gap-6">
           <nav
             className={cn(
-              "hidden sm:flex items-center gap-6 text-xs uppercase tracking-widest font-sans font-medium transition-colors duration-300",
+              "hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium transition-colors duration-300",
               isOverDarkSection ? "text-earth-sand/90" : "text-earth-moss dark:text-earth-sand/90"
             )}
           >
@@ -163,7 +163,7 @@ export default function Header() {
               href="#about"
               onClick={(e) => handleNavClick(e, "about")}
               className={cn(
-                "transition-colors cursor-pointer py-1",
+                "transition-colors cursor-pointer py-1 whitespace-nowrap",
                 activeSection === "about"
                   ? "text-earth-cream font-medium"
                   : isOverDarkSection
@@ -177,7 +177,7 @@ export default function Header() {
               href="#skills"
               onClick={(e) => handleNavClick(e, "skills")}
               className={cn(
-                "transition-colors cursor-pointer py-1",
+                "transition-colors cursor-pointer py-1 whitespace-nowrap",
                 activeSection === "skills"
                   ? "text-earth-cream font-medium"
                   : isOverDarkSection
@@ -188,11 +188,25 @@ export default function Header() {
               Skills
             </a>
             <a
+              href="#experience"
+              onClick={(e) => handleNavClick(e, "experience")}
+              className={cn(
+                "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                activeSection === "experience"
+                  ? "text-earth-cream font-medium"
+                  : isOverDarkSection
+                  ? "hover:text-earth-cream"
+                  : "hover:text-earth-forest dark:hover:text-earth-cream"
+              )}
+            >
+              Work Experience
+            </a>
+            <a
               href="#projects"
               onClick={(e) => handleNavClick(e, "projects")}
               className={cn(
-                "transition-colors cursor-pointer py-1",
-                (activeSection === "projects" || activeSection === "experience")
+                "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                activeSection === "projects"
                   ? "text-earth-cream font-medium"
                   : isOverDarkSection
                   ? "hover:text-earth-cream"
