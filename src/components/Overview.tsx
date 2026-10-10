@@ -77,13 +77,14 @@ export default function Overview() {
   const sectionRef = useRef<HTMLElement>(null);
   const drumRef = useRef<HTMLDivElement>(null);
   const rollerContainerRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 640 : false
+  );
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 640);
     };
-    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -104,6 +105,11 @@ export default function Overview() {
       const section = sectionRef.current;
       const rollerContainer = rollerContainerRef.current;
       if (!drum || !section || !rollerContainer) return;
+
+      const existingSt = ScrollTrigger.getById("about-timeline");
+      if (existingSt) {
+        existingSt.kill(true);
+      }
 
       // Start with the first 5 lines in the focal reading zone (lines 0-4 centered at line 2)
       const initialRotation = 2 * stepAngle;

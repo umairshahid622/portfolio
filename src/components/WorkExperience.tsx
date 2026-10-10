@@ -130,6 +130,11 @@ export default function WorkExperience() {
         gsap.set(cards[i], { yPercent: 125, y: 0, scale: 1, opacity: 0, transformOrigin: "center top" });
       }
 
+      const existingSt = ScrollTrigger.getById("experience-timeline");
+      if (existingSt) {
+        existingSt.kill(true);
+      }
+
       const tl = gsap.timeline({
         scrollTrigger: {
           id: "experience-timeline",

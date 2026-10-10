@@ -162,6 +162,11 @@ export default function Skills() {
         return Math.max(0, cardsTrack.scrollWidth - window.innerWidth + pad);
       };
 
+      const existingSt = ScrollTrigger.getById("skills-timeline");
+      if (existingSt) {
+        existingSt.kill(true);
+      }
+
       const tl = gsap.timeline({
         scrollTrigger: {
           id: "skills-timeline",

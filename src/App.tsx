@@ -42,15 +42,13 @@ export default function App() {
           {/* Hero section is completely standalone */}
           <Hero />
 
-          {/* Unified particle experience wrapper for Overview, Skills & Work Experience */}
+          {/* Unified particle experience wrapper for Overview, Skills, Work Experience & Contact */}
           <ParticleExperienceWrapper>
             <Overview />
             <Skills />
             <WorkExperience />
+            <Contact />
           </ParticleExperienceWrapper>
-
-          {/* Contact Us Section */}
-          <Contact />
         </main>
         <SmoothCursor />
       </div>

@@ -39,12 +39,15 @@ const BREAKDOWN_VERTEX_SHADER = `
   uniform float uOverviewBreak;
   uniform float uSkillsProgress;
   uniform float uExperienceProgress;
+  uniform float uContactProgress;
   uniform vec3 uOriginOffset;
   uniform float uOriginScale;
   uniform vec3 uTargetOffset;
   uniform float uTargetScale;
   uniform vec3 uTarget3Offset;
   uniform float uTarget3Scale;
+  uniform vec3 uTarget4Offset;
+  uniform float uTarget4Scale;
 
   uniform vec2 uMouseWorld;
   uniform float uMouseActive;
@@ -56,6 +59,8 @@ const BREAKDOWN_VERTEX_SHADER = `
   attribute vec3 aTargetCenter;
   attribute vec3 aTarget3Pos;
   attribute vec3 aTarget3Center;
+  attribute vec3 aTarget4Pos;
+  attribute vec3 aTarget4Center;
   attribute vec4 aRandom;
 
   varying vec3 vWorldPos;
@@ -76,6 +81,11 @@ const BREAKDOWN_VERTEX_SHADER = `
     vec3 text3Center = uTarget3Offset + aTarget3Center * uTarget3Scale;
     vec3 text3Local = (aTarget3Pos - aTarget3Center) * uTarget3Scale;
     vec3 text3Pos = text3Center + text3Local;
+
+    // 4. Text 4 World Coordinates (Let's Get In or Touch)
+    vec3 text4Center = uTarget4Offset + aTarget4Center * uTarget4Scale;
+    vec3 text4Local = (aTarget4Pos - aTarget4Center) * uTarget4Scale;
+    vec3 text4Pos = text4Center + text4Local;
 
     // Screen Spread Target (distributed evenly across visible viewport)
     float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
@@ -117,11 +127,25 @@ const BREAKDOWN_VERTEX_SHADER = `
       mergeExpP = clamp((uExperienceProgress - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
     }
 
+    float mergeContactP = 0.0;
+    if (uContactProgress >= 0.985) {
+      mergeContactP = 1.0;
+    } else {
+      mergeContactP = clamp((uContactProgress - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
+    }
+
     vec3 currentCenter;
     vec3 currentLocal;
     float facetP;
 
-    if (uExperienceProgress > 0.001) {
+    if (uContactProgress > 0.001) {
+      // In Contact: Fly between screenTarget and Text 4 ("Let's Get In" / "Touch")
+      float t = smoothstep(0.0, 1.0, mergeContactP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeContactP) * 3.14159);
+      currentCenter = mix(screenTarget, text4Center, t) + arc;
+      currentLocal = mix(text1Local, text4Local, t);
+      facetP = 1.0 - mergeContactP;
+    } else if (uExperienceProgress > 0.001) {
       // In Work Experience: Fly directly from screenTarget to Text 3 (Work Experience in middle)
       float t = smoothstep(0.0, 1.0, mergeExpP);
       vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeExpP) * 3.14159);
@@ -196,12 +220,15 @@ const POINTS_VERTEX_SHADER = `
   uniform float uOverviewBreak;
   uniform float uSkillsProgress;
   uniform float uExperienceProgress;
+  uniform float uContactProgress;
   uniform vec3 uOriginOffset;
   uniform float uOriginScale;
   uniform vec3 uTargetOffset;
   uniform float uTargetScale;
   uniform vec3 uTarget3Offset;
   uniform float uTarget3Scale;
+  uniform vec3 uTarget4Offset;
+  uniform float uTarget4Scale;
 
   uniform vec2 uMouseWorld;
   uniform float uMouseActive;
@@ -213,6 +240,8 @@ const POINTS_VERTEX_SHADER = `
   attribute vec3 aTargetCenter;
   attribute vec3 aTarget3Pos;
   attribute vec3 aTarget3Center;
+  attribute vec3 aTarget4Pos;
+  attribute vec3 aTarget4Center;
   attribute vec4 aRandom;
 
   varying float vBreakProgress;
@@ -226,6 +255,9 @@ const POINTS_VERTEX_SHADER = `
 
     vec3 text3Center = uTarget3Offset + aTarget3Center * uTarget3Scale;
     vec3 text3Local = (aTarget3Pos - aTarget3Center) * uTarget3Scale;
+
+    vec3 text4Center = uTarget4Offset + aTarget4Center * uTarget4Scale;
+    vec3 text4Local = (aTarget4Pos - aTarget4Center) * uTarget4Scale;
 
     float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
     float s2 = cos(aCenter.x * 93.9898 + aCenter.y * 67.345 + aRandom.y * 24.634) * 24634.6345;
@@ -264,11 +296,24 @@ const POINTS_VERTEX_SHADER = `
       mergeExpP = clamp((uExperienceProgress - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
     }
 
+    float mergeContactP = 0.0;
+    if (uContactProgress >= 0.985) {
+      mergeContactP = 1.0;
+    } else {
+      mergeContactP = clamp((uContactProgress - threshold) / (0.985 - threshold + 0.0001), 0.0, 1.0);
+    }
+
     vec3 currentCenter;
     vec3 currentLocal;
     float facetP;
 
-    if (uExperienceProgress > 0.001) {
+    if (uContactProgress > 0.001) {
+      float t = smoothstep(0.0, 1.0, mergeContactP);
+      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeContactP) * 3.14159);
+      currentCenter = mix(screenTarget, text4Center, t) + arc;
+      currentLocal = mix(text1Local, text4Local, t);
+      facetP = 1.0 - mergeContactP;
+    } else if (uExperienceProgress > 0.001) {
       float t = smoothstep(0.0, 1.0, mergeExpP);
       vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeExpP) * 3.14159);
       currentCenter = mix(screenTarget, text3Center, t) + arc;
@@ -337,12 +382,15 @@ function createBreakdownMeshMaterial(colorHex: string, radius = 0.40) {
       uOverviewBreak: { value: 0.0 },
       uSkillsProgress: { value: 0.0 },
       uExperienceProgress: { value: 0.0 },
+      uContactProgress: { value: 0.0 },
       uOriginOffset: { value: new THREE.Vector3(0, 0, 0) },
       uOriginScale: { value: 1.0 },
       uTargetOffset: { value: new THREE.Vector3(0, 0, 0) },
       uTargetScale: { value: 1.0 },
       uTarget3Offset: { value: new THREE.Vector3(0, 0, 0) },
       uTarget3Scale: { value: 1.0 },
+      uTarget4Offset: { value: new THREE.Vector3(0, 0, 0) },
+      uTarget4Scale: { value: 1.0 },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
       uRadius: { value: radius },
@@ -364,12 +412,15 @@ function createBreakdownPointsMaterial(colorHex: string, radius = 0.40) {
       uOverviewBreak: { value: 0.0 },
       uSkillsProgress: { value: 0.0 },
       uExperienceProgress: { value: 0.0 },
+      uContactProgress: { value: 0.0 },
       uOriginOffset: { value: new THREE.Vector3(0, 0, 0) },
       uOriginScale: { value: 1.0 },
       uTargetOffset: { value: new THREE.Vector3(0, 0, 0) },
       uTargetScale: { value: 1.0 },
       uTarget3Offset: { value: new THREE.Vector3(0, 0, 0) },
       uTarget3Scale: { value: 1.0 },
+      uTarget4Offset: { value: new THREE.Vector3(0, 0, 0) },
+      uTarget4Scale: { value: 1.0 },
       uMouseWorld: { value: new THREE.Vector2(0, 0) },
       uMouseActive: { value: 0.0 },
       uRadius: { value: radius },
@@ -392,6 +443,7 @@ function UnifiedCelestialMesh({
   const smoothSkillsProgress = useRef(0);
   const smoothExperienceProgress = useRef(0);
   const smoothExperienceTitleYProgress = useRef(0);
+  const smoothContactProgress = useRef(0);
   const smoothDarkActive = useRef(0);
   const smoothMouseWorld = useRef(new THREE.Vector2(0, 0));
   const smoothMouseActive = useRef(0.0);
@@ -486,6 +538,36 @@ function UnifiedCelestialMesh({
     const xWorkTop = -(wExpTop + spaceExpWTop) * 0.5;
     const xExperienceTop = +(wWorkTop + spaceExpWTop) * 0.5;
 
+    // Contact Layout ("Let's Get In" / "Touch") in the Left Section:
+    const metrics = geometries.contactMetrics || {
+      wWhite: 6.8,
+      hWhite: 0.96,
+      wRed: 3.4,
+      hRed: 0.96,
+    };
+
+    const isContactMobile = viewport.width < 3.2;
+
+    const contactColW = isContactMobile
+      ? viewport.width * 0.88
+      : Math.abs(edges.left) * 0.86;
+    const contactColH = viewport.height * (isContactMobile ? 0.17 : 0.28);
+
+    const baseContactW = Math.max(metrics.wWhite, metrics.wRed * 1.6);
+    const baseContactH = metrics.hWhite + metrics.hRed + 0.35;
+
+    const contactScale = Math.min(contactColW / baseContactW, contactColH / baseContactH);
+
+    const xContact = isContactMobile ? 0.0 : edges.left * 0.52;
+
+    const contactLineGap = 0.28 * contactScale;
+    const yContactCenter = isContactMobile ? viewport.height * 0.30 : 0.0;
+
+    const yContactWhite =
+      yContactCenter + metrics.hWhite * 0.5 * contactScale + contactLineGap * 0.5;
+    const yContactRed =
+      yContactCenter - metrics.hRed * 0.5 * contactScale - contactLineGap * 0.5;
+
     return {
       overviewCenterY,
       scale,
@@ -503,12 +585,16 @@ function UnifiedCelestialMesh({
       expTopScale,
       xWorkTop,
       xExperienceTop,
+      xContact,
+      yContactWhite,
+      yContactRed,
+      contactScale,
     };
-  }, [viewport.width, viewport.height, size.width]);
+  }, [viewport.width, viewport.height, size.width, geometries]);
 
   // Mesh & Point Materials:
-  // Word 1 ("About", "Skills", "Work") matches "Umair" (Cream: #fefae0)
-  // Word 2 ("ME", "</>", "Experience") matches our main golden color ("Shahid" / Sand: #dda15e)
+  // Word 1 ("About", "Skills", "Work", "Let's Get In") matches "Umair" (Cream: #fefae0)
+  // Word 2 ("ME", "</>", "Experience", "Touch") matches our main golden color ("Shahid" / Sand: #dda15e)
   const creamColor = typeof window !== "undefined"
     ? getComputedStyle(document.documentElement).getPropertyValue("--color-cream").trim() || "#fefae0"
     : "#fefae0";
@@ -587,6 +673,20 @@ function UnifiedCelestialMesh({
       smoothExperienceTitleYProgress.current = particleBridge.experienceTitleYProgress;
     }
 
+    smoothContactProgress.current = THREE.MathUtils.lerp(
+      smoothContactProgress.current,
+      particleBridge.contactProgress,
+      0.15
+    );
+    if (Math.abs(smoothContactProgress.current - particleBridge.contactProgress) < 0.002) {
+      smoothContactProgress.current = particleBridge.contactProgress;
+    }
+    if (smoothContactProgress.current < 0.005) {
+      smoothContactProgress.current = 0.0;
+    } else if (smoothContactProgress.current > 0.995) {
+      smoothContactProgress.current = 1.0;
+    }
+
     smoothDarkActive.current = THREE.MathUtils.lerp(
       smoothDarkActive.current,
       particleBridge.isDarkActive ? 1.0 : 0.0,
@@ -612,6 +712,7 @@ function UnifiedCelestialMesh({
     const ovBreak = smoothOverviewProgress.current;
     const skProgress = smoothSkillsProgress.current;
     const expProgress = smoothExperienceProgress.current;
+    const ctProgress = smoothContactProgress.current;
 
     const titleP = smoothExperienceTitleYProgress.current;
     const currentExpY = THREE.MathUtils.lerp(textLayout.expCenterY, textLayout.expTopY, titleP);
@@ -620,45 +721,47 @@ function UnifiedCelestialMesh({
     const currentXExperience = THREE.MathUtils.lerp(textLayout.xExperience, textLayout.xExperienceTop, titleP);
 
     // Exact typographic baseline & cap-height alignment:
-    // In Clash Display, "Work" center is at Y = 0.4585, while "Experience" (with 'p' descender) center is at Y = 0.3475.
-    // By offsetting Work by +0.0555 * scale and Experience by -0.0555 * scale:
-    // Both share the exact same baseline at currentExpY - 0.4030 * scale
-    // Both share the exact same cap-height ('W' & 'E') at currentExpY + 0.5280 * scale!
     const yAlignOffset = 0.0555 * currentExpScale;
     const currentExpYWork = currentExpY + yAlignOffset;
     const currentExpYExperience = currentExpY - yAlignOffset;
 
-    // White Mesh & Points (Morphs ABOUT -> Spread Screen Triangles -> SKILLS -> Work)
+    // White Mesh & Points (Morphs ABOUT -> Spread Screen Triangles -> SKILLS -> Work -> Let's Get In)
     const whiteMats = [whiteMeshMat, whitePointsMat];
     for (const mat of whiteMats) {
       mat.uniforms.uViewport.value.set(vW, vH);
       mat.uniforms.uOverviewBreak.value = ovBreak;
       mat.uniforms.uSkillsProgress.value = skProgress;
       mat.uniforms.uExperienceProgress.value = expProgress;
+      mat.uniforms.uContactProgress.value = ctProgress;
       mat.uniforms.uOriginOffset.value.set(textLayout.xAbout, textLayout.overviewCenterY, 0);
       mat.uniforms.uOriginScale.value = textLayout.scale;
       mat.uniforms.uTargetOffset.value.set(textLayout.xSkills, textLayout.skillsCenterY, 0);
       mat.uniforms.uTargetScale.value = textLayout.skillsScale;
       mat.uniforms.uTarget3Offset.value.set(currentXWork, currentExpYWork, 0);
       mat.uniforms.uTarget3Scale.value = currentExpScale;
+      mat.uniforms.uTarget4Offset.value.set(textLayout.xContact, textLayout.yContactWhite, 0);
+      mat.uniforms.uTarget4Scale.value = textLayout.contactScale;
       mat.uniforms.uOpacity.value = opacity;
       mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       mat.uniforms.uMouseActive.value = smoothMouseActive.current;
     }
 
-    // Gold Mesh & Points (Morphs ME -> Spread Screen Triangles -> </> -> Experience)
+    // Gold Mesh & Points (Morphs ME -> Spread Screen Triangles -> </> -> Experience -> Touch)
     const goldMats = [goldMeshMat, goldPointsMat];
     for (const mat of goldMats) {
       mat.uniforms.uViewport.value.set(vW, vH);
       mat.uniforms.uOverviewBreak.value = ovBreak;
       mat.uniforms.uSkillsProgress.value = skProgress;
       mat.uniforms.uExperienceProgress.value = expProgress;
+      mat.uniforms.uContactProgress.value = ctProgress;
       mat.uniforms.uOriginOffset.value.set(textLayout.xMe, textLayout.overviewCenterY, 0);
       mat.uniforms.uOriginScale.value = textLayout.scale;
       mat.uniforms.uTargetOffset.value.set(textLayout.xCode, textLayout.skillsCenterY, 0.05);
       mat.uniforms.uTargetScale.value = textLayout.skillsScale;
       mat.uniforms.uTarget3Offset.value.set(currentXExperience, currentExpYExperience, 0);
       mat.uniforms.uTarget3Scale.value = currentExpScale;
+      mat.uniforms.uTarget4Offset.value.set(textLayout.xContact, textLayout.yContactRed, 0.05);
+      mat.uniforms.uTarget4Scale.value = textLayout.contactScale;
       mat.uniforms.uOpacity.value = opacity;
       mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
       mat.uniforms.uMouseActive.value = smoothMouseActive.current;

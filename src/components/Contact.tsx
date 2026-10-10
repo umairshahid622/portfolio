@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { particleBridge } from "../utils/particleBridge";
 import AppButton from "./AppButton";
 import { AppIcon } from "./AppIcon";
 import AppInput from "./AppInput";
 
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
 export default function Contact() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -11,6 +18,40 @@ export default function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useGSAP(
+    () => {
+      const section = sectionRef.current;
+      if (!section) return;
+
+      const existingSt = ScrollTrigger.getById("contact-particle-trigger");
+      if (existingSt) {
+        existingSt.kill(true);
+      }
+
+      ScrollTrigger.create({
+        id: "contact-particle-trigger",
+        trigger: section,
+        start: "top 80%",
+        end: "top 20%",
+        scrub: 0.8,
+        onEnter: () => {
+          particleBridge.isDarkActive = true;
+        },
+        onEnterBack: () => {
+          particleBridge.isDarkActive = true;
+        },
+        onLeaveBack: () => {
+          particleBridge.contactProgress = 0.0;
+        },
+        onUpdate: (self) => {
+          particleBridge.contactProgress = self.progress;
+          particleBridge.isDarkActive = true;
+        },
+      });
+    },
+    { scope: sectionRef }
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -37,8 +78,9 @@ export default function Contact() {
 
   return (
     <section
+      ref={sectionRef}
       id="contact"
-      className="relative w-full py-24 sm:py-32 md:py-36 px-5 sm:px-8 md:px-12 bg-earth-black text-earth-cream overflow-hidden"
+      className="relative w-full min-h-screen pt-24 sm:pt-32 md:pt-36 pb-32 sm:pb-40 md:pb-48 px-5 sm:px-8 md:px-12 bg-transparent text-earth-cream overflow-hidden flex items-center justify-center"
     >
       {/* Ambient background glows */}
       <div
@@ -52,14 +94,14 @@ export default function Contact() {
 
       <div className="w-full max-w-7xl mx-auto relative z-10">      
 
-        {/* Two-Column Grid: Left (Empty for now) & Right (Form) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-start">
-          {/* Left Column: Reserved / Empty for now */}
+        {/* Two-Column Grid: Left (3D Particle Text) & Right (Form) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 xl:gap-16 items-center">
+          {/* Left Column: Reserved space for 3D particles "Let's Get In Touch" */}
           <div
-            className="w-full min-h-[220px] sm:min-h-[300px] lg:min-h-[520px] rounded-2xl sm:rounded-3xl border border-dashed border-earth-cream/10 bg-earth-card/20 flex items-center justify-center relative overflow-hidden"
-            aria-label="Left section container"
+            className="w-full min-h-[160px] sm:min-h-[240px] lg:min-h-[460px] flex items-center justify-center relative pointer-events-none"
+            aria-label="Let's Get in touch particle text area"
           >
-            {/* Kept clean and empty for upcoming visual/interactive content */}
+            {/* The 3D CharacterPointsCanvas renders "Let's Get in touch" right here */}
           </div>
 
           {/* Right Column: Contact Form */}
@@ -108,7 +150,7 @@ export default function Contact() {
                     required
                     value={formData.fullName}
                     onChange={handleChange}
-                    placeholder="e.g. Alex Morgan"
+                    placeholder="Write Your Full Name"
                     disabled={isSubmitting}
                   />
 
@@ -121,7 +163,7 @@ export default function Contact() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="e.g. alex@example.com"
+                    placeholder="Write Your Email"
                     disabled={isSubmitting}
                   />
 
@@ -135,7 +177,7 @@ export default function Contact() {
                     required
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Tell me about your project, opportunity, or inquiry..."
+                    placeholder="Write Anything In Your Mind"
                     disabled={isSubmitting}
                   />
 

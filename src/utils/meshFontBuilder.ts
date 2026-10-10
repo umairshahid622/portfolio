@@ -2,8 +2,14 @@ import * as THREE from "three";
 import { TTFLoader, FontLoader } from "three-stdlib";
 
 export interface TextMeshGeometries {
-  white: THREE.BufferGeometry; // Unified morphable geometry: ABOUT <-> Spread Screen Triangles <-> SKILLS
-  red: THREE.BufferGeometry;   // Unified morphable geometry: ME <-> Spread Screen Triangles <-> </>
+  white: THREE.BufferGeometry; // Unified morphable geometry: ABOUT <-> SKILLS <-> Work <-> Let's Get In
+  red: THREE.BufferGeometry;   // Unified morphable geometry: ME <-> </> <-> Experience <-> Touch
+  contactMetrics?: {
+    wWhite: number;
+    hWhite: number;
+    wRed: number;
+    hRed: number;
+  };
 }
 
 interface RawTriangle {
@@ -98,10 +104,6 @@ function matchTriangleCountCentroid(arr: RawTriangle[], targetCount: number) {
     const p1 = t.p1;
     const p2 = t.p2;
     const p3 = t.p3;
-    // Centroid subdivision:
-    // Partition triangle into 3 sub-triangles meeting at centroid.
-    // Boundary edges (p1-p2, p2-p3, p3-p1) are 100% preserved with zero edge cuts.
-    // This guarantees ZERO T-junctions across the entire font mesh, keeping it completely watertight under mouse vertex displacement!
     const c: [number, number, number] = [
       (p1[0] + p2[0] + p3[0]) / 3,
       (p1[1] + p2[1] + p3[1]) / 3,
@@ -144,13 +146,22 @@ function matchTriangleCountCentroid(arr: RawTriangle[], targetCount: number) {
 function buildMorphableGeometry(
   t1: RawTriangle[],
   t2: RawTriangle[],
-  t3?: RawTriangle[]
+  t3?: RawTriangle[],
+  t4?: RawTriangle[]
 ): THREE.BufferGeometry {
-  const targetCount = Math.max(t1.length, t2.length, t3 ? t3.length : 0);
+  const targetCount = Math.max(
+    t1.length,
+    t2.length,
+    t3 ? t3.length : 0,
+    t4 ? t4.length : 0
+  );
   matchTriangleCountCentroid(t1, targetCount);
   matchTriangleCountCentroid(t2, targetCount);
   if (t3) {
     matchTriangleCountCentroid(t3, targetCount);
+  }
+  if (t4) {
+    matchTriangleCountCentroid(t4, targetCount);
   }
 
   // Sort along X to align natural typographic flow
@@ -158,6 +169,9 @@ function buildMorphableGeometry(
   t2.sort((a, b) => a.cx - b.cx || a.cy - b.cy);
   if (t3) {
     t3.sort((a, b) => a.cx - b.cx || a.cy - b.cy);
+  }
+  if (t4) {
+    t4.sort((a, b) => a.cx - b.cx || a.cy - b.cy);
   }
 
   const totalVertices = targetCount * 3;
@@ -167,12 +181,15 @@ function buildMorphableGeometry(
   const targetCenters = new Float32Array(totalVertices * 3);
   const target3Positions = new Float32Array(totalVertices * 3);
   const target3Centers = new Float32Array(totalVertices * 3);
+  const target4Positions = new Float32Array(totalVertices * 3);
+  const target4Centers = new Float32Array(totalVertices * 3);
   const randoms = new Float32Array(totalVertices * 4);
 
   for (let i = 0; i < targetCount; i++) {
     const tri1 = t1[i];
     const tri2 = t2[i];
     const tri3 = t3 ? t3[i] : null;
+    const tri4 = t4 ? t4[i] : null;
 
     // Deterministic pseudo-random seed based on triangle center
     const s1 = Math.sin(tri1.cx * 12.9898 + tri1.cy * 78.233) * 43758.5453;
@@ -191,6 +208,7 @@ function buildMorphableGeometry(
     const pts1 = [tri1.p1, tri1.p2, tri1.p3];
     const pts2 = [tri2.p1, tri2.p2, tri2.p3];
     const pts3 = tri3 ? [tri3.p1, tri3.p2, tri3.p3] : pts2;
+    const pts4 = tri4 ? [tri4.p1, tri4.p2, tri4.p3] : pts3;
 
     for (let v = 0; v < 3; v++) {
       const vIdx = (i * 3 + v) * 3;
@@ -220,6 +238,14 @@ function buildMorphableGeometry(
       target3Centers[vIdx + 1] = tri3 ? tri3.cy : tri2.cy;
       target3Centers[vIdx + 2] = tri3 ? tri3.cz : tri2.cz;
 
+      target4Positions[vIdx] = pts4[v][0];
+      target4Positions[vIdx + 1] = pts4[v][1];
+      target4Positions[vIdx + 2] = pts4[v][2];
+
+      target4Centers[vIdx] = tri4 ? tri4.cx : (tri3 ? tri3.cx : tri2.cx);
+      target4Centers[vIdx + 1] = tri4 ? tri4.cy : (tri3 ? tri3.cy : tri2.cy);
+      target4Centers[vIdx + 2] = tri4 ? tri4.cz : (tri3 ? tri3.cz : tri2.cz);
+
       randoms[rIdx] = nx;
       randoms[rIdx + 1] = ny;
       randoms[rIdx + 2] = nz;
@@ -234,6 +260,8 @@ function buildMorphableGeometry(
   geom.setAttribute("aTargetCenter", new THREE.BufferAttribute(targetCenters, 3));
   geom.setAttribute("aTarget3Pos", new THREE.BufferAttribute(target3Positions, 3));
   geom.setAttribute("aTarget3Center", new THREE.BufferAttribute(target3Centers, 3));
+  geom.setAttribute("aTarget4Pos", new THREE.BufferAttribute(target4Positions, 3));
+  geom.setAttribute("aTarget4Center", new THREE.BufferAttribute(target4Centers, 3));
   geom.setAttribute("aRandom", new THREE.BufferAttribute(randoms, 4));
   geom.computeBoundingBox();
   return geom;
@@ -257,22 +285,51 @@ export async function loadMeshFontGeometries(): Promise<TextMeshGeometries> {
     const shapesAbout = font.generateShapes("ABOUT", 1);
     const shapesSkills = font.generateShapes("SKILLS", 1);
     const shapesWork = font.generateShapes("Work", 1);
+    const shapesContactWhite = font.generateShapes("Let's Get In", 1);
+
+    const geomContactWhite = new THREE.ShapeGeometry(shapesContactWhite);
+    geomContactWhite.computeBoundingBox();
+    const wContactWhite =
+      geomContactWhite.boundingBox!.max.x - geomContactWhite.boundingBox!.min.x;
+    const hContactWhite =
+      geomContactWhite.boundingBox!.max.y - geomContactWhite.boundingBox!.min.y;
+
     const white = buildMorphableGeometry(
       getTrianglesFromShapes(shapesAbout, 0.16),
       getTrianglesFromShapes(shapesSkills, 0.17),
-      getTrianglesFromShapes(shapesWork, 0.12)
+      getTrianglesFromShapes(shapesWork, 0.12),
+      getTrianglesFromShapes(shapesContactWhite, 0.14)
     );
 
     const shapesMe = font.generateShapes("ME", 1);
     const shapesCode = font.generateShapes("</>", 1);
     const shapesExperience = font.generateShapes("Experience", 1);
+    const shapesContactRed = font.generateShapes("Touch", 1);
+
+    const geomContactRed = new THREE.ShapeGeometry(shapesContactRed);
+    geomContactRed.computeBoundingBox();
+    const wContactRed =
+      geomContactRed.boundingBox!.max.x - geomContactRed.boundingBox!.min.x;
+    const hContactRed =
+      geomContactRed.boundingBox!.max.y - geomContactRed.boundingBox!.min.y;
+
     const red = buildMorphableGeometry(
       getTrianglesFromShapes(shapesMe, 0.06),
       getTrianglesFromShapes(shapesCode, 0.06),
-      getTrianglesFromShapes(shapesExperience, 0.20)
+      getTrianglesFromShapes(shapesExperience, 0.20),
+      getTrianglesFromShapes(shapesContactRed, 0.08)
     );
 
-    cachedGeometries = { white, red };
+    cachedGeometries = {
+      white,
+      red,
+      contactMetrics: {
+        wWhite: wContactWhite,
+        hWhite: hContactWhite,
+        wRed: wContactRed,
+        hRed: hContactRed,
+      },
+    };
     return cachedGeometries;
   })();
 
