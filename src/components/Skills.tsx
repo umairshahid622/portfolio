@@ -240,6 +240,8 @@ export default function Skills() {
       // 3. Comfortable resting hold for final card before unpinning (0.88 -> 1.00)
       tl.to({}, { duration: 0.12 }, 0.88);
 
+      ScrollTrigger.sort();
+
       return () => {
         tl.kill();
       };
@@ -251,7 +253,7 @@ export default function Skills() {
     <section
       ref={sectionRef}
       id="skills"
-      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent text-earth-cream transition-colors duration-300 flex flex-col justify-end overflow-hidden select-none -mt-[100vh]"
+      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent text-earth-cream transition-colors duration-300 flex flex-col justify-end overflow-hidden select-none"
     >
       {/* Accessible Section Heading */}
       <h2 className="sr-only">Skills — Core Technical Domains</h2>
@@ -259,7 +261,7 @@ export default function Skills() {
       {/* Horizontal Cards Track Container */}
       <div
         ref={cardsWrapperRef}
-        className="w-full overflow-visible mt-auto mb-[105px] sm:mb-[125px] md:mb-[135px] relative z-20 will-change-transform"
+        className="w-full overflow-visible mt-auto mb-[105px] sm:mb-[125px] md:mb-[135px] relative z-20 will-change-transform opacity-0"
       >
         <div
           ref={trackRef}

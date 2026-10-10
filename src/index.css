@@ -253,8 +253,20 @@ samp,
 
 /* Overview 3D roller mask */
 .overview-roller-mask {
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.22) 8%, rgba(0,0,0,0.22) calc(50% - 114px), rgba(0,0,0,1) calc(50% - 96px), rgba(0,0,0,1) calc(50% + 96px), rgba(0,0,0,0.22) calc(50% + 114px), rgba(0,0,0,0.22) 92%, transparent 100%);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 88%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 88%,
+    transparent 100%
+  );
 }
 
 /* AppIcon SVG mask */
