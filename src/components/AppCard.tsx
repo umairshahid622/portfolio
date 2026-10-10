@@ -202,19 +202,22 @@ export function AppCardTitle({
 export interface AppCardBadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children?: ReactNode;
   className?: string;
+  accent?: CardAccent;
 }
 
 export function AppCardBadge({
   children,
   className,
+  accent,
   ...props
 }: AppCardBadgeProps) {
   const { accentStyles } = useAppCard();
+  const styles = accent ? ACCENT_STYLES[accent] : accentStyles;
   return (
     <span
       className={cn(
         "inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-sans font-medium border",
-        accentStyles.badge,
+        styles.badge,
         className
       )}
       {...props}

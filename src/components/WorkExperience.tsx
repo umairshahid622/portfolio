@@ -357,13 +357,13 @@ export default function WorkExperience() {
                 </div>
 
                 {/* Role */}
-                <h4 className="text-base sm:text-lg md:text-xl font-bold text-earth-cream tracking-tight">
+                <h4 className="text-base sm:text-lg md:text-xl font-bold text-earth-sand tracking-tight">
                   {item.role}
                 </h4>
 
                 {/* Domain under Role */}
                 <div className="mt-1 mb-2.5 sm:mb-3">
-                  <AppCardBadge>{item.domain}</AppCardBadge>
+                  <AppCardBadge accent="sand">{item.domain}</AppCardBadge>
                 </div>
 
                 {/* Role Summary */}

@@ -74,7 +74,7 @@ export default function ParticleExperienceWrapper({
     <div
       ref={wrapperRef}
       id="particle-experience-wrapper"
-      className="relative w-full bg-earth-black text-earth-cream"
+      className="dark relative w-full bg-earth-black text-earth-cream"
     >
       {/* 3D Particle Canvas Viewport & Single Continuous Background */}
       {/* CSS sticky keeps this viewport locked across Overview & Skills with ZERO GSAP pin conflicts */}

@@ -82,7 +82,7 @@ export default function BackgroundParticles({
     const sandRgb = getRgbPrefixFromVar("--color-sand", "rgba(221, 161, 94,");
     const forestRgb = getRgbPrefixFromVar("--color-forest", "rgba(40, 54, 24,");
 
-    const colorsDark = [creamRgb, terracottaRgb];
+    const colorsDark = [creamRgb, sandRgb];
     const colorsLight = [terracottaRgb, mossRgb, sandRgb, forestRgb];
 
     const activeColors = isDark ? colorsDark : colorsLight;

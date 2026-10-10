@@ -178,9 +178,9 @@ const BREAKDOWN_FRAGMENT_SHADER = `
   void main() {
     vec3 col = uColor;
 
-    // Luminous energy when floating as facets
+    // Luminous energy when floating as facets (warm golden radiance)
     if (vBreakProgress > 0.0) {
-      col += vec3(0.18, 0.12, 0.06) * sin(vBreakProgress * 3.14159);
+      col += vec3(0.12, 0.10, 0.03) * sin(vBreakProgress * 3.14159);
     }
 
     // Alpha stays visible when dispersed across the screen
@@ -188,6 +188,7 @@ const BREAKDOWN_FRAGMENT_SHADER = `
     if (alpha < 0.005) discard;
 
     gl_FragColor = vec4(col, alpha);
+    #include <colorspace_fragment>
   }
 `;
 
@@ -320,7 +321,8 @@ const POINTS_FRAGMENT_SHADER = `
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
     float alpha = uOpacity * max(0.40, 1.0 - vBreakProgress * 0.35) * (1.0 - dist * 2.0);
-    gl_FragColor = vec4(uColor + vec3(0.2), alpha);
+    gl_FragColor = vec4(uColor + vec3(0.1), alpha);
+    #include <colorspace_fragment>
   }
 `;
 
@@ -378,7 +380,11 @@ function createBreakdownPointsMaterial(colorHex: string, radius = 0.40) {
   });
 }
 
-function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }) {
+function UnifiedCelestialMesh({
+  geometries,
+}: {
+  geometries: TextMeshGeometries;
+}) {
   const groupRef = useRef<THREE.Group>(null);
   const { viewport, size } = useThree();
 
@@ -500,27 +506,34 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
     };
   }, [viewport.width, viewport.height, size.width]);
 
-  // Mesh & Point Materials (Cream and Terracotta sourced via CSS variables)
+  // Mesh & Point Materials:
+  // Word 1 ("About", "Skills", "Work") matches "Umair" (Cream: #fefae0)
+  // Word 2 ("ME", "</>", "Experience") matches our main golden color ("Shahid" / Sand: #dda15e)
   const creamColor = typeof window !== "undefined"
     ? getComputedStyle(document.documentElement).getPropertyValue("--color-cream").trim() || "#fefae0"
     : "#fefae0";
-  const terracottaColor = typeof window !== "undefined"
-    ? getComputedStyle(document.documentElement).getPropertyValue("--color-terracotta").trim() || "#bc6c25"
-    : "#bc6c25";
+  const goldenSandColor = typeof window !== "undefined"
+    ? getComputedStyle(document.documentElement).getPropertyValue("--color-sand").trim() || "#dda15e"
+    : "#dda15e";
 
   const whiteMeshMat = useMemo(() => createBreakdownMeshMaterial(creamColor), [creamColor]);
   const whitePointsMat = useMemo(() => createBreakdownPointsMaterial(creamColor), [creamColor]);
-  const redMeshMat = useMemo(() => createBreakdownMeshMaterial(terracottaColor), [terracottaColor]);
-  const redPointsMat = useMemo(() => createBreakdownPointsMaterial(terracottaColor), [terracottaColor]);
+  const goldMeshMat = useMemo(() => createBreakdownMeshMaterial(goldenSandColor), [goldenSandColor]);
+  const goldPointsMat = useMemo(() => createBreakdownPointsMaterial(goldenSandColor), [goldenSandColor]);
+
+  useEffect(() => {
+    goldMeshMat.uniforms.uColor.value.set(goldenSandColor);
+    goldPointsMat.uniforms.uColor.value.set(goldenSandColor);
+  }, [goldenSandColor, goldMeshMat, goldPointsMat]);
 
   useEffect(() => {
     return () => {
       whiteMeshMat.dispose();
       whitePointsMat.dispose();
-      redMeshMat.dispose();
-      redPointsMat.dispose();
+      goldMeshMat.dispose();
+      goldPointsMat.dispose();
     };
-  }, [whiteMeshMat, whitePointsMat, redMeshMat, redPointsMat]);
+  }, [whiteMeshMat, whitePointsMat, goldMeshMat, goldPointsMat]);
 
   useFrame(() => {
     smoothOverviewProgress.current = THREE.MathUtils.lerp(
@@ -633,9 +646,9 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
       mat.uniforms.uMouseActive.value = smoothMouseActive.current;
     }
 
-    // Red Mesh & Points (Morphs ME -> Spread Screen Triangles -> </> -> Experience)
-    const redMats = [redMeshMat, redPointsMat];
-    for (const mat of redMats) {
+    // Gold Mesh & Points (Morphs ME -> Spread Screen Triangles -> </> -> Experience)
+    const goldMats = [goldMeshMat, goldPointsMat];
+    for (const mat of goldMats) {
       mat.uniforms.uViewport.value.set(vW, vH);
       mat.uniforms.uOverviewBreak.value = ovBreak;
       mat.uniforms.uSkillsProgress.value = skProgress;
@@ -661,13 +674,13 @@ function UnifiedCelestialMesh({ geometries }: { geometries: TextMeshGeometries }
 
   return (
     <group ref={groupRef}>
-      {/* 1. White Unified Mesh & Nodes: Morphs from "ABOUT" -> Spread Screen Triangles -> "SKILLS" */}
+      {/* 1. White Unified Mesh & Nodes: Morphs from "ABOUT" -> Spread Screen Triangles -> "SKILLS" -> "Work" */}
       <mesh geometry={geometries.white} material={whiteMeshMat} />
       <points geometry={geometries.white} material={whitePointsMat} />
 
-      {/* 2. Red Unified Mesh & Nodes: Morphs from "ME" -> Spread Screen Triangles -> "</>" in front of Skills */}
-      <mesh geometry={geometries.red} material={redMeshMat} renderOrder={2} />
-      <points geometry={geometries.red} material={redPointsMat} renderOrder={2} />
+      {/* 2. Gold Unified Mesh & Nodes: Morphs from "ME" -> Spread Screen Triangles -> "</>" -> "Experience" */}
+      <mesh geometry={geometries.red} material={goldMeshMat} renderOrder={2} />
+      <points geometry={geometries.red} material={goldPointsMat} renderOrder={2} />
     </group>
   );
 }
