@@ -1,11 +1,112 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import AppButton from "./AppButton";
+import { AppIcon } from "./AppIcon";
 import { particleBridge } from "../utils/particleBridge";
 import { cn } from "../utils/cn";
 
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+interface NavItem {
+  id: string;
+  label: string;
+  number: string;
+  description: string;
+}
+
+const NAV_ITEMS: readonly NavItem[] = [
+  { id: "about", label: "About Me", number: "01", description: "Background & Architecture" },
+  { id: "skills", label: "Skills", number: "02", description: "Tech Stack & Specialties" },
+  { id: "experience", label: "Work Experience", number: "03", description: "Roles & Achievements" },
+  { id: "contact", label: "Contact", number: "04", description: "Let's Get In Touch" },
+] as const;
+
 export default function Header() {
   const [activeSection, setActiveSection] = useState<string>("hero");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const togglerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [clipOrigin, setClipOrigin] = useState<{ x: number | null; y: number | null }>({
+    x: null,
+    y: null,
+  });
+
+  const updateClipOrigin = () => {
+    if (togglerRef.current) {
+      const rect = togglerRef.current.getBoundingClientRect();
+      setClipOrigin({
+        x: Math.round(rect.left + rect.width / 2),
+        y: Math.round(rect.top + rect.height / 2),
+      });
+    }
+  };
+
+  useEffect(() => {
+    updateClipOrigin();
+    window.addEventListener("resize", updateClipOrigin, { passive: true });
+    return () => window.removeEventListener("resize", updateClipOrigin);
+  }, []);
+
+  const handleToggleMenu = () => {
+    updateClipOrigin();
+    setIsMobileMenuOpen((prev) => !prev);
+  };
+
+  // Kinetic GSAP stagger entrance and exit for mobile menu elements
+  useGSAP(
+    () => {
+      const prefersReducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (isMobileMenuOpen) {
+        if (prefersReducedMotion) {
+          gsap.set(".mobile-menu-anim", { opacity: 1, y: 0, scale: 1, filter: "none" });
+          return;
+        }
+
+        gsap.killTweensOf(".mobile-menu-anim");
+        gsap.fromTo(
+          ".mobile-menu-anim",
+          {
+            opacity: 0,
+            y: 28,
+            scale: 0.94,
+            filter: "blur(6px)",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 0.46,
+            ease: "back.out(1.4)",
+            stagger: 0.065,
+            delay: 0.12, // Synchronized with circular clip-path expansion
+            clearProps: "filter",
+          }
+        );
+      } else {
+        if (prefersReducedMotion) {
+          gsap.set(".mobile-menu-anim", { opacity: 0 });
+          return;
+        }
+
+        gsap.killTweensOf(".mobile-menu-anim");
+        gsap.to(".mobile-menu-anim", {
+          opacity: 0,
+          y: -12,
+          scale: 0.97,
+          duration: 0.2,
+          ease: "power2.in",
+          stagger: 0.02,
+        });
+      }
+    },
+    { dependencies: [isMobileMenuOpen], scope: menuRef }
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,11 +152,37 @@ export default function Header() {
     };
   }, []);
 
-  const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    targetId: string
-  ) => {
-    e.preventDefault();
+  // Lock body scroll and listen for Escape key when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setIsMobileMenuOpen(false);
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isMobileMenuOpen]);
+
+  // Auto-close mobile menu if viewport expands beyond mobile breakpoint
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 640) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleNavAction = (targetId: string) => {
     if (targetId === "hero") {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -126,106 +253,288 @@ export default function Header() {
     }
   };
 
-  return (
-    <header className="nav-bar fixed top-0 left-0 right-0 z-40 w-full px-5 sm:px-8 md:px-12 py-4 bg-transparent transition-all duration-300">
-      <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
-        {/* Brand Monogram & Name */}
-        <a
-          href="#"
-          onClick={(e) => handleNavClick(e, "hero")}
-          className="flex items-center gap-3 group cursor-pointer"
-        >
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-earth-terracotta to-earth-moss flex items-center justify-center text-earth-cream font-bold text-base shadow-md shadow-earth-terracotta/20 group-hover:scale-105 group-hover:shadow-earth-terracotta/40 transition-all duration-200">
-            <span>US</span>
-            <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-sm sm:text-base tracking-tight leading-tight text-earth-cream">
-              Umair Shahid
-            </span>
-            <span className="text-[11px] font-sans font-medium uppercase tracking-wider leading-tight text-earth-sand">
-              Full-Stack Developer
-            </span>
-          </div>
-        </a>
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    targetId: string
+  ) => {
+    e.preventDefault();
+    handleNavAction(targetId);
+  };
 
-        {/* Navigation */}
-        <div className="flex items-center gap-3 sm:gap-6">
-          <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-earth-sand/90">
-            <a
-              href="#about"
-              onClick={(e) => handleNavClick(e, "about")}
+  const handleMobileNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    targetId: string
+  ) => {
+    e.preventDefault();
+    document.body.style.overflow = "";
+    setIsMobileMenuOpen(false);
+    requestAnimationFrame(() => {
+      handleNavAction(targetId);
+    });
+  };
+
+  const handleBrandClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "";
+      setIsMobileMenuOpen(false);
+    }
+    requestAnimationFrame(() => {
+      handleNavAction("hero");
+    });
+  };
+
+  return (
+    <>
+      <header className="nav-bar fixed top-0 left-0 right-0 z-50 w-full px-5 sm:px-8 md:px-12 py-4 bg-transparent transition-all duration-300">
+        <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
+          {/* Brand Monogram & Name */}
+          <a
+            href="#"
+            onClick={handleBrandClick}
+            className="flex items-center gap-3 group cursor-pointer relative z-50 select-none"
+          >
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-earth-terracotta to-earth-moss flex items-center justify-center text-earth-cream font-bold text-base shadow-md shadow-earth-terracotta/20 group-hover:scale-105 group-hover:shadow-earth-terracotta/40 transition-all duration-200">
+              <span>US</span>
+              <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-semibold text-sm sm:text-base tracking-tight leading-tight text-earth-cream">
+                Umair Shahid
+              </span>
+              <span className="text-[11px] font-sans font-medium uppercase tracking-wider leading-tight text-earth-sand">
+                Full-Stack Developer
+              </span>
+            </div>
+          </a>
+
+          {/* Navigation Controls */}
+          <div className="flex items-center gap-3 sm:gap-6">
+            {/* Desktop Navigation Links */}
+            <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-earth-sand/90">
+              <a
+                href="#about"
+                onClick={(e) => handleNavClick(e, "about")}
+                className={cn(
+                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                  activeSection === "about"
+                    ? "text-earth-cream font-medium"
+                    : "text-earth-sand/80 hover:text-earth-cream"
+                )}
+              >
+                About me
+              </a>
+              <a
+                href="#skills"
+                onClick={(e) => handleNavClick(e, "skills")}
+                className={cn(
+                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                  activeSection === "skills"
+                    ? "text-earth-cream font-medium"
+                    : "text-earth-sand/80 hover:text-earth-cream"
+                )}
+              >
+                Skills
+              </a>
+              <a
+                href="#experience"
+                onClick={(e) => handleNavClick(e, "experience")}
+                className={cn(
+                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                  activeSection === "experience"
+                    ? "text-earth-cream font-medium"
+                    : "text-earth-sand/80 hover:text-earth-cream"
+                )}
+              >
+                Work Experience
+              </a>
+              <a
+                href="#contact"
+                onClick={(e) => handleNavClick(e, "contact")}
+                className={cn(
+                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                  activeSection === "contact"
+                    ? "text-earth-cream font-medium"
+                    : "text-earth-sand/80 hover:text-earth-cream"
+                )}
+              >
+                Contact
+              </a>
+              <AppButton
+                href="/Resume.pdf"
+                target="_blank"
+                variant="outline"
+                size="sm"
+                icon="external-link"
+                iconPosition="right"
+                className="!text-earth-sand !border-earth-sand/30 hover:!text-earth-cream hover:!border-earth-sand/60"
+              >
+                Resume
+              </AppButton>
+            </nav>
+
+            {/* Mobile Hamburger / Close Morph Button */}
+            <button
+              ref={togglerRef}
+              type="button"
+              onClick={handleToggleMenu}
+              aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-nav-menu"
               className={cn(
-                "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                activeSection === "about"
-                  ? "text-earth-cream font-medium"
-                  : "text-earth-sand/80 hover:text-earth-cream"
+                "sm:hidden relative z-50 w-11 h-11 rounded-xl bg-earth-card border active:scale-95 transition-all duration-300 flex flex-col items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-earth-sand shadow-lg backdrop-blur-md cursor-pointer",
+                isMobileMenuOpen
+                  ? "border-earth-sand/40 shadow-earth-sand/15"
+                  : "border-earth-cream/15 hover:border-earth-sand/40"
               )}
             >
-              About me
-            </a>
-            <a
-              href="#skills"
-              onClick={(e) => handleNavClick(e, "skills")}
-              className={cn(
-                "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                activeSection === "skills"
-                  ? "text-earth-cream font-medium"
-                  : "text-earth-sand/80 hover:text-earth-cream"
-              )}
-            >
-              Skills
-            </a>
-            <a
-              href="#experience"
-              onClick={(e) => handleNavClick(e, "experience")}
-              className={cn(
-                "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                activeSection === "experience"
-                  ? "text-earth-cream font-medium"
-                  : "text-earth-sand/80 hover:text-earth-cream"
-              )}
-            >
-              Work Experience
-            </a>
-            {/* <a
-              href="#projects"
-              onClick={(e) => handleNavClick(e, "projects")}
-              className={cn(
-                "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                activeSection === "projects"
-                  ? "text-earth-cream font-medium"
-                  : "text-earth-sand/80 hover:text-earth-cream"
-              )}
-            >
-              Projects
-            </a> */}
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, "contact")}
-              className={cn(
-                "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                activeSection === "contact"
-                  ? "text-earth-cream font-medium"
-                  : "text-earth-sand/80 hover:text-earth-cream"
-              )}
-            >
-              Contact
-            </a>
+              <span
+                className={cn(
+                  "w-5 h-[2px] rounded-full bg-earth-cream transition-all duration-300 origin-center",
+                  isMobileMenuOpen && "translate-y-[8px] rotate-45 bg-earth-sand"
+                )}
+              />
+              <span
+                className={cn(
+                  "w-5 h-[2px] rounded-full bg-earth-cream transition-all duration-200",
+                  isMobileMenuOpen && "opacity-0 scale-x-0"
+                )}
+              />
+              <span
+                className={cn(
+                  "w-5 h-[2px] rounded-full bg-earth-cream transition-all duration-300 origin-center",
+                  isMobileMenuOpen && "-translate-y-[8px] -rotate-45 bg-earth-sand"
+                )}
+              />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Navigation Drawer Overlay — extends directly from toggler button's background */}
+      <div
+        ref={menuRef}
+        id="mobile-nav-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile Navigation"
+        style={{
+          clipPath: isMobileMenuOpen
+            ? `circle(160% at ${clipOrigin.x !== null ? `${clipOrigin.x}px` : "calc(100% - 42px)"} ${clipOrigin.y !== null ? `${clipOrigin.y}px` : "38px"})`
+            : `circle(0px at ${clipOrigin.x !== null ? `${clipOrigin.x}px` : "calc(100% - 42px)"} ${clipOrigin.y !== null ? `${clipOrigin.y}px` : "38px"})`,
+          WebkitClipPath: isMobileMenuOpen
+            ? `circle(160% at ${clipOrigin.x !== null ? `${clipOrigin.x}px` : "calc(100% - 42px)"} ${clipOrigin.y !== null ? `${clipOrigin.y}px` : "38px"})`
+            : `circle(0px at ${clipOrigin.x !== null ? `${clipOrigin.x}px` : "calc(100% - 42px)"} ${clipOrigin.y !== null ? `${clipOrigin.y}px` : "38px"})`,
+          transition: isMobileMenuOpen
+            ? "clip-path 0.58s cubic-bezier(0.76, 0, 0.24, 1), -webkit-clip-path 0.58s cubic-bezier(0.76, 0, 0.24, 1)"
+            : "clip-path 0.45s cubic-bezier(0.76, 0, 0.24, 1), -webkit-clip-path 0.45s cubic-bezier(0.76, 0, 0.24, 1)",
+        }}
+        className={cn(
+          "fixed inset-0 z-40 bg-earth-card text-earth-cream backdrop-blur-3xl sm:hidden flex flex-col justify-between overflow-y-auto px-5 pt-24 pb-8 overscroll-contain will-change-[clip-path]",
+          isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
+        )}
+      >
+        {/* Ambient Celestial Glow Orbs inside the expanding menu */}
+        <div
+          className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-earth-sand/15 blur-3xl pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full bg-earth-terracotta/15 blur-3xl pointer-events-none"
+          aria-hidden="true"
+        />
+
+        {/* Navigation Items List */}
+        <div className="relative z-10 flex flex-col gap-2.5 pt-2">
+          <div className="mobile-menu-anim opacity-0 text-[11px] font-mono uppercase tracking-widest text-earth-sand/60 px-2 pb-1 will-change-transform">
+            Navigation Menu
+          </div>
+
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleMobileNavClick(e, item.id)}
+                className={cn(
+                  "mobile-menu-anim opacity-0 group relative flex items-center justify-between p-3.5 rounded-2xl border select-none will-change-transform",
+                  isActive
+                    ? "bg-earth-forest/70 border-earth-sand/50 shadow-lg shadow-earth-sand/10 text-earth-cream"
+                    : "bg-earth-forest/30 border-earth-cream/10 hover:bg-earth-forest/50 hover:border-earth-sand/30 text-earth-cream/80 hover:text-earth-cream"
+                )}
+              >
+                <div className="flex items-center gap-3.5">
+                  <span
+                    className={cn(
+                      "font-mono text-[11px] px-2 py-0.5 rounded-md border transition-colors",
+                      isActive
+                        ? "border-earth-sand/50 text-earth-sand bg-earth-sand/15 font-semibold"
+                        : "border-earth-cream/10 text-earth-sand/60 bg-white/[0.02]"
+                    )}
+                  >
+                    {item.number}
+                  </span>
+                  <div className="flex flex-col text-left">
+                    <span
+                      className={cn(
+                        "font-heading text-lg font-semibold tracking-tight leading-snug transition-colors",
+                        isActive ? "text-earth-cream" : "text-earth-cream/90 group-hover:text-earth-cream"
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                    <span className="text-[11px] font-sans text-earth-sand/70 leading-tight">
+                      {item.description}
+                    </span>
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+
+          {/* Mobile Resume Action Button with Signature Ripple Effect */}
+          <div className="mobile-menu-anim opacity-0 pt-2 will-change-transform">
             <AppButton
               href="/Resume.pdf"
               target="_blank"
-              variant="outline"
-              size="sm"
+              variant="primary"
+              size="md"
               icon="external-link"
               iconPosition="right"
-              className="!text-earth-sand !border-earth-sand/30 hover:!text-earth-cream hover:!border-earth-sand/60"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full !rounded-2xl !py-3.5 shadow-lg shadow-earth-sand/20 text-xs font-semibold uppercase tracking-widest"
             >
-              Resume
+              View Resume
             </AppButton>
-          </nav>
+          </div>
+        </div>
+
+        {/* Quick Contact Footer */}
+        <div className="mobile-menu-anim opacity-0 relative z-10 pt-5 mt-6 border-t border-earth-cream/10 flex flex-col gap-2.5 text-xs font-sans text-earth-sand/85 will-change-transform">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <a
+              href="mailto:shahidumair622@gmail.com"
+              className="flex items-center gap-2 hover:text-earth-cream transition-colors py-1 group min-w-0"
+            >
+              <AppIcon icon="mail" className="w-3.5 h-3.5 text-earth-sand shrink-0 group-hover:text-earth-cream transition-colors" />
+              <span className="truncate text-earth-cream/90 group-hover:text-earth-cream font-medium">
+                shahidumair622@gmail.com
+              </span>
+            </a>
+
+            <a
+              href="tel:+923215215701"
+              className="flex items-center gap-2 hover:text-earth-cream transition-colors py-1 group shrink-0"
+            >
+              <AppIcon icon="phone" className="w-3.5 h-3.5 text-earth-sand shrink-0 group-hover:text-earth-cream transition-colors" />
+              <span className="text-earth-cream/90 group-hover:text-earth-cream font-medium">
+                +92-321-5215701
+              </span>
+            </a>
+          </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }

@@ -272,6 +272,28 @@ export function AppButton({
     onMouseUp?.(event);
   };
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (disabled || !ref.current) return;
+    if (event.touches.length > 0) {
+      const touch = event.touches[0];
+      handleEnter({
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      } as React.MouseEvent<HTMLElement>);
+    }
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
+    if (disabled || !ref.current) return;
+    if (event.changedTouches.length > 0) {
+      const touch = event.changedTouches[0];
+      handleLeave({
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      } as React.MouseEvent<HTMLElement>);
+    }
+  };
+
   // Icon sizing
   const defaultIconSize =
     variant === "icon" ? "w-5 h-5" : size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
@@ -334,6 +356,8 @@ export function AppButton({
         onMouseLeave={handleLeave}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         {...(rest as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
       >
         {innerContent}
@@ -352,6 +376,8 @@ export function AppButton({
       onMouseLeave={handleLeave}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
     >
       {innerContent}
