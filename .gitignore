@@ -24,10 +24,6 @@ dist-ssr
 *.sw?
 
 .env
-<<<<<<< HEAD
 .agents
 .playwright-mcp
 .playwright-mcp/
-=======
-.agents
->>>>>>> 24d4fa5 (chore: add .agents to .gitignore)
