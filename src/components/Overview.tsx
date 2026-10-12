@@ -36,8 +36,22 @@ export default function Overview({ embedded = false }: OverviewProps) {
         existingSt.kill(true);
       }
 
+      // Function to calculate exact dynamic metrics based on current rendered DOM dimensions
+      const getMetrics = () => {
+        const comp = window.getComputedStyle(paragraph);
+        const lineHeight = parseFloat(comp.lineHeight) || 40;
+        const totalHeight = paragraph.scrollHeight;
+        const viewHeight = viewport.clientHeight;
+        // yMid centers a line in the middle of the viewport
+        const yMid = (viewHeight - lineHeight) / 2;
+        // Total travel distance so the last line ends at the exact same middle position as the first line
+        const maxRollDistance = Math.max(0, totalHeight - lineHeight);
+        return { yMid, maxRollDistance };
+      };
+
+      const { yMid: initialYMid } = getMetrics();
       gsap.set(container, { opacity: 1 });
-      gsap.set(track, { y: 0 });
+      track.style.transform = `translate3d(0, ${initialYMid.toFixed(1)}px, 0)`;
 
       ScrollTrigger.create({
         id: "about-timeline",
@@ -49,6 +63,15 @@ export default function Overview({ embedded = false }: OverviewProps) {
         scrub: 0.8,
         anticipatePin: embedded ? 0 : 1,
         invalidateOnRefresh: true,
+        onRefresh: (self) => {
+          if (track) {
+            const { yMid, maxRollDistance } = getMetrics();
+            const p = self.progress;
+            const u = Math.max(0, Math.min(1, p / 0.70));
+            const currentY = yMid - u * maxRollDistance;
+            track.style.transform = `translate3d(0, ${currentY.toFixed(1)}px, 0)`;
+          }
+        },
         onEnter: () => {
           particleBridge.isDarkActive = true;
         },
@@ -63,7 +86,8 @@ export default function Overview({ embedded = false }: OverviewProps) {
             gsap.set(container, { opacity: 0 });
           }
           if (track) {
-            track.style.transform = "translate3d(0, 0px, 0)";
+            const { yMid } = getMetrics();
+            track.style.transform = `translate3d(0, ${yMid.toFixed(1)}px, 0)`;
           }
         },
         onUpdate: (self) => {
@@ -87,12 +111,12 @@ export default function Overview({ embedded = false }: OverviewProps) {
           particleBridge.skillsProgress = 0.0;
 
           // Rolling the single continuous paragraph:
-          // Across the 0.0 -> 0.70 scroll range, the paragraph rolls from top to bottom
+          // - First line starts in the exact middle of the roller (yMid)
+          // - Across 0.0 -> 0.70 scroll range, rolls continuously
+          // - Ends exactly where the last line sits in the middle (yMid)
+          const { yMid, maxRollDistance } = getMetrics();
           const u = Math.max(0, Math.min(1, p / 0.70));
-          const totalHeight = paragraph.scrollHeight;
-          const viewHeight = viewport.clientHeight;
-          const maxRollDistance = Math.max(0, totalHeight - viewHeight);
-          const currentY = -u * maxRollDistance;
+          const currentY = yMid - u * maxRollDistance;
 
           track.style.transform = `translate3d(0, ${currentY.toFixed(1)}px, 0)`;
 
