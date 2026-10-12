@@ -1,4 +1,5 @@
 import "./index.css";
+import "lenis/dist/lenis.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import gsap from "gsap";

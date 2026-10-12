@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLoading } from "../context/LoadingContext";
 import { cn } from "../utils/cn";
+import { stopScroll, startScroll } from "../utils/lenis";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -65,6 +66,7 @@ export default function CurtainLoader() {
 
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
+      stopScroll();
 
       const preventScroll = (e: Event) => {
         e.preventDefault();
@@ -125,6 +127,7 @@ export default function CurtainLoader() {
             onComplete: () => {
               document.body.style.overflow = "";
               document.documentElement.style.overflow = "";
+              startScroll();
               window.scrollTo(0, 0);
               ScrollTrigger.clearScrollMemory("manual");
               setIsCurtainComplete(true);
@@ -145,6 +148,7 @@ export default function CurtainLoader() {
           onComplete: () => {
             document.body.style.overflow = "";
             document.documentElement.style.overflow = "";
+            startScroll();
             window.scrollTo(0, 0);
             ScrollTrigger.clearScrollMemory("manual");
             setIsCurtainComplete(true);

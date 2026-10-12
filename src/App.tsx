@@ -10,6 +10,7 @@ import ParticleExperienceWrapper from "./components/ParticleExperienceWrapper";
 import SmoothCursor from "./components/SmoothCursor";
 import CurtainLoader from "./components/CurtainLoader";
 import { LoadingProvider } from "./context/LoadingContext";
+import { initLenis, destroyLenis } from "./utils/lenis";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,12 +25,19 @@ export default function App() {
     window.scrollTo(0, 0);
     ScrollTrigger.clearScrollMemory("manual");
 
+    const lenis = initLenis();
+
     const timer = setTimeout(() => {
       window.scrollTo(0, 0);
+      lenis?.scrollTo(0, { immediate: true });
       ScrollTrigger.clearScrollMemory("manual");
+      ScrollTrigger.refresh();
     }, 50);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      destroyLenis();
+    };
   }, []);
 
   return (

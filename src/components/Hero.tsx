@@ -5,6 +5,7 @@ import { useLoading } from "../context/LoadingContext";
 import TextSpiralWrap from "./TextSpiralWrap";
 import AtmosphericVeils from "./AtmosphericVeils";
 import AppButton from "./AppButton";
+import { scrollTo } from "../utils/lenis";
 
 gsap.registerPlugin(useGSAP);
 
@@ -175,6 +176,10 @@ export default function Hero() {
             >
               <AppButton
                 href="#contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollTo("#contact", { duration: 1.2 });
+                }}
                 variant="primary"
                 size="md"
                 icon="arrow-right"

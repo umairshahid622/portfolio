@@ -530,8 +530,13 @@ function UnifiedCelestialMesh({
     const expCenterY = 0.0;
 
     // Top title coordinates when cards are stacked below:
-    const expTopY = viewport.height * (viewport.width < 3.2 ? 0.40 : 0.38);
-    const expTopScale = expScale * (viewport.width < 3.2 ? 0.78 : 0.72);
+    const isMobileViewport =
+      typeof window !== "undefined"
+        ? window.innerWidth < 1024
+        : viewport.width < 3.2;
+
+    const expTopY = viewport.height * (isMobileViewport ? 0.372 : 0.365);
+    const expTopScale = expScale * (isMobileViewport ? 0.78 : 0.72);
     const wWorkTop = baseWWork * expTopScale;
     const wExpTop = baseWExp * expTopScale;
     const spaceExpWTop = baseSpaceExp * expTopScale;
@@ -546,7 +551,10 @@ function UnifiedCelestialMesh({
       hRed: 0.96,
     };
 
-    const isContactMobile = viewport.width < 3.2;
+    const isContactMobile =
+      typeof window !== "undefined"
+        ? window.innerWidth < 1024
+        : viewport.width < 3.2;
 
     const contactColW = isContactMobile
       ? viewport.width * 0.88
@@ -565,10 +573,13 @@ function UnifiedCelestialMesh({
       ? viewport.height * 0.37
       : viewport.height * 0.08;
 
-    const yContactWhite =
-      yContactCenter + metrics.hWhite * 0.5 * contactScale + contactLineGap * 0.5;
-    const yContactRed =
-      yContactCenter - metrics.hRed * 0.5 * contactScale - contactLineGap * 0.5;
+    const lineOffsetWhite =
+      metrics.hWhite * 0.5 * contactScale + contactLineGap * 0.5;
+    const lineOffsetRed =
+      -(metrics.hRed * 0.5 * contactScale + contactLineGap * 0.5);
+
+    const yContactWhite = yContactCenter + lineOffsetWhite;
+    const yContactRed = yContactCenter + lineOffsetRed;
 
     return {
       overviewCenterY,
@@ -588,9 +599,13 @@ function UnifiedCelestialMesh({
       xWorkTop,
       xExperienceTop,
       xContact,
+      yContactCenter,
+      lineOffsetWhite,
+      lineOffsetRed,
       yContactWhite,
       yContactRed,
       contactScale,
+      isContactMobile,
     };
   }, [viewport.width, viewport.height, size.width, geometries]);
 
@@ -727,6 +742,22 @@ function UnifiedCelestialMesh({
     const currentExpYWork = currentExpY + yAlignOffset;
     const currentExpYExperience = currentExpY - yAlignOffset;
 
+    // Calculate live Y-offset for contact title so it scrolls naturally with DOM content on mobile
+    let liveContactYCenter = textLayout.yContactCenter;
+    if (textLayout.isContactMobile && typeof document !== "undefined") {
+      const anchor = document.getElementById("contact-title-anchor");
+      if (anchor) {
+        const rect = anchor.getBoundingClientRect();
+        const centerY_px = rect.top + rect.height * 0.5;
+        // Convert screen pixel position to Three.js world Y:
+        // Screen center (window.innerHeight * 0.5) is y = 0
+        liveContactYCenter = ((window.innerHeight * 0.5 - centerY_px) / window.innerHeight) * vH;
+      }
+    }
+
+    const currentYContactWhite = liveContactYCenter + textLayout.lineOffsetWhite;
+    const currentYContactRed = liveContactYCenter + textLayout.lineOffsetRed;
+
     // White Mesh & Points (Morphs ABOUT -> Spread Screen Triangles -> SKILLS -> Work -> Let's Get In)
     const whiteMats = [whiteMeshMat, whitePointsMat];
     for (const mat of whiteMats) {
@@ -741,7 +772,7 @@ function UnifiedCelestialMesh({
       mat.uniforms.uTargetScale.value = textLayout.skillsScale;
       mat.uniforms.uTarget3Offset.value.set(currentXWork, currentExpYWork, 0);
       mat.uniforms.uTarget3Scale.value = currentExpScale;
-      mat.uniforms.uTarget4Offset.value.set(textLayout.xContact, textLayout.yContactWhite, 0);
+      mat.uniforms.uTarget4Offset.value.set(textLayout.xContact, currentYContactWhite, 0);
       mat.uniforms.uTarget4Scale.value = textLayout.contactScale;
       mat.uniforms.uOpacity.value = opacity;
       mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);
@@ -762,7 +793,7 @@ function UnifiedCelestialMesh({
       mat.uniforms.uTargetScale.value = textLayout.skillsScale;
       mat.uniforms.uTarget3Offset.value.set(currentXExperience, currentExpYExperience, 0);
       mat.uniforms.uTarget3Scale.value = currentExpScale;
-      mat.uniforms.uTarget4Offset.value.set(textLayout.xContact, textLayout.yContactRed, 0.05);
+      mat.uniforms.uTarget4Offset.value.set(textLayout.xContact, currentYContactRed, 0.05);
       mat.uniforms.uTarget4Scale.value = textLayout.contactScale;
       mat.uniforms.uOpacity.value = opacity;
       mat.uniforms.uMouseWorld.value.copy(smoothMouseWorld.current);

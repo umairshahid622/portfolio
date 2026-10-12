@@ -152,21 +152,27 @@ export const AppCard = forwardRef<HTMLDivElement, AppCardProps>(function AppCard
 export interface AppCardNumberProps extends HTMLAttributes<HTMLSpanElement> {
   children?: ReactNode;
   className?: string;
+  hollow?: boolean;
 }
 
 export function AppCardNumber({
   children,
   className,
+  hollow = true,
+  style,
   ...props
 }: AppCardNumberProps) {
-  const { accentStyles } = useAppCard();
   return (
     <span
       className={cn(
         "font-heading text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight select-none shrink-0",
-        accentStyles.text,
+        hollow ? "text-transparent" : "text-white",
         className
       )}
+      style={{
+        ...(hollow ? { WebkitTextStroke: "1.2px #ffffff" } : {}),
+        ...style,
+      }}
       {...props}
     >
       {children}

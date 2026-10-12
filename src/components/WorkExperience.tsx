@@ -327,7 +327,7 @@ export default function WorkExperience() {
       id="experience"
       className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-center items-center pt-14 sm:pt-16 pb-4 pointer-events-auto"
     >
-      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
+      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-8 mt-5 sm:mt-0">
         {/* Full-width Stacked Cards Track */}
         <div
           ref={stackWrapperRef}

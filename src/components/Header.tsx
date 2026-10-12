@@ -6,6 +6,7 @@ import AppButton from "./AppButton";
 import { AppIcon } from "./AppIcon";
 import { particleBridge } from "../utils/particleBridge";
 import { cn } from "../utils/cn";
+import { scrollTo, stopScroll, startScroll } from "../utils/lenis";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -51,7 +52,15 @@ export default function Header() {
 
   const handleToggleMenu = () => {
     updateClipOrigin();
-    setIsMobileMenuOpen((prev) => !prev);
+    setIsMobileMenuOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        stopScroll();
+      } else {
+        startScroll();
+      }
+      return next;
+    });
   };
 
   // Kinetic GSAP stagger entrance and exit for mobile menu elements
@@ -184,7 +193,7 @@ export default function Header() {
 
   const handleNavAction = (targetId: string) => {
     if (targetId === "hero") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollTo(0, { duration: 1.2 });
       return;
     }
     if (targetId === "experience") {
@@ -197,10 +206,7 @@ export default function Header() {
       if (expSt) {
         // Scroll to the assembled Experience position (progress = 0.10) where title is at top and Card 0 is revealed
         const targetScroll = expSt.start + (expSt.end - expSt.start) * 0.10;
-        window.scrollTo({
-          top: targetScroll,
-          behavior: "smooth",
-        });
+        scrollTo(targetScroll, { duration: 1.2 });
         return;
       }
     }
@@ -214,10 +220,7 @@ export default function Header() {
         // Scroll directly to the assembled Skills entry point (progress = 0.142)
         // where "SKILLS </>" is fully merged and the cards track is fully revealed
         const targetScroll = skillsSt.start + (skillsSt.end - skillsSt.start) * 0.142;
-        window.scrollTo({
-          top: targetScroll,
-          behavior: "smooth",
-        });
+        scrollTo(targetScroll, { duration: 1.2 });
         return;
       }
     }
@@ -228,10 +231,7 @@ export default function Header() {
       particleBridge.experienceProgress = 0;
       const aboutSt = ScrollTrigger.getById("about-timeline");
       if (aboutSt) {
-        window.scrollTo({
-          top: aboutSt.start,
-          behavior: "smooth",
-        });
+        scrollTo(aboutSt.start, { duration: 1.2 });
         return;
       }
     }
@@ -241,15 +241,21 @@ export default function Header() {
       particleBridge.skillsProgress = 0.0;
       particleBridge.experienceProgress = 0.0;
       particleBridge.contactProgress = 1.0;
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: "smooth",
-      });
+      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        const contactEl = document.getElementById("contact");
+        if (contactEl) {
+          const targetTop = contactEl.getBoundingClientRect().top + window.scrollY;
+          scrollTo(targetTop, { duration: 1.2 });
+          return;
+        }
+      }
+      const scrollMax = document.documentElement.scrollHeight - window.innerHeight;
+      scrollTo(scrollMax, { duration: 1.2 });
       return;
     }
     const el = document.getElementById(targetId);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+      scrollTo(el, { duration: 1.2 });
     }
   };
 
@@ -267,6 +273,7 @@ export default function Header() {
   ) => {
     e.preventDefault();
     document.body.style.overflow = "";
+    startScroll();
     setIsMobileMenuOpen(false);
     requestAnimationFrame(() => {
       handleNavAction(targetId);
@@ -294,7 +301,7 @@ export default function Header() {
             onClick={handleBrandClick}
             className="flex items-center gap-3 group cursor-pointer relative z-50 select-none"
           >
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-earth-terracotta to-earth-moss flex items-center justify-center text-earth-cream font-bold text-base shadow-md shadow-earth-terracotta/20 group-hover:scale-105 group-hover:shadow-earth-terracotta/40 transition-all duration-200">
+            <div className="relative w-10 h-10 rounded-xl bg-earth-terracotta flex items-center justify-center text-earth-cream font-bold text-base shadow-md shadow-earth-terracotta/20 group-hover:scale-105 group-hover:shadow-earth-terracotta/40 transition-all duration-200">
               <span>US</span>
               <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
             </div>
@@ -430,7 +437,7 @@ export default function Header() {
             : "clip-path 0.45s cubic-bezier(0.76, 0, 0.24, 1), -webkit-clip-path 0.45s cubic-bezier(0.76, 0, 0.24, 1)",
         }}
         className={cn(
-          "fixed inset-0 z-40 bg-earth-card text-earth-cream backdrop-blur-3xl sm:hidden flex flex-col justify-between overflow-y-auto px-5 pt-24 pb-8 overscroll-contain will-change-[clip-path]",
+          "fixed inset-0 z-[60] bg-earth-card text-earth-cream backdrop-blur-3xl sm:hidden flex flex-col justify-between overflow-y-auto px-5 pt-24 pb-8 overscroll-contain will-change-[clip-path]",
           isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
         )}
       >

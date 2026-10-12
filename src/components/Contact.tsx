@@ -2,12 +2,20 @@ import React, { useState, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import emailjs from "@emailjs/browser";
 import { particleBridge } from "../utils/particleBridge";
 import AppButton from "./AppButton";
 import { AppIcon } from "./AppIcon";
 import AppInput from "./AppInput";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_APP_EMAILJS_SERVICE_ID || "";
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_APP_EMAILJS_TEMPLATE_ID || "";
+const EMAILJS_PUBLIC_KEY =
+  import.meta.env.VITE_APP_EMAILJS_PUBLIC_ID ||
+  import.meta.env.VITE_APP_EMAILJS_PUBLIC_KEY ||
+  "";
 
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -17,8 +25,14 @@ export default function Contact() {
     email: "",
     message: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<{
+    fullName?: string;
+    email?: string;
+    message?: string;
+  }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useGSAP(
     () => {
@@ -104,34 +118,113 @@ export default function Contact() {
     { scope: sectionRef }
   );
 
+  const validate = () => {
+    const errors: { fullName?: string; email?: string; message?: string } = {};
+
+    if (!formData.fullName.trim()) {
+      errors.fullName = "Please enter your full name.";
+    } else if (formData.fullName.trim().length < 2) {
+      errors.fullName = "Name must be at least 2 characters.";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      errors.email = "Please enter your email address.";
+    } else if (!emailRegex.test(formData.email.trim())) {
+      errors.email = "Please enter a valid email address.";
+    }
+
+    if (!formData.message.trim()) {
+      errors.message = "Please write a message.";
+    } else if (formData.message.trim().length < 5) {
+      errors.message = "Message must be at least 5 characters.";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.fullName.trim() || !formData.email.trim() || !formData.message.trim()) {
+    setErrorMessage(null);
+
+    if (!validate()) {
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate async submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+        throw new Error(
+          "EmailJS configuration keys are missing. Please check your .env file."
+        );
+      }
 
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    setFormData({ fullName: "", email: "", message: "" });
+      // Map common variable names so whatever placeholder is used in the template gets populated
+      const templateParams = {
+        from_name: formData.fullName.trim(),
+        name: formData.fullName.trim(),
+        fullName: formData.fullName.trim(),
+        user_name: formData.fullName.trim(),
+
+        from_email: formData.email.trim(),
+        email: formData.email.trim(),
+        user_email: formData.email.trim(),
+        reply_to: formData.email.trim(),
+
+        message: formData.message.trim(),
+        to_name: "Umair Shahid",
+      };
+
+      const res = await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        {
+          publicKey: EMAILJS_PUBLIC_KEY,
+        }
+      );
+
+      if (res.status === 200 || res.text === "OK") {
+        setIsSuccess(true);
+        setFormData({ fullName: "", email: "", message: "" });
+        setFieldErrors({});
+      } else {
+        throw new Error(res.text || "Failed to deliver message.");
+      }
+    } catch (err: unknown) {
+      console.error("EmailJS submission error:", err);
+      const emailJsError = err as { text?: string; message?: string };
+      const message =
+        emailJsError?.text ||
+        emailJsError?.message ||
+        "Could not send message. Please try again or reach out directly.";
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <section
       ref={sectionRef}
       id="contact"
-      className="relative w-full min-h-screen px-5 sm:px-8 md:px-12 bg-transparent text-earth-cream overflow-hidden flex items-center justify-center py-10 lg:py-0"
+      className="relative w-full min-h-screen px-5 sm:px-8 md:px-12 bg-transparent text-earth-cream overflow-hidden flex items-center justify-center pt-24 pb-12 lg:py-0"
     >
       {/* Ambient background glows */}
       <div
@@ -151,6 +244,7 @@ export default function Contact() {
           <div className="w-full flex flex-col justify-center items-center lg:items-start relative z-10 space-y-4 sm:space-y-6">
             {/* Upper Area: Reserved space for 3D particles "Let's Get In Touch" */}
             <div
+              id="contact-title-anchor"
               className="w-full min-h-[210px] sm:min-h-[220px] lg:min-h-[220px] flex items-center justify-center relative pointer-events-none"
               aria-label="Let's Get in touch particle text area"
             >
@@ -231,7 +325,11 @@ export default function Contact() {
                     <AppButton
                       variant="outline"
                       size="md"
-                      onClick={() => setIsSuccess(false)}
+                      onClick={() => {
+                        setIsSuccess(false);
+                        setErrorMessage(null);
+                        setFieldErrors({});
+                      }}
                       className="!border-earth-sand/40 !text-earth-sand hover:!text-earth-cream hover:!border-earth-sand"
                     >
                       Send Another Message
@@ -239,11 +337,43 @@ export default function Contact() {
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-                  
-                    <h3 className="text-xl sm:text-2xl font-bold font-heading text-earth-cream tracking-tight mb-1">
-                      Send a Message
-                    </h3>                    
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5" noValidate>
+                  <h3 className="text-xl sm:text-2xl font-bold font-heading text-earth-cream tracking-tight mb-1">
+                    Send a Message
+                  </h3>
+
+                  {/* Submission Error Banner */}
+                  {errorMessage && (
+                    <div
+                      role="alert"
+                      className="p-3.5 sm:p-4 rounded-xl bg-earth-terracotta/20 border border-earth-terracotta/50 text-earth-cream text-sm flex items-start gap-3 backdrop-blur-sm animate-in fade-in duration-200"
+                    >
+                      <svg
+                        className="w-5 h-5 text-earth-sand shrink-0 mt-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <div className="flex-1 space-y-1 text-left">
+                        <p className="font-semibold text-earth-cream">{errorMessage}</p>
+                        <p className="text-xs text-earth-cream/70">
+                          You can also reach me directly at{" "}
+                          <a
+                            href="mailto:shahidumair622@gmail.com"
+                            className="text-earth-sand underline underline-offset-2 hover:text-earth-cream font-medium transition-colors"
+                          >
+                            shahidumair622@gmail.com
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Full Name */}
                   <AppInput
@@ -255,6 +385,7 @@ export default function Contact() {
                     onChange={handleChange}
                     placeholder="Write Your Full Name"
                     disabled={isSubmitting}
+                    error={fieldErrors.fullName}
                   />
 
                   {/* Email */}
@@ -268,6 +399,7 @@ export default function Contact() {
                     onChange={handleChange}
                     placeholder="Write Your Email"
                     disabled={isSubmitting}
+                    error={fieldErrors.email}
                   />
 
                   {/* Message */}
@@ -282,6 +414,7 @@ export default function Contact() {
                     onChange={handleChange}
                     placeholder="Write Anything In Your Mind"
                     disabled={isSubmitting}
+                    error={fieldErrors.message}
                   />
 
                   {/* Submit Button */}
