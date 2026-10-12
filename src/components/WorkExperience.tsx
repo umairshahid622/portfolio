@@ -162,29 +162,29 @@ export default function WorkExperience() {
           onUpdate: (self) => {
             const p = self.progress;
 
-            // Phase 1 (0.00 -> 0.05): Triangles merge into "Work Experience" in exact center
+            // 70% Section Height Scroll Threshold:
+            // Phase 1 (0.00 -> 0.05): Triangles merge into "Work Experience" in center
             // Phase 2 (0.05 -> 0.10): Title glides up to top position
-            // Phase 3 (0.10 -> 0.36): Card 1 (02 BX Technologies - 2nd card) stacks on Card 0
-            // Phase 4 (0.36 -> 0.62): Card 2 (03 Tecklogics - 3rd card) stacks on Card 1
-            // Phase 5 (0.62 -> 0.88): Card 3 (04 Cyber Reconnaissance & Combat - 4th card) stacks AND TRIANGLES SPREAD AT THE EXACT SAME TIME!
-            // Phase 6 (0.88 -> 1.00): Fully stacked resting deck with dispersed triangles in background
+            // Phase 3 (0.10 -> 0.70): Title stays fully assembled while cards stack
+            // Phase 4 (0.70 -> 0.90): When 70% of Work Experience height is scrolled, particles break down again into triangles
+            // Phase 5 (0.90 -> 1.00): Particles stay broken / dispersed between 70% and 100%
+            const breakStart = 0.70;
+            const breakEnd = 0.90;
+
             if (p < 0.05) {
               particleBridge.experienceProgress = p / 0.05;
               particleBridge.experienceTitleYProgress = 0.0;
             } else if (p < 0.10) {
               particleBridge.experienceProgress = 1.0;
               particleBridge.experienceTitleYProgress = (p - 0.05) / 0.05;
-            } else if (p <= 0.62) {
-              // Title stays completely assembled at top while Card 1 (02) and Card 2 (03) stack!
+            } else if (p < breakStart) {
               particleBridge.experienceProgress = 1.0;
               particleBridge.experienceTitleYProgress = 1.0;
-            } else if (p <= 0.88) {
-              // 4th card and triangle spreading happen at the EXACT SAME TIME!
-              const spreadP = (p - 0.62) / (0.88 - 0.62);
+            } else if (p < breakEnd) {
+              const spreadP = (p - breakStart) / (breakEnd - breakStart);
               particleBridge.experienceProgress = Math.max(0.0, Math.min(1.0, 1.0 - spreadP));
               particleBridge.experienceTitleYProgress = 1.0;
             } else {
-              // Triangles remain dispersed in background while all 4 cards rest
               particleBridge.experienceProgress = 0.0;
               particleBridge.experienceTitleYProgress = 1.0;
             }

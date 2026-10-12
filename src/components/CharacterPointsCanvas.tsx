@@ -450,9 +450,9 @@ function UnifiedCelestialMesh({
 
   const textLayout = useMemo(() => {
     const edges = getHeaderContentEdgesWorld(viewport.width, size.width);
-    const overviewCenterY = viewport.height * (viewport.width < 3.2 ? 0.26 : 0.23);
-    const overviewWidthRatio = viewport.width < 3.2 ? 0.88 : 0.68;
-    const overviewHeightRatio = viewport.width < 3.2 ? 0.16 : 0.20;
+    const overviewCenterY = viewport.height * (viewport.width < 3.2 ? 0.28 : 0.24);
+    const overviewWidthRatio = viewport.width < 3.2 ? 0.72 : 0.52;
+    const overviewHeightRatio = viewport.width < 3.2 ? 0.13 : 0.145;
 
     const targetW = viewport.width * overviewWidthRatio;
     const targetH = viewport.height * overviewHeightRatio;

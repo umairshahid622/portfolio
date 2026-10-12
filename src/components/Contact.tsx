@@ -80,6 +80,10 @@ export default function Contact() {
               particleBridge.isDarkActive = true;
               particleBridge.contactProgress = 1.0;
             },
+            onLeave: () => {
+              particleBridge.isDarkActive = true;
+              particleBridge.contactProgress = 1.0;
+            },
             onLeaveBack: () => {
               particleBridge.contactProgress = 0.0;
             },

@@ -1,12 +1,14 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { particleBridge } from "../utils/particleBridge";
-import { cn } from "../utils/cn";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+/* =========================================================================
+   CIRCULAR SLIDER DATA & TYPES (COMMENTED OUT - PRESERVED)
+   =========================================================================
 interface AboutSlide {
   id: number;
   badge: string;
@@ -45,10 +47,22 @@ const ABOUT_SLIDES: AboutSlide[] = [
     tags: ["PostgreSQL", "MongoDB", "Cloud Microservices", "CI/CD", "RESTful APIs"],
   },
 ];
+========================================================================= */
+
+// Professional Summary verbatim from Resume.pdf (Single continuous paragraph)
+const OVERVIEW_PARAGRAPH =
+  "Full-Stack Developer with hands-on experience building and shipping modern web and cross-platform mobile applications using React, Next.js, Angular, Node.js, and Flutter. Proven expertise in developing scalable frontend architectures and secure backend systems using Node.js, Express.js, and NestJS, delivering high-performance RESTful APIs and seamless user experiences. Strong Dart programming skills with state management (GetX, Bloc, Provider), multi-flavor builds, localization, and Dart isolates. Experienced in integrating third-party APIs, implementing responsive UI/UX designs, writing test cases, and optimizing applications through efficient state management and performance techniques. Strong understanding of database management, authentication systems, and cloud-based solutions, with the ability to deliver end-to-end development. Known for strong analytical thinking, clear communication, and effective collaboration.";
+
+const WORDS = OVERVIEW_PARAGRAPH.split(/\s+/);
 
 export default function Overview() {
   const sectionRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  /* =========================================================================
+     CIRCULAR SLIDER STATE & REFS (COMMENTED OUT - PRESERVED)
+     =========================================================================
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(() =>
@@ -63,9 +77,9 @@ export default function Overview() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 3D Circular geometry parameters
   const stepAngle = isMobile ? 65 : 48;
   const radius = isMobile ? 440 : 720;
+  ========================================================================= */
 
   useGSAP(
     () => {
@@ -73,37 +87,30 @@ export default function Overview() {
       const container = containerRef.current;
       if (!section || !container) return;
 
+      const words = wordRefs.current.filter(Boolean) as HTMLSpanElement[];
+
+      /* =====================================================================
+         CIRCULAR SLIDER SCROLLTRIGGER LOGIC (COMMENTED OUT - PRESERVED)
+         =====================================================================
       const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
 
-      // Pure GSAP 3D Circular Slider positioner
-      // Evaluates parametric cylinder arc coordinates for each card based on continuous slide position 's' (0 to 2)
       const updateSliderPosition = (slideProgress: number) => {
         let bestIdx = 0;
         let minDiff = Infinity;
 
         cards.forEach((card, idx) => {
-          const delta = idx - slideProgress; // Slide distance (-1, 0, +1, etc.)
-          const angle = delta * stepAngle;   // Angular offset in degrees
+          const delta = idx - slideProgress;
+          const angle = delta * stepAngle;
           const rad = (angle * Math.PI) / 180;
-
-          // Parametric cylinder arc in 3D:
-          // X follows circle perimeter
-          // Z recedes into screen depth: Z = 0 at center, Z < 0 as card turns away
-          // rotationY angles card tangent to cylinder facing inward toward viewer
           const x = radius * Math.sin(rad);
           const z = radius * (Math.cos(rad) - 1);
           const rotY = -angle * 0.65;
-
           const dist = Math.abs(delta);
           if (dist < minDiff) {
             minDiff = dist;
             bestIdx = idx;
           }
-
-          // Scale: center card is 1.0, receding cards slightly scale down
           const scale = gsap.utils.clamp(0.78, 1.0, 1.0 - dist * 0.14);
-
-          // Opacity: Center card = 1.0; Adjacent peeked card = 0.28; Far cards = 0.0
           let opacity = 0;
           if (dist < 0.15) {
             opacity = 1.0;
@@ -114,27 +121,13 @@ export default function Overview() {
           } else {
             opacity = 0;
           }
-
           const zIndex = Math.round(100 - dist * 40);
-
-          gsap.set(card, {
-            x,
-            y: 0,
-            z,
-            rotationY: rotY,
-            scale,
-            opacity,
-            zIndex,
-          });
-
+          gsap.set(card, { x, y: 0, z, rotationY: rotY, scale, opacity, zIndex });
           card.style.pointerEvents = dist < 0.35 ? "auto" : "none";
         });
-
         setActiveIndex(bestIdx);
       };
-
-      gsap.set(container, { opacity: 0 });
-      updateSliderPosition(0);
+      ===================================================================== */
 
       // Kill any previous about-timeline to avoid duplicate pin-spacers
       const existingSt = ScrollTrigger.getById("about-timeline");
@@ -142,115 +135,155 @@ export default function Overview() {
         existingSt.kill(true);
       }
 
-      // GSAP ScrollTrigger timeline for circular rotation with designated reading plateaus
+      // Initial state: unscrubbed words at 20% (0.20) ghost opacity
+      gsap.set(container, { opacity: 1 });
+      words.forEach((w) => {
+        w.style.opacity = "0.20";
+      });
+
+      // Reflect Orbital multi-word gradient falloff scrub:
+      // Base unread opacity = 0.20, Revealed opacity = 1.0, Ramp width = 5 words
+      const updateWordsOpacity = (p: number) => {
+        const totalWords = words.length;
+        if (totalWords === 0) return;
+
+        // 70% Section Height Scroll Threshold:
+        // From 0% to 70% of section scroll height: "ABOUT ME" remains fully assembled.
+        // Once the 70% scroll threshold is crossed (0.70 -> 0.90): "ABOUT ME" begins breaking apart into triangles.
+        // Between 70% and 100% of the section's scroll range: particles stay broken / dispersed.
+        const breakStart = 0.70;
+        const breakEnd = 0.90;
+
+        if (p < breakStart) {
+          particleBridge.overviewProgress = 0.0;
+        } else if (p < breakEnd) {
+          particleBridge.overviewProgress = (p - breakStart) / (breakEnd - breakStart);
+        } else {
+          particleBridge.overviewProgress = 1.0;
+        }
+        particleBridge.skillsProgress = 0.0;
+
+        const baseOpacity = 0.20;
+        const ramp = 5;
+
+        // Reading wave completes across the 0% -> 70% scroll range while "ABOUT ME" is assembled
+        if (p <= 0.70) {
+          container.style.opacity = "1";
+
+          const u = Math.max(0, Math.min(1, p / 0.70));
+          const cursor = u * (totalWords + ramp);
+
+          words.forEach((w, i) => {
+            if (i <= cursor - ramp) {
+              w.style.opacity = "1";
+            } else if (i >= cursor) {
+              w.style.opacity = `${baseOpacity}`;
+            } else {
+              // Smooth gradient falloff across the reading wave front
+              const frac = (cursor - i) / ramp;
+              const op = baseOpacity + frac * (1.0 - baseOpacity);
+              w.style.opacity = `${op.toFixed(3)}`;
+            }
+          });
+        } else {
+          words.forEach((w) => {
+            w.style.opacity = "1";
+          });
+
+          if (p < 0.94) {
+            container.style.opacity = "1";
+          } else {
+            const fade = Math.max(0, 1 - (p - 0.94) / 0.06);
+            container.style.opacity = `${fade}`;
+          }
+        }
+      };
+
       ScrollTrigger.create({
         id: "about-timeline",
         trigger: section,
         start: "top top",
-        end: "+=1700",
+        end: "+=1100",
         pin: true,
         pinSpacing: true,
         scrub: 0.8,
         anticipatePin: 1,
         invalidateOnRefresh: true,
+        onEnter: () => {
+          particleBridge.isDarkActive = true;
+        },
+        onEnterBack: () => {
+          particleBridge.isDarkActive = true;
+        },
         onLeaveBack: () => {
+          particleBridge.isDarkActive = false;
           particleBridge.overviewProgress = 0.0;
           particleBridge.skillsProgress = 0.0;
           gsap.set(container, { opacity: 0 });
-          updateSliderPosition(0);
+          words.forEach((w) => {
+            w.style.opacity = "0.20";
+          });
         },
         onUpdate: (self) => {
-          const p = self.progress;
-
-          // Phase 1: 0.00 -> 0.10: "ABOUT ME" particle text formed
-          // Phase 2: 0.10 -> 0.22: "ABOUT ME" disperses, circular slider fades in
-          // Phase 3: 0.22 -> 0.88: Circular slider with reading plateaus and smooth 3D transitions
-          // Phase 4: 0.88 -> 1.00: Circular slider fades out before Skills section enters
-
-          if (p < 0.10) {
-            particleBridge.overviewProgress = 0.0;
-            container.style.opacity = "0";
-            updateSliderPosition(0);
-          } else if (p < 0.22) {
-            const t = (p - 0.10) / 0.12;
-            particleBridge.overviewProgress = t;
-            container.style.opacity = `${t}`;
-            updateSliderPosition(0);
-          } else if (p <= 0.88) {
-            particleBridge.overviewProgress = 1.0;
-            container.style.opacity = "1";
-
-            // Normalized progress across slides (0 to 1)
-            const u = (p - 0.22) / 0.66;
-            let currentSlide = 0;
-
-            // Piecewise progression with reading pauses at each slide
-            if (u < 0.22) {
-              // Resting pause at Slide 0
-              currentSlide = 0;
-            } else if (u < 0.44) {
-              // Smooth transition Slide 0 -> Slide 1
-              const t = (u - 0.22) / 0.22;
-              const ease = t * t * (3 - 2 * t);
-              currentSlide = ease * 1.0;
-            } else if (u < 0.66) {
-              // Resting pause at Slide 1
-              currentSlide = 1.0;
-            } else if (u < 0.88) {
-              // Smooth transition Slide 1 -> Slide 2
-              const t = (u - 0.66) / 0.22;
-              const ease = t * t * (3 - 2 * t);
-              currentSlide = 1.0 + ease * 1.0;
-            } else {
-              // Resting pause at Slide 2
-              currentSlide = 2.0;
-            }
-
-            updateSliderPosition(currentSlide);
-          } else {
-            particleBridge.overviewProgress = 1.0;
-            const fadeOut = Math.max(0.0, 1.0 - (p - 0.88) / 0.10);
-            container.style.opacity = `${fadeOut}`;
-            updateSliderPosition(2.0);
-          }
-
-          particleBridge.skillsProgress = 0.0;
+          particleBridge.isDarkActive = true;
+          updateWordsOpacity(self.progress);
         },
       });
 
       ScrollTrigger.sort();
       ScrollTrigger.refresh();
     },
-    { scope: sectionRef, dependencies: [isMobile, stepAngle, radius] }
+    { scope: sectionRef }
   );
 
+  /* =========================================================================
+     CIRCULAR SLIDER NAVIGATION HANDLER (COMMENTED OUT - PRESERVED)
+     =========================================================================
   const navigateToSlide = (idx: number) => {
     const st = ScrollTrigger.getById("about-timeline");
     if (!st) return;
     const scrollRange = st.end - st.start;
-    // Map idx (0, 1, 2) to midpoint of each slide's reading zone
-    const targetProgress =
-      idx === 0 ? 0.29 : idx === 1 ? 0.58 : 0.84;
+    const targetProgress = idx === 0 ? 0.29 : idx === 1 ? 0.58 : 0.84;
     const targetY = st.start + targetProgress * scrollRange;
     window.scrollTo({ top: targetY, behavior: "smooth" });
   };
+  ========================================================================= */
 
   return (
     <section
       ref={sectionRef}
       id="about"
-      className="relative w-full h-screen h-[100dvh] max-h-screen py-6 sm:py-8 md:py-10 px-4 sm:px-6 md:px-8 bg-transparent text-earth-cream transition-colors duration-300 flex items-center justify-center overflow-hidden select-none"
+      className="relative w-full h-screen h-[100dvh] max-h-screen px-4 sm:px-6 md:px-8 bg-transparent text-earth-cream transition-colors duration-300 flex flex-col items-center justify-center overflow-hidden select-none"
     >
-      {/* Subtle radial backdrop for contrast against starfield particles */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(10,12,10,0.65)_0%,rgba(5,6,5,0.25)_65%,transparent_100%)] z-0" />
-
-      <div className="w-full max-w-[96vw] lg:max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center justify-center relative z-10 px-2 sm:px-4">
-        {/* Pure GSAP 3D Circular Slider Container */}
+      <div className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1400px] mx-auto flex flex-col items-center justify-center relative z-10 px-4 sm:px-6 md:px-8 mt-[10vh] sm:mt-[12vh] md:mt-[14vh]">
+        {/* Simple Continuous Paragraph Container with Reflect Orbital Gradient Scroll Reveal */}
         <div
           ref={containerRef}
           className="w-full relative flex flex-col items-center justify-center will-change-transform pointer-events-auto"
         >
-          {/* 3D Perspective Stage */}
+          {/* Reflect Orbital Style Continuous Body Text */}
+          <p className="w-full max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1380px] mx-auto text-[14.5px] xs:text-[15.5px] sm:text-[16.5px] md:text-[17.5px] lg:text-[18.5px] xl:text-[19.5px] font-sans font-medium leading-[1.65] sm:leading-[1.7] tracking-tight text-center text-earth-cream px-2 sm:px-4">
+            {WORDS.map((word, idx) => (
+              <span
+                key={idx}
+                ref={(el) => {
+                  wordRefs.current[idx] = el;
+                }}
+                className="inline-block mr-[0.28em] will-change-opacity text-earth-cream"
+                style={{ opacity: 0.2 }}
+              >
+                {word}
+              </span>
+            ))}
+          </p>
+        </div>
+
+        {/* =========================================================================
+           CIRCULAR SLIDER JSX (COMMENTED OUT - PRESERVED FOR FUTURE USE)
+           =========================================================================
+        <div
+          className="w-full relative flex flex-col items-center justify-center will-change-transform pointer-events-auto hidden"
+        >
           <div
             className="relative w-full max-w-4xl min-h-[410px] sm:min-h-[430px] md:min-h-[450px] flex items-center justify-center"
             style={{
@@ -285,7 +318,6 @@ export default function Overview() {
                   WebkitBackfaceVisibility: "hidden",
                 }}
               >
-                {/* Card Header: Category Badge & Slide Number */}
                 <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-earth-cream/10 border border-earth-cream/15 text-earth-cream/85 text-[11px] sm:text-xs font-mono tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-earth-terracotta" />
@@ -296,17 +328,14 @@ export default function Overview() {
                   </span>
                 </div>
 
-                {/* Heading */}
                 <h3 className="text-lg sm:text-xl md:text-2xl font-sans font-semibold text-white tracking-tight mb-2.5 sm:mb-3">
                   {slide.heading}
                 </h3>
 
-                {/* Full Paragraph Text (Never broken into sentences) */}
                 <p className="text-[13.5px] sm:text-[15px] md:text-[16px] font-sans font-normal text-earth-cream/90 leading-relaxed sm:leading-relaxed tracking-normal">
                   {slide.paragraph}
                 </p>
 
-                {/* Tech Tags */}
                 <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-4 sm:mt-5 pt-3.5 sm:pt-4 border-t border-earth-cream/10">
                   {slide.tags.map((tag) => (
                     <span
@@ -321,9 +350,7 @@ export default function Overview() {
             ))}
           </div>
 
-          {/* Interactive Navigation: Arrows + Pill Indicators */}
           <div className="flex items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 z-20">
-            {/* Prev Arrow */}
             <button
               type="button"
               onClick={() => navigateToSlide(Math.max(0, activeIndex - 1))}
@@ -341,7 +368,6 @@ export default function Overview() {
               </svg>
             </button>
 
-            {/* Pill Dots */}
             <div className="flex items-center gap-2 sm:gap-2.5">
               {ABOUT_SLIDES.map((slide, idx) => (
                 <button
@@ -378,7 +404,6 @@ export default function Overview() {
               ))}
             </div>
 
-            {/* Next Arrow */}
             <button
               type="button"
               onClick={() => navigateToSlide(Math.min(ABOUT_SLIDES.length - 1, activeIndex + 1))}
@@ -397,6 +422,7 @@ export default function Overview() {
             </button>
           </div>
         </div>
+        ========================================================================= */}
       </div>
     </section>
   );

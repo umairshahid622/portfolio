@@ -189,22 +189,23 @@ export default function Skills() {
           onUpdate: (self) => {
             const p = self.progress;
 
-            // Phase 1 (0.00 -> 0.14): As Skills enters, particles merge from screen-spread into "SKILLS </>"!
-            // Phase 2 (0.14 -> 0.55): Cards scroll horizontally; "SKILLS </>" stays assembled (skillsProgress = 1.0)
-            // Phase 3 (0.55 -> 0.85): While cards scroll through later cards, particles take flight into nebula (skillsProgress: 1.0 -> 0.0)
-            // Phase 4 (0.85 -> 1.00): Cards reach final cards with particles fully dispersed
-            const mergeDuration = 0.14;
-            const spreadStart = 0.55;
-            const spreadEnd = 0.85;
+            // 70% Section Height Scroll Threshold:
+            // Phase 1 (0.00 -> 0.12): As Skills enters, triangles re-form the word "SKILLS </>"
+            // Phase 2 (0.12 -> 0.70): Title stays fully assembled while cards scroll horizontally
+            // Phase 3 (0.70 -> 0.90): When 70% of Skills height is scrolled, particles break down again into triangles
+            // Phase 4 (0.90 -> 1.00): Particles stay broken / dispersed between 70% and 100%
+            const mergeDuration = 0.12;
+            const breakStart = 0.70;
+            const breakEnd = 0.90;
 
             if (p < mergeDuration) {
               particleBridge.skillsProgress = p / mergeDuration;
-            } else if (p < spreadStart) {
+            } else if (p < breakStart) {
               particleBridge.skillsProgress = 1.0;
-            } else if (p > spreadEnd) {
+            } else if (p > breakEnd) {
               particleBridge.skillsProgress = 0.0;
             } else {
-              const spreadProgress = (p - spreadStart) / (spreadEnd - spreadStart);
+              const spreadProgress = (p - breakStart) / (breakEnd - breakStart);
               particleBridge.skillsProgress = Math.max(0.0, Math.min(1.0, 1.0 - spreadProgress));
             }
 
