@@ -24,8 +24,8 @@ if (typeof window !== "undefined") {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider>
       <App />
-    </ThemeProvider>
+    {/* <ThemeProvider>
+    </ThemeProvider> */}
   </StrictMode>
 );
