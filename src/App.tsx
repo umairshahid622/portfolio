@@ -2,8 +2,7 @@ import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Header from "./components/Header";
-import Hero from "./components/Hero";
-import Overview from "./components/Overview";
+import HeroOverviewPortal from "./components/HeroOverviewPortal";
 import Skills from "./components/Skills";
 import WorkExperience from "./components/WorkExperience";
 import Contact from "./components/Contact";
@@ -39,12 +38,9 @@ export default function App() {
       <div className="dark min-h-screen w-full relative bg-earth-forest text-earth-cream overflow-x-clip selection:bg-earth-terracotta selection:text-earth-cream">
         <Header />
         <main className="w-full relative z-10">
-          {/* Hero section is completely standalone */}
-          <Hero />
-
-          {/* Unified particle experience wrapper for Overview, Skills, Work Experience & Contact */}
+          {/* Unified particle experience wrapper for Hero portal, Overview, Skills, Work Experience & Contact */}
           <ParticleExperienceWrapper>
-            <Overview />
+            <HeroOverviewPortal />
             <Skills />
             <WorkExperience />
             <Contact />

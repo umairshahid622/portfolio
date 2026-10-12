@@ -36,11 +36,13 @@ export default function ParticleExperienceWrapper({
       // When scrolling back up to Hero, isDarkActive becomes false so particles fade out cleanly.
       ScrollTrigger.create({
         trigger: wrapper,
-        start: "top 75%",
+        start: "top+=15 top",
         end: "bottom bottom",
         onToggle: (self) => {
           if (self.isActive) {
             particleBridge.isDarkActive = true;
+          } else {
+            particleBridge.isDarkActive = false;
           }
         },
         onRefresh: (self) => {

@@ -55,7 +55,11 @@ const OVERVIEW_PARAGRAPH =
 
 const WORDS = OVERVIEW_PARAGRAPH.split(/\s+/);
 
-export default function Overview() {
+interface OverviewProps {
+  embedded?: boolean;
+}
+
+export default function Overview({ embedded = false }: OverviewProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -201,13 +205,13 @@ export default function Overview() {
 
       ScrollTrigger.create({
         id: "about-timeline",
-        trigger: section,
-        start: "top top",
-        end: "+=1100",
-        pin: true,
-        pinSpacing: true,
+        trigger: embedded ? "#hero-portal-wrapper" : section,
+        start: embedded ? "top+=850 top" : "top top",
+        end: embedded ? "top+=1950 top" : "+=1100",
+        pin: !embedded,
+        pinSpacing: !embedded,
         scrub: 0.8,
-        anticipatePin: 1,
+        anticipatePin: embedded ? 0 : 1,
         invalidateOnRefresh: true,
         onEnter: () => {
           particleBridge.isDarkActive = true;
@@ -216,10 +220,12 @@ export default function Overview() {
           particleBridge.isDarkActive = true;
         },
         onLeaveBack: () => {
-          particleBridge.isDarkActive = false;
           particleBridge.overviewProgress = 0.0;
           particleBridge.skillsProgress = 0.0;
-          gsap.set(container, { opacity: 0 });
+          if (!embedded) {
+            particleBridge.isDarkActive = false;
+            gsap.set(container, { opacity: 0 });
+          }
           words.forEach((w) => {
             w.style.opacity = "0.20";
           });
