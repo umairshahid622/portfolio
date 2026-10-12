@@ -120,28 +120,58 @@ export default function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const headerThreshold = 75;
+      const aboutSt = ScrollTrigger.getById("about-timeline");
+      const aboutStart = aboutSt ? aboutSt.start : 850;
+
+      // 1. When at or near the top of the page (Hero section before About portal expansion)
+      if (window.scrollY < aboutStart) {
+        setActiveSection("hero");
+        return;
+      }
+
+      // 2. Check pinned / scrubbed sections via ScrollTrigger
       const expSt = ScrollTrigger.getById("experience-timeline");
       const skillsSt = ScrollTrigger.getById("skills-timeline");
-      const aboutSt = ScrollTrigger.getById("about-timeline");
+      const contactSt = ScrollTrigger.getById("contact-timeline");
+
+      if (contactSt && window.scrollY >= contactSt.start) {
+        setActiveSection("contact");
+        return;
+      }
 
       if (expSt && window.scrollY >= expSt.start && window.scrollY <= expSt.end) {
         setActiveSection("experience");
         return;
       }
+
       if (skillsSt && window.scrollY >= skillsSt.start && window.scrollY <= skillsSt.end) {
         setActiveSection("skills");
         return;
       }
+
       if (aboutSt && window.scrollY >= aboutSt.start && window.scrollY < aboutSt.end) {
         setActiveSection("about");
         return;
       }
 
-      // Detect which section is currently underneath the navbar
+      // 3. Fallback for mobile and natural scroll sections
+      const contactEl = document.getElementById("contact");
+      if (contactEl) {
+        const cRect = contactEl.getBoundingClientRect();
+        if (cRect.top <= headerThreshold + 150) {
+          setActiveSection("contact");
+          return;
+        }
+      }
+
       const sections = document.querySelectorAll<HTMLElement>("section[id]");
       let current = "hero";
 
       for (const section of sections) {
+        // Skip #about if scroll position hasn't crossed the portal threshold into Overview
+        if (section.id === "about" && window.scrollY < aboutStart) {
+          continue;
+        }
         const rect = section.getBoundingClientRect();
         if (rect.top <= headerThreshold && rect.bottom > headerThreshold) {
           current = section.id;

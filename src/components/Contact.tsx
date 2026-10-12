@@ -210,10 +210,18 @@ export default function Contact() {
     } catch (err: unknown) {
       console.error("EmailJS submission error:", err);
       const emailJsError = err as { text?: string; message?: string };
-      const message =
+      const rawText =
         emailJsError?.text ||
         emailJsError?.message ||
-        "Could not send message. Please try again or reach out directly.";
+        "";
+
+      let message = "Could not send message. Please try again or reach out directly.";
+      if (rawText.toLowerCase().includes("invalid grant") || rawText.includes("Gmail_API")) {
+        message = "Email service temporarily needs re-authentication. Please email me directly below!";
+      } else if (rawText) {
+        message = rawText;
+      }
+
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
