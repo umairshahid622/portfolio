@@ -32,35 +32,46 @@ export default function SmoothCursor() {
       const yToRing = gsap.quickTo(ring, "y", { duration: 0.22, ease: "power2.out" });
 
       let isInitialized = false;
-      let lastX = -1;
-      let lastY = -1;
-      let lastSpawnTime = 0;
+      let lastSpawnX = -1;
+      let lastSpawnY = -1;
       let logoIndex = 0;
       let isMoving = false;
+      let currentZIndex = 1000;
       let stopTimer: ReturnType<typeof setTimeout> | null = null;
 
-      const { DISTANCE_THRESHOLD, MIN_SPAWN_INTERVAL, STOP_DELAY } = CURSOR_CONFIG;
+      const {
+        DISTANCE_THRESHOLD,
+        STOP_DELAY,
+        MAX_STACK_SIZE,
+        STACK_HOLD_DURATION,
+      } = CURSOR_CONFIG;
       const activeElements: HTMLDivElement[] = [];
 
-      // Spawn next logo in synchronized order so every icon spawns
-      const spawnLogo = (x: number, y: number, angleDeg: number) => {
+      // Spawn next logo in stack formation with overlapping edges
+      const spawnLogo = (x: number, y: number) => {
         const logo = LOGOS[logoIndex];
         logoIndex = (logoIndex + 1) % LOGOS.length;
+
+        // Alternate subtle tilt (-8deg to +8deg) for natural fanned stack look
+        const tiltSign = logoIndex % 2 === 0 ? 1 : -1;
+        const randomRot = tiltSign * gsap.utils.random(4, 9);
+
+        // Keep increasing z-index so every newly spawned card sits on top of the stack
+        currentZIndex++;
 
         // Create popup card
         const badge = document.createElement("div");
         badge.className =
-          "cursor-logo-badge fixed top-0 left-0 pointer-events-none select-none z-[9998] flex flex-col items-center justify-center will-change-transform";
-
-        // Random subtle rotation (-12deg to +12deg)
-        const randomRot = gsap.utils.random(-14, 14);
+          "cursor-logo-badge fixed top-0 left-0 pointer-events-none select-none flex flex-col items-center justify-center will-change-transform";
+        badge.style.zIndex = currentZIndex.toString();
 
         badge.innerHTML = `
-          <div class="relative flex items-center justify-center size-10">
+          <div class="relative flex items-center justify-center size-10 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
             <img
               src="${logo.src}"
               alt="${logo.name}"
               class="w-full h-full object-contain ${logo.isMonochrome ? "invert" : ""}"
+              draggable="false"
             />
           </div>
         `;
@@ -68,55 +79,60 @@ export default function SmoothCursor() {
         trailContainer.appendChild(badge);
         activeElements.push(badge);
 
-        // Cull excess elements if moving very fast
-        if (activeElements.length > 8) {
+        // Cull oldest element smoothly when stack exceeds max size
+        if (activeElements.length > MAX_STACK_SIZE) {
           const oldest = activeElements.shift();
           if (oldest && oldest.parentElement) {
             gsap.killTweensOf(oldest);
-            oldest.remove();
+            gsap.to(oldest, {
+              scale: 0.7,
+              opacity: 0,
+              duration: 0.18,
+              ease: "power2.in",
+              onComplete: () => {
+                oldest.remove();
+              },
+            });
           }
         }
 
-        // Float direction slightly based on movement angle
-        const driftX = Math.cos(angleDeg) * 15;
-        const driftY = Math.sin(angleDeg) * 15 - 30; // slight upward lift
-
-        // Set initial spawn coordinates centered on mouse
+        // Set initial spawn coordinates centered on position with initial scale pop
         gsap.set(badge, {
           x,
           y,
           xPercent: -50,
           yPercent: -50,
-          scale: 0.2,
+          scale: 0.3,
           rotation: randomRot,
           opacity: 0,
         });
 
-        // Dynamic pop-in, float, and fade-out timeline
+        // Dynamic pop-in onto the stack, hold in stacked place, and smoothly fade out
         const tl = gsap.timeline({
           onComplete: () => {
             const idx = activeElements.indexOf(badge);
             if (idx > -1) activeElements.splice(idx, 1);
             badge.remove();
+            if (activeElements.length === 0) {
+              currentZIndex = 1000;
+            }
           },
         });
 
         tl.to(badge, {
           scale: 1,
           opacity: 1,
-          duration: 0.3,
-          ease: "back.out(2)",
+          duration: 0.22,
+          ease: "back.out(2.2)",
         }).to(
           badge,
           {
-            x: `+=${driftX}`,
-            y: `+=${driftY}`,
-            scale: 0.75,
+            scale: 0.7,
             opacity: 0,
-            duration: 0.45,
-            ease: "power2.inOut",
+            duration: 0.28,
+            ease: "power2.in",
           },
-          "+=0.25"
+          `+=${STACK_HOLD_DURATION}`
         );
       };
 
@@ -127,9 +143,8 @@ export default function SmoothCursor() {
 
         if (!isInitialized) {
           isInitialized = true;
-          lastX = clientX;
-          lastY = clientY;
-          lastSpawnTime = Date.now();
+          lastSpawnX = clientX;
+          lastSpawnY = clientY;
           isMoving = true;
           gsap.set(ring, {
             x: clientX,
@@ -149,9 +164,8 @@ export default function SmoothCursor() {
         // Every time cursor starts moving after being stopped
         if (!isMoving) {
           isMoving = true;
-          lastX = clientX;
-          lastY = clientY;
-          lastSpawnTime = Date.now();
+          lastSpawnX = clientX;
+          lastSpawnY = clientY;
         }
 
         // Reset the idle stop timer on every mousemove
@@ -168,23 +182,28 @@ export default function SmoothCursor() {
             'a, button, input, textarea, select, [role="button"], [data-cursor-hover], [role="link"], label, .cursor-pointer'
           );
 
-        // Calculate travel distance
-        const dx = clientX - lastX;
-        const dy = clientY - lastY;
+        // Calculate travel distance from the last spawn position
+        const dx = clientX - lastSpawnX;
+        const dy = clientY - lastSpawnY;
         const dist = Math.hypot(dx, dy);
-        const now = Date.now();
 
-        // Stop spawning icons while hovering something
+        // Stop spawning icons while hovering interactive elements
         if (isHovering) {
-          lastX = clientX;
-          lastY = clientY;
-          lastSpawnTime = now;
-        } else if (dist >= DISTANCE_THRESHOLD && now - lastSpawnTime >= MIN_SPAWN_INTERVAL) {
-          const moveAngle = Math.atan2(dy, dx);
-          spawnLogo(clientX, clientY, moveAngle);
-          lastX = clientX;
-          lastY = clientY;
-          lastSpawnTime = now;
+          lastSpawnX = clientX;
+          lastSpawnY = clientY;
+        } else if (dist >= DISTANCE_THRESHOLD) {
+          // Step along the movement vector to ensure seamless overlapping edges in the stack
+          const numSteps = Math.min(Math.floor(dist / DISTANCE_THRESHOLD), 4);
+
+          for (let s = 1; s <= numSteps; s++) {
+            const stepDist = s * DISTANCE_THRESHOLD;
+            const spawnX = lastSpawnX + (dx * stepDist) / dist;
+            const spawnY = lastSpawnY + (dy * stepDist) / dist;
+            spawnLogo(spawnX, spawnY);
+          }
+
+          lastSpawnX = lastSpawnX + (dx * (numSteps * DISTANCE_THRESHOLD)) / dist;
+          lastSpawnY = lastSpawnY + (dy * (numSteps * DISTANCE_THRESHOLD)) / dist;
         }
       };
 

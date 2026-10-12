@@ -28,7 +28,10 @@ export const LOGOS: LogoItem[] = [
 ];
 
 export const CURSOR_CONFIG = {
-  DISTANCE_THRESHOLD: 50, // pixels moved before next logo pop
-  MIN_SPAWN_INTERVAL: 60, // ms minimum delay to prevent stacking
-  STOP_DELAY: 220,        // ms of no mousemove considered as cursor stopped
+  DISTANCE_THRESHOLD: 36,    // Spacing between icons in px (light edge overlap for 40px icons)
+  MIN_SPAWN_INTERVAL: 25,    // Minimum ms between spawns for fluid stacking
+  STOP_DELAY: 220,           // ms of no mousemove considered as cursor stopped
+  MAX_STACK_SIZE: 7,         // Maximum icons visible simultaneously in the active stack
+  CARD_SIZE: 40,             // Icon dimension in px
+  STACK_HOLD_DURATION: 0.65, // Seconds icons stay in place in the stack before fading
 } as const;
