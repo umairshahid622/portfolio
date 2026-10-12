@@ -66,7 +66,7 @@ export default function SmoothCursor() {
         badge.style.zIndex = currentZIndex.toString();
 
         badge.innerHTML = `
-          <div class="relative flex items-center justify-center size-10 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+          <div class="relative flex items-center justify-center size-10">
             <img
               src="${logo.src}"
               alt="${logo.name}"
