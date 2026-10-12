@@ -301,9 +301,9 @@ export default function Header() {
             onClick={handleBrandClick}
             className="flex items-center gap-3 group cursor-pointer relative z-50 select-none"
           >
-            <div className="relative w-10 h-10 rounded-xl bg-earth-terracotta flex items-center justify-center text-earth-cream font-bold text-base shadow-md shadow-earth-terracotta/20 group-hover:scale-105 group-hover:shadow-earth-terracotta/40 transition-all duration-200">
+            <div className="relative w-10 h-10 rounded-xl bg-earth-sand flex items-center justify-center text-earth-forest font-bold text-base shadow-md shadow-earth-sand/20 group-hover:scale-105 group-hover:shadow-earth-sand/40 transition-all duration-200">
               <span>US</span>
-              <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
+              <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10" />
             </div>
             <div className="flex flex-col">
               <span className="font-semibold text-sm sm:text-base tracking-tight leading-tight text-earth-cream">
