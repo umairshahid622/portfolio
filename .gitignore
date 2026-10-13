@@ -27,3 +27,6 @@ dist-ssr
 .agents
 .playwright-mcp
 .playwright-mcp/
+
+# Local agent workspace (session notes, previews, generated artifacts)
+.workbuddy-ai/

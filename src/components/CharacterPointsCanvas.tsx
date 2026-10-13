@@ -436,7 +436,11 @@ const BREAKDOWN_FRAGMENT_SHADER = `
 
   void main() {
     // Precise per-card occlusion during Skills spread:
-    // Only discard if the particle is BEHIND (z < -0.05) AND located directly inside an individual card body.
+    // Depth decides, exactly as it reads in 3D. Measured against the live card rects at the
+    // rest state, the loop crosses the cards at:
+    //   u 0.19 -> 0.31  left descent,  z ~ -1.3  -> BEHIND the card, discarded here
+    //   u 0.63 -> 0.87  the rise,       z ~ +1.5  -> IN FRONT of the card, drawn opaque
+    // Because z belongs to the loop geometry, the front/behind split stays put while scrolling.
     // In the space/gap between cards, or above/below the cards, particles remain fully visible!
     if (uSkillsSpread > 0.05 && (uExperienceProgress < 0.001 || vBreakProgress > 0.97) && vWorldPos.z < -0.05) {
       float projFactor = 5.0 / max(0.1, 5.0 - vWorldPos.z);
@@ -884,7 +888,11 @@ const POINTS_FRAGMENT_SHADER = `
     if (vBreakProgress < 0.01) discard;
 
     // Precise per-card occlusion during Skills spread:
-    // Only discard if the point is BEHIND (z < -0.05) AND located directly inside an individual card body.
+    // Depth decides, exactly as it reads in 3D. Measured against the live card rects at the
+    // rest state, the loop crosses the cards at:
+    //   u 0.19 -> 0.31  left descent,  z ~ -1.3  -> BEHIND the card, discarded here
+    //   u 0.63 -> 0.87  the rise,       z ~ +1.5  -> IN FRONT of the card, drawn opaque
+    // Because z belongs to the loop geometry, the front/behind split stays put while scrolling.
     // In the space/gap between cards, or above/below the cards, points remain fully visible!
     if (uSkillsSpread > 0.05 && (uExperienceProgress < 0.001 || vBreakProgress > 0.97) && vWorldPos.z < -0.05) {
       float projFactor = 5.0 / max(0.1, 5.0 - vWorldPos.z);
