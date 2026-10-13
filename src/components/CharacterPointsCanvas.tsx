@@ -36,6 +36,7 @@ const globalMouseState = {
 // ever disappearing or creating separate meshes.
 // =========================================================================
 const BREAKDOWN_VERTEX_SHADER = `
+  uniform float uTime;
   uniform float uOverviewBreak;
   uniform float uSkillsProgress;
   uniform float uExperienceProgress;
@@ -87,7 +88,7 @@ const BREAKDOWN_VERTEX_SHADER = `
     vec3 text4Local = (aTarget4Pos - aTarget4Center) * uTarget4Scale;
     vec3 text4Pos = text4Center + text4Local;
 
-    // Screen Spread Target (distributed evenly across visible viewport)
+    // Screen Spread Target with full 3D perspective volume (Z-axis, X-axis, Y-axis)
     float s1 = sin(aCenter.x * 12.9898 + aCenter.y * 78.233 + aRandom.x * 43.123) * 43758.5453;
     float s2 = cos(aCenter.x * 93.9898 + aCenter.y * 67.345 + aRandom.y * 24.634) * 24634.6345;
     float s3 = sin(aCenter.x * 43.1234 + aCenter.y * 19.876 + aRandom.z * 58.392) * 58392.1234;
@@ -96,10 +97,14 @@ const BREAKDOWN_VERTEX_SHADER = `
     float r2 = fract(abs(s2));
     float r3 = fract(abs(s3));
 
+    // Deep perspective depth along Z-axis: from foreground (close to camera) to deep background
+    float zDepth = (r3 - 0.5) * 4.6; // span ~ -2.3 (deep background) to +2.3 (foreground near camera)
+    float frustumExpand = max(0.60, (5.0 - zDepth) / 5.0);
+
     vec3 screenTarget = vec3(
-      (r1 - 0.5) * uViewport.x * 0.92,
-      (r2 - 0.5) * uViewport.y * 0.90,
-      (r3 - 0.5) * 1.6
+      (r1 - 0.5) * uViewport.x * 1.05 * frustumExpand,
+      (r2 - 0.5) * uViewport.y * 1.02 * frustumExpand,
+      zDepth
     );
 
     // Staggered threshold per triangle for natural organic flight
@@ -141,38 +146,56 @@ const BREAKDOWN_VERTEX_SHADER = `
     if (uContactProgress > 0.001) {
       // In Contact: Fly between screenTarget and Text 4 ("Let's Get In" / "Touch")
       float t = smoothstep(0.0, 1.0, mergeContactP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeContactP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeContactP) * 3.14159);
       currentCenter = mix(screenTarget, text4Center, t) + arc;
       currentLocal = mix(text1Local, text4Local, t);
       facetP = 1.0 - mergeContactP;
     } else if (uExperienceProgress > 0.001) {
       // In Work Experience: Fly directly from screenTarget to Text 3 (Work Experience in middle)
       float t = smoothstep(0.0, 1.0, mergeExpP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeExpP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeExpP) * 3.14159);
       currentCenter = mix(screenTarget, text3Center, t) + arc;
       currentLocal = mix(text1Local, text3Local, t);
       facetP = 1.0 - mergeExpP;
     } else if (uSkillsProgress > 0.001) {
       // In Skills: Fly between screenTarget and Text 2 (SKILLS </>)
       float t = smoothstep(0.0, 1.0, mergeSkillsP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeSkillsP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeSkillsP) * 3.14159);
       currentCenter = mix(screenTarget, text2Center, t) + arc;
       currentLocal = mix(text1Local, text2Local, t);
       facetP = 1.0 - mergeSkillsP;
     } else {
       // In Overview: Text 1 (ABOUT ME) breaks apart and flies to screenTarget identically to Skills and Work Experience
       float t = smoothstep(0.0, 1.0, mergeOverviewP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeOverviewP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeOverviewP) * 3.14159);
       currentCenter = mix(screenTarget, text1Center, t) + arc;
       currentLocal = text1Local;
       facetP = 1.0 - mergeOverviewP;
     }
 
+    // Continuous 3D floating waves across all perspective axes: X, Y, and Z
+    float tFlow = uTime * 0.75;
+    float phaseX = aRandom.x * 6.28318 + aCenter.x * 1.8;
+    float phaseY = aRandom.y * 6.28318 + aCenter.y * 1.8;
+    float phaseZ = aRandom.z * 6.28318 + (aRandom.x + aRandom.y) * 2.2;
+
+    vec3 floatOffset = vec3(
+      sin(tFlow * 0.70 + phaseX) * 0.35 + cos(tFlow * 0.35 + phaseY) * 0.18,
+      cos(tFlow * 0.60 + phaseY) * 0.30 + sin(tFlow * 0.45 + phaseX) * 0.15,
+      sin(tFlow * 0.55 + phaseZ) * 0.55 + cos(tFlow * 0.85 + phaseX) * 0.30
+    );
+
+    // Apply continuous 3D floating to the dispersed particles (zero when assembled into text)
+    currentCenter += floatOffset * smoothstep(0.0, 0.20, facetP);
+
     // 3D rotation and scaling of facet when dispersed (smoothly eased once facet begins motion)
     if (facetP > 0.01) {
-      float motionP = smoothstep(0.01, 0.12, facetP);
+      float motionP = smoothstep(0.01, 0.15, facetP);
       float scale = max(0.20, 1.0 - pow(facetP, 0.65) * 0.65 * motionP);
-      float angle = facetP * 8.0 * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
+
+      // Dynamic continuous 3D tumbling as shards float in perspective space
+      float dynamicSpin = uTime * (0.35 + abs(aRandom.w) * 0.55) * (aRandom.y > 0.0 ? 1.0 : -1.0);
+      float angle = (facetP * 6.0 + dynamicSpin) * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
       vec3 axis = normalize(aRandom.xyz + vec3(0.001));
       currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
       currentLocal *= scale;
@@ -205,6 +228,15 @@ const BREAKDOWN_FRAGMENT_SHADER = `
     // Luminous energy when floating as facets (warm golden radiance)
     if (vBreakProgress > 0.0) {
       col += vec3(0.12, 0.10, 0.03) * sin(vBreakProgress * 3.14159);
+
+      // Dynamic facet lighting based on 3D geometric face normal
+      vec3 fdx = dFdx(vWorldPos);
+      vec3 fdy = dFdy(vWorldPos);
+      vec3 normal = normalize(cross(fdx, fdy));
+      vec3 lightDir = normalize(vec3(0.2, 0.5, 0.8));
+      float diff = abs(dot(normal, lightDir));
+      float lighting = mix(1.0, 0.72 + 0.38 * diff, smoothstep(0.02, 0.20, vBreakProgress));
+      col *= lighting;
     }
 
     // Alpha stays visible when dispersed across the screen
@@ -217,6 +249,7 @@ const BREAKDOWN_FRAGMENT_SHADER = `
 `;
 
 const POINTS_VERTEX_SHADER = `
+  uniform float uTime;
   uniform float uOverviewBreak;
   uniform float uSkillsProgress;
   uniform float uExperienceProgress;
@@ -267,10 +300,14 @@ const POINTS_VERTEX_SHADER = `
     float r2 = fract(abs(s2));
     float r3 = fract(abs(s3));
 
+    // Deep perspective depth along Z-axis: from foreground to deep background
+    float zDepth = (r3 - 0.5) * 4.6;
+    float frustumExpand = max(0.60, (5.0 - zDepth) / 5.0);
+
     vec3 screenTarget = vec3(
-      (r1 - 0.5) * uViewport.x * 0.92,
-      (r2 - 0.5) * uViewport.y * 0.90,
-      (r3 - 0.5) * 1.6
+      (r1 - 0.5) * uViewport.x * 1.05 * frustumExpand,
+      (r2 - 0.5) * uViewport.y * 1.02 * frustumExpand,
+      zDepth
     );
 
     float threshold = aRandom.w * 0.32;
@@ -309,34 +346,50 @@ const POINTS_VERTEX_SHADER = `
 
     if (uContactProgress > 0.001) {
       float t = smoothstep(0.0, 1.0, mergeContactP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeContactP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeContactP) * 3.14159);
       currentCenter = mix(screenTarget, text4Center, t) + arc;
       currentLocal = mix(text1Local, text4Local, t);
       facetP = 1.0 - mergeContactP;
     } else if (uExperienceProgress > 0.001) {
       float t = smoothstep(0.0, 1.0, mergeExpP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeExpP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeExpP) * 3.14159);
       currentCenter = mix(screenTarget, text3Center, t) + arc;
       currentLocal = mix(text1Local, text3Local, t);
       facetP = 1.0 - mergeExpP;
     } else if (uSkillsProgress > 0.001) {
       float t = smoothstep(0.0, 1.0, mergeSkillsP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeSkillsP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeSkillsP) * 3.14159);
       currentCenter = mix(screenTarget, text2Center, t) + arc;
       currentLocal = mix(text1Local, text2Local, t);
       facetP = 1.0 - mergeSkillsP;
     } else {
       float t = smoothstep(0.0, 1.0, mergeOverviewP);
-      vec3 arc = vec3(aRandom.x * 0.40, aRandom.y * 0.35, aRandom.z * 0.35) * sin((1.0 - mergeOverviewP) * 3.14159);
+      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeOverviewP) * 3.14159);
       currentCenter = mix(screenTarget, text1Center, t) + arc;
       currentLocal = text1Local;
       facetP = 1.0 - mergeOverviewP;
     }
 
+    // Continuous 3D floating waves across all perspective axes: X, Y, and Z
+    float tFlow = uTime * 0.75;
+    float phaseX = aRandom.x * 6.28318 + aCenter.x * 1.8;
+    float phaseY = aRandom.y * 6.28318 + aCenter.y * 1.8;
+    float phaseZ = aRandom.z * 6.28318 + (aRandom.x + aRandom.y) * 2.2;
+
+    vec3 floatOffset = vec3(
+      sin(tFlow * 0.70 + phaseX) * 0.35 + cos(tFlow * 0.35 + phaseY) * 0.18,
+      cos(tFlow * 0.60 + phaseY) * 0.30 + sin(tFlow * 0.45 + phaseX) * 0.15,
+      sin(tFlow * 0.55 + phaseZ) * 0.55 + cos(tFlow * 0.85 + phaseX) * 0.30
+    );
+
+    // Apply continuous 3D floating to the dispersed particles (zero when assembled into text)
+    currentCenter += floatOffset * smoothstep(0.0, 0.20, facetP);
+
     if (facetP > 0.01) {
-      float motionP = smoothstep(0.01, 0.12, facetP);
+      float motionP = smoothstep(0.01, 0.15, facetP);
       float scale = max(0.20, 1.0 - pow(facetP, 0.65) * 0.65 * motionP);
-      float angle = facetP * 8.0 * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
+      float dynamicSpin = uTime * (0.35 + abs(aRandom.w) * 0.55) * (aRandom.y > 0.0 ? 1.0 : -1.0);
+      float angle = (facetP * 6.0 + dynamicSpin) * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
       vec3 axis = normalize(aRandom.xyz + vec3(0.001));
       currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
       currentLocal *= scale;
@@ -351,7 +404,10 @@ const POINTS_VERTEX_SHADER = `
     finalWorldPos.z -= repel * 0.3;
 
     vBreakProgress = facetP;
-    gl_PointSize = clamp(facetP * 4.5, 0.0, 6.0);
+
+    // Optical distance attenuation for true 3D perspective point sizing
+    float distToCam = max(1.2, 5.0 - finalWorldPos.z);
+    gl_PointSize = clamp((facetP * 18.0) / distToCam, 0.0, 7.5);
     gl_Position = projectionMatrix * viewMatrix * vec4(finalWorldPos, 1.0);
   }
 `;
@@ -379,6 +435,7 @@ function createBreakdownMeshMaterial(colorHex: string, radius = 0.40) {
     depthWrite: false,
     side: THREE.DoubleSide,
     uniforms: {
+      uTime: { value: 0.0 },
       uOverviewBreak: { value: 0.0 },
       uSkillsProgress: { value: 0.0 },
       uExperienceProgress: { value: 0.0 },
@@ -409,6 +466,7 @@ function createBreakdownPointsMaterial(colorHex: string, radius = 0.40) {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     uniforms: {
+      uTime: { value: 0.0 },
       uOverviewBreak: { value: 0.0 },
       uSkillsProgress: { value: 0.0 },
       uExperienceProgress: { value: 0.0 },
@@ -638,7 +696,8 @@ function UnifiedCelestialMesh({
     };
   }, [whiteMeshMat, whitePointsMat, goldMeshMat, goldPointsMat]);
 
-  useFrame(() => {
+  useFrame((state) => {
+    const time = state.clock.elapsedTime;
     smoothOverviewProgress.current = THREE.MathUtils.lerp(
       smoothOverviewProgress.current,
       particleBridge.overviewProgress,
@@ -761,6 +820,7 @@ function UnifiedCelestialMesh({
     // White Mesh & Points (Morphs ABOUT -> Spread Screen Triangles -> SKILLS -> Work -> Let's Get In)
     const whiteMats = [whiteMeshMat, whitePointsMat];
     for (const mat of whiteMats) {
+      mat.uniforms.uTime.value = time;
       mat.uniforms.uViewport.value.set(vW, vH);
       mat.uniforms.uOverviewBreak.value = ovBreak;
       mat.uniforms.uSkillsProgress.value = skProgress;
@@ -782,6 +842,7 @@ function UnifiedCelestialMesh({
     // Gold Mesh & Points (Morphs ME -> Spread Screen Triangles -> </> -> Experience -> Touch)
     const goldMats = [goldMeshMat, goldPointsMat];
     for (const mat of goldMats) {
+      mat.uniforms.uTime.value = time;
       mat.uniforms.uViewport.value.set(vW, vH);
       mat.uniforms.uOverviewBreak.value = ovBreak;
       mat.uniforms.uSkillsProgress.value = skProgress;
@@ -800,10 +861,10 @@ function UnifiedCelestialMesh({
       mat.uniforms.uMouseActive.value = smoothMouseActive.current;
     }
 
-    // 3D Perspective Tilt on Group
+    // 3D Perspective Tilt on Group for immersive depth parallax across X, Y, and Z
     if (groupRef.current) {
-      groupRef.current.rotation.y = smoothMouseWorld.current.x * 0.012 * smoothMouseActive.current;
-      groupRef.current.rotation.x = smoothMouseWorld.current.y * 0.008 * smoothMouseActive.current;
+      groupRef.current.rotation.y = smoothMouseWorld.current.x * 0.016 * smoothMouseActive.current;
+      groupRef.current.rotation.x = smoothMouseWorld.current.y * 0.010 * smoothMouseActive.current;
       groupRef.current.rotation.z = 0;
     }
   });
