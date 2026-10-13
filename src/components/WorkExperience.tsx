@@ -134,6 +134,38 @@ export default function WorkExperience() {
       if (existingSt) {
         existingSt.kill(true);
       }
+      const existingLead = ScrollTrigger.getById("experience-particle-lead-in");
+      if (existingLead) {
+        existingLead.kill(true);
+      }
+
+      // Lead-in trigger: As Work Experience section enters viewport from bottom,
+      // particles from the Skills spiral triangles smoothly fly into "Work Experience" in the center!
+      ScrollTrigger.create({
+        id: "experience-particle-lead-in",
+        trigger: section,
+        start: "top bottom",
+        end: "top top",
+        scrub: 0.8,
+        onEnter: () => {
+          particleBridge.isDarkActive = true;
+          particleBridge.activeWord = "EXPERIENCE";
+        },
+        onEnterBack: () => {
+          particleBridge.isDarkActive = true;
+          particleBridge.activeWord = "EXPERIENCE";
+        },
+        onLeaveBack: () => {
+          particleBridge.experienceProgress = 0.0;
+          particleBridge.experienceTitleYProgress = 0.0;
+          particleBridge.activeWord = "SKILLS";
+        },
+        onUpdate: (self) => {
+          particleBridge.experienceProgress = self.progress;
+          particleBridge.experienceTitleYProgress = 0.0;
+          particleBridge.isDarkActive = true;
+        },
+      });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -147,36 +179,35 @@ export default function WorkExperience() {
           invalidateOnRefresh: true,
           onEnter: () => {
             particleBridge.isDarkActive = true;
+            particleBridge.experienceProgress = 1.0;
           },
           onEnterBack: () => {
             particleBridge.isDarkActive = true;
+            particleBridge.experienceProgress = 1.0;
           },
           onLeave: () => {
             particleBridge.experienceProgress = 0.0;
             particleBridge.experienceTitleYProgress = 1.0;
           },
           onLeaveBack: () => {
-            particleBridge.experienceProgress = 0.0;
+            particleBridge.experienceProgress = 1.0;
             particleBridge.experienceTitleYProgress = 0.0;
           },
           onUpdate: (self) => {
             const p = self.progress;
 
             // 70% Section Height Scroll Threshold:
-            // Phase 1 (0.00 -> 0.05): Triangles merge into "Work Experience" in center
-            // Phase 2 (0.05 -> 0.10): Title glides up to top position
-            // Phase 3 (0.10 -> 0.70): Title stays fully assembled while cards stack
-            // Phase 4 (0.70 -> 0.90): When 70% of Work Experience height is scrolled, particles break down again into triangles
-            // Phase 5 (0.90 -> 1.00): Particles stay broken / dispersed between 70% and 100%
+            // Phase 1 (0.00 -> 0.08): Title glides from center up to top position
+            // Phase 2 (0.08 -> 0.70): Title stays fully assembled while cards stack
+            // Phase 3 (0.70 -> 0.90): When 70% of Work Experience is scrolled, particles break down towards Contact
+            // Phase 4 (0.90 -> 1.00): Particles stay broken / dispersed
+            const titleGlideEnd = 0.08;
             const breakStart = 0.70;
             const breakEnd = 0.90;
 
-            if (p < 0.05) {
-              particleBridge.experienceProgress = p / 0.05;
-              particleBridge.experienceTitleYProgress = 0.0;
-            } else if (p < 0.10) {
+            if (p < titleGlideEnd) {
               particleBridge.experienceProgress = 1.0;
-              particleBridge.experienceTitleYProgress = (p - 0.05) / 0.05;
+              particleBridge.experienceTitleYProgress = p / titleGlideEnd;
             } else if (p < breakStart) {
               particleBridge.experienceProgress = 1.0;
               particleBridge.experienceTitleYProgress = 1.0;
@@ -194,16 +225,16 @@ export default function WorkExperience() {
         },
       });
 
-      // 1. Reveal stack container & Card 0 as title reaches top (0.05 -> 0.10)
+      // 1. Reveal stack container & Card 0 as title reaches top (0.00 -> 0.08)
       tl.to(
         stackWrapper,
         {
           opacity: 1,
           y: 0,
           ease: "power2.out",
-          duration: 0.05,
+          duration: 0.08,
         },
-        0.05
+        0.0
       );
 
       // 2. Card 1 (02 BX Technologies - 2nd card) stacks on Card 0 (0.10 -> 0.36)

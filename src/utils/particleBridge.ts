@@ -2,7 +2,8 @@
 // Eliminates React re-renders and ensures a single continuous particle canvas across sections
 export interface ParticleState {
   overviewProgress: number;   // 0.0 (OVERVIEW text) -> 1.0 (Dispersed cosmic nebula)
-  skillsProgress: number;     // 0.0 (Dispersed nebula) -> 1.0 (Merged into SKILLS on top-left)
+  skillsProgress: number;     // 0.0 (Dispersed nebula) -> 1.0 (Merged normally into SKILLS on top-left)
+  skillsSpreadProgress: number; // 0.0 (Assembled SKILLS) -> 1.0 (Spread into 1-loop spring structure)
   experienceProgress: number; // 0.0 (Dispersed nebula) -> 1.0 (Merged into Work Experience in middle)
   experienceTitleYProgress: number; // 0.0 (middle of screen) -> 1.0 (glides up to top for cards)
   contactProgress: number;    // 0.0 (Dispersed nebula) -> 1.0 (Merged into "Let's Get In Touch" in Contact)
@@ -14,6 +15,7 @@ export interface ParticleState {
 export const particleBridge: ParticleState = {
   overviewProgress: 0,
   skillsProgress: 0,
+  skillsSpreadProgress: 0,
   experienceProgress: 0,
   experienceTitleYProgress: 0,
   contactProgress: 0,

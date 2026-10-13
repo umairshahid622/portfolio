@@ -39,7 +39,9 @@ const BREAKDOWN_VERTEX_SHADER = `
   uniform float uTime;
   uniform float uOverviewBreak;
   uniform float uSkillsProgress;
+  uniform float uSkillsSpread;
   uniform float uExperienceProgress;
+  uniform float uExperienceTitleYProgress;
   uniform float uContactProgress;
   uniform vec3 uOriginOffset;
   uniform float uOriginScale;
@@ -54,6 +56,8 @@ const BREAKDOWN_VERTEX_SHADER = `
   uniform float uMouseActive;
   uniform float uRadius;
   uniform vec2 uViewport;
+  uniform vec2 uCardYInfo;
+  uniform vec2 uSkillsPhraseInfo;
 
   attribute vec3 aCenter;
   attribute vec3 aTargetPos;
@@ -66,6 +70,109 @@ const BREAKDOWN_VERTEX_SHADER = `
 
   varying vec3 vWorldPos;
   varying float vBreakProgress;
+
+  vec3 computeOrbitalFlight(
+    vec3 startPos,
+    vec3 endPos,
+    float mergeP,
+    vec4 rnd,
+    vec2 viewport
+  ) {
+    float t = smoothstep(0.0, 1.0, mergeP);
+    
+    vec2 halfVp = viewport * 0.5;
+    vec2 nStart = startPos.xy / max(vec2(0.001), halfVp);
+    vec2 nEnd = endPos.xy / max(vec2(0.001), halfVp);
+
+    float rStart = length(nStart);
+    float rEnd = length(nEnd);
+
+    float aStart = atan(nStart.y, nStart.x);
+    float aEnd = atan(nEnd.y, nEnd.x);
+
+    float da = aEnd - aStart;
+    if (da > 3.14159265) da -= 6.2831853;
+    if (da < -3.14159265) da += 6.2831853;
+
+    // Full dramatic rounded loop (360 degrees) around the screen perimeter
+    float spinSign = rnd.y > 0.0 ? 1.0 : -1.0;
+    float angle = aStart + da * t + spinSign * 6.2831853 * (1.0 - t);
+
+    // Very large radius hugging the screen edges during mid-flight
+    float peakRho = 0.90 + abs(rnd.x) * 0.30;
+    float rBase = mix(rStart, rEnd, t);
+    float rArc = max(0.0, peakRho - rBase) * sin(t * 3.14159265);
+    float rho = rBase + rArc;
+
+    vec2 xy = vec2(rho * cos(angle), rho * sin(angle)) * halfVp;
+    
+    // Deep 3D Z-loop forward and backward across perspective depth
+    float zSign = rnd.z > 0.0 ? 1.0 : -1.0;
+    float zArc = zSign * (1.8 + abs(rnd.w) * 1.5) * sin(t * 3.14159265);
+    float z = mix(startPos.z, endPos.z, t) + zArc;
+
+    return vec3(xy, z);
+  }
+
+  // Single 3D spring loop across the cards starting from top-left and ending at top-right
+  vec3 computeSkillsSpringTarget(
+    vec4 rnd,
+    float seqP,
+    vec2 viewport,
+    float time,
+    vec2 cardYInfo
+  ) {
+    // Sequence-aligned distribution along the 1-loop spiral from 0.0 to 1.0
+    // Subtle micro-jitter ensures full volumetric 3D richness without breaking sequence order
+    float uJitter = (rnd.x - 0.5) * 0.06 + (rnd.y - 0.5) * 0.03;
+    float u = clamp(seqP + uJitter, 0.0, 1.0);
+
+    // 1. Equal, symmetrical horizontal traversal across the active cards (wider span)
+    float startX = -viewport.x * (viewport.x < 3.5 ? 0.36 : 0.28);
+    float endX = viewport.x * (viewport.x < 3.5 ? 0.36 : 0.33);
+    float xTarget = mix(startX, endX, u);
+
+    // 2. Exactly 1 equal 360-degree helical loop (theta goes uniformly from 0 to 2*PI)
+    float theta = u * 6.2831853;
+
+    // Amplitude in Y: bigger vertical loop arching high over and deep under cards
+    float yCenter = cardYInfo.x;
+    float Ay = cardYInfo.y + 0.65;
+    float yTarget = yCenter + Ay * cos(theta);
+
+    // 3. True 3D Depth looping around cards:
+    // Left side (u < 0.45): BEHIND cards (Z < -0.15)
+    // Bottom (u ~ 0.50): swoops under the bottom of cards
+    // Right side (u >= 0.50): COMES TO FRONT FROM THE BACK and stays strictly in front (Z >= +0.35 to +1.60)
+    float zCurve = -0.95 * sin(theta);
+    float zShift = mix(-0.35, 0.70, smoothstep(0.35, 0.65, u));
+    float z = zCurve + zShift;
+
+    // 4. Perspective Compensation so the spiral looks 100% equal and uniform on screen:
+    // Camera is at Z = 5.0. Perspective scales screen coordinates by 5.0 / (5.0 - z).
+    // Compensating by (5.0 - z) / 5.0 ensures the projected loop on screen is perfectly uniform!
+    float perspScale = (5.0 - z) / 5.0;
+    float x = xTarget * perspScale;
+    float y = yCenter + (yTarget - yCenter) * perspScale;
+
+    // 5. Thicker 3D volumetric thickness around the spring core
+    float tubeRadius = 0.26;
+    vec3 volumeOffset = vec3(
+      rnd.x * tubeRadius,
+      rnd.y * tubeRadius,
+      rnd.z * 0.18
+    );
+
+    // 6. Living celestial shimmer & wave drift
+    float tDrift = time * 0.75;
+    vec3 waveDrift = vec3(
+      sin(tDrift + u * 6.283) * 0.05,
+      cos(tDrift * 0.85 + u * 6.283) * 0.04,
+      sin(tDrift * 0.65 + u * 3.141) * 0.05
+    );
+
+    return vec3(x, y, z) + volumeOffset + waveDrift;
+  }
 
   void main() {
     // 1. Text 1 World Coordinates (ABOUT or ME)
@@ -144,31 +251,65 @@ const BREAKDOWN_VERTEX_SHADER = `
     float facetP;
 
     if (uContactProgress > 0.001) {
-      // In Contact: Fly between screenTarget and Text 4 ("Let's Get In" / "Touch")
-      float t = smoothstep(0.0, 1.0, mergeContactP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeContactP) * 3.14159);
-      currentCenter = mix(screenTarget, text4Center, t) + arc;
-      currentLocal = mix(text1Local, text4Local, t);
+      // In Contact: Orbit around large radius on screen and merge into Text 4
+      currentCenter = computeOrbitalFlight(screenTarget, text4Center, mergeContactP, aRandom, uViewport);
+      currentLocal = mix(text3Local, text4Local, smoothstep(0.0, 1.0, mergeContactP));
       facetP = 1.0 - mergeContactP;
-    } else if (uExperienceProgress > 0.001) {
-      // In Work Experience: Fly directly from screenTarget to Text 3 (Work Experience in middle)
-      float t = smoothstep(0.0, 1.0, mergeExpP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeExpP) * 3.14159);
-      currentCenter = mix(screenTarget, text3Center, t) + arc;
-      currentLocal = mix(text1Local, text3Local, t);
+    } else if (uExperienceTitleYProgress > 0.5) {
+      // Leaving Work Experience towards Contact: break into the free floating nebula (never back into the Skills spiral)
+      currentCenter = computeOrbitalFlight(screenTarget, text3Center, mergeExpP, aRandom, uViewport);
+      currentLocal = text3Local;
       facetP = 1.0 - mergeExpP;
+    } else if (uExperienceProgress > 0.001) {
+      // In Work Experience: Joined directly to the Skills spiral triangles!
+      float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
+      vec3 spiralPos = computeSkillsSpringTarget(aRandom, seqP, uViewport, uTime, uCardYInfo);
+
+      // Sequential hand-off: the "</>" end of the spiral (seqP ~ 1) leaves first, "SKILLS" end last
+      float handoffStart = (1.0 - seqP) * 0.40 + abs(aRandom.w) * 0.06;
+      float handoffP = clamp((uExperienceProgress - handoffStart) / (0.985 - handoffStart + 0.0001), 0.0, 1.0);
+      if (uExperienceProgress >= 0.985) handoffP = 1.0;
+      float ht = smoothstep(0.0, 1.0, handoffP);
+
+      // Curved on-screen flight (quadratic bezier) from spiral to Work Experience title.
+      // Control point bulges sideways + in depth so the stream reads as a ribbon, never leaving the viewport.
+      vec2 hDir = text3Center.xy - spiralPos.xy;
+      vec2 hPerp = normalize(vec2(-hDir.y, hDir.x) + vec2(0.0001));
+      vec3 hMid = mix(spiralPos, text3Center, 0.5);
+      vec3 hCtrl = hMid + vec3(hPerp * aRandom.x * uViewport.y * 0.18, aRandom.z * 0.9);
+      vec3 hA = mix(spiralPos, hCtrl, ht);
+      vec3 hB = mix(hCtrl, text3Center, ht);
+      currentCenter = mix(hA, hB, ht);
+      vec2 hClamped = clamp(currentCenter.xy, -uViewport * 0.47, uViewport * 0.47);
+      currentCenter.xy = mix(hClamped, currentCenter.xy, smoothstep(0.85, 1.0, handoffP));
+
+      currentLocal = mix(text2Local, text3Local, ht);
+      facetP = 1.0 - handoffP;
+    } else if (uSkillsSpread > 0.001) {
+      // Sequential breakdown from right-to-left: starts breaking from "</>" first, then "SKILLS"
+      float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
+      float seqBreak = 1.0 - seqP;
+      float pTri = clamp(seqBreak + (aRandom.w - 0.5) * 0.05, 0.0, 0.98);
+      float tStart = pTri * 0.50;
+      float localSpread = clamp((uSkillsSpread - tStart) / (1.0 - tStart + 0.0001), 0.0, 1.0);
+      float t = smoothstep(0.0, 1.0, localSpread);
+
+      // Traversal: starts at u = 0.0 (behind cards on the left) and travels along the full spiral shape to uTarget
+      float uTarget = seqP;
+      float uCurrent = mix(0.0, uTarget, t);
+      vec3 spiralPos = computeSkillsSpringTarget(aRandom, uCurrent, uViewport, uTime, uCardYInfo);
+
+      currentCenter = mix(text2Center, spiralPos, smoothstep(0.0, 0.16, t));
+      currentLocal = text2Local;
+      facetP = t;
     } else if (uSkillsProgress > 0.001) {
-      // In Skills: Fly between screenTarget and Text 2 (SKILLS </>)
-      float t = smoothstep(0.0, 1.0, mergeSkillsP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeSkillsP) * 3.14159);
-      currentCenter = mix(screenTarget, text2Center, t) + arc;
-      currentLocal = mix(text1Local, text2Local, t);
+      // From Overview into Skills: Skill text forms NORMALLY via orbital flight from screenTarget
+      currentCenter = computeOrbitalFlight(screenTarget, text2Center, mergeSkillsP, aRandom, uViewport);
+      currentLocal = mix(text1Local, text2Local, smoothstep(0.0, 1.0, mergeSkillsP));
       facetP = 1.0 - mergeSkillsP;
     } else {
-      // In Overview: Text 1 (ABOUT ME) breaks apart and flies to screenTarget identically to Skills and Work Experience
-      float t = smoothstep(0.0, 1.0, mergeOverviewP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeOverviewP) * 3.14159);
-      currentCenter = mix(screenTarget, text1Center, t) + arc;
+      // In Overview: Orbit around large radius on screen and merge into Text 1 (ABOUT ME)
+      currentCenter = computeOrbitalFlight(screenTarget, text1Center, mergeOverviewP, aRandom, uViewport);
       currentLocal = text1Local;
       facetP = 1.0 - mergeOverviewP;
     }
@@ -186,16 +327,22 @@ const BREAKDOWN_VERTEX_SHADER = `
     );
 
     // Apply continuous 3D floating to the dispersed particles (zero when assembled into text)
-    currentCenter += floatOffset * smoothstep(0.0, 0.20, facetP);
+    if (uSkillsSpread > 0.001 && uExperienceTitleYProgress <= 0.5) {
+      currentCenter += floatOffset * 0.15 * smoothstep(0.0, 0.20, facetP);
+    } else {
+      currentCenter += floatOffset * smoothstep(0.0, 0.20, facetP);
+    }
 
     // 3D rotation and scaling of facet when dispersed (smoothly eased once facet begins motion)
     if (facetP > 0.01) {
       float motionP = smoothstep(0.01, 0.15, facetP);
-      float scale = max(0.20, 1.0 - pow(facetP, 0.65) * 0.65 * motionP);
+      float shrinkFactor = (uSkillsSpread > 0.001 || uExperienceProgress > 0.001) ? 0.32 : 0.65;
+      float scale = max(0.35, 1.0 - pow(facetP, 0.65) * shrinkFactor * motionP);
 
-      // Dynamic continuous 3D tumbling as shards float in perspective space
+      // Dynamic continuous 3D tumbling as shards orbit around the screen
       float dynamicSpin = uTime * (0.35 + abs(aRandom.w) * 0.55) * (aRandom.y > 0.0 ? 1.0 : -1.0);
-      float angle = (facetP * 6.0 + dynamicSpin) * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
+      float orbitSpin = facetP * 6.28318 * (aRandom.x > 0.0 ? 1.0 : -1.0);
+      float angle = (facetP * 6.0 + dynamicSpin + orbitSpin) * motionP;
       vec3 axis = normalize(aRandom.xyz + vec3(0.001));
       currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
       currentLocal *= scale;
@@ -219,10 +366,47 @@ const BREAKDOWN_VERTEX_SHADER = `
 const BREAKDOWN_FRAGMENT_SHADER = `
   uniform vec3 uColor;
   uniform float uOpacity;
+  uniform float uSkillsSpread;
+  uniform float uExperienceProgress;
+  uniform vec4 uCardBoxes[8];
+  uniform int uCardCount;
+  uniform vec2 uCardYInfo;
   varying vec3 vWorldPos;
   varying float vBreakProgress;
 
   void main() {
+    // Precise per-card occlusion during Skills spread:
+    // Only discard if the particle is BEHIND (z < -0.05) AND located directly inside an individual card body.
+    // In the space/gap between cards, or above/below the cards, particles remain fully visible!
+    if (uSkillsSpread > 0.05 && (uExperienceProgress < 0.001 || vBreakProgress > 0.97) && vWorldPos.z < -0.05) {
+      float projFactor = 5.0 / max(0.1, 5.0 - vWorldPos.z);
+      vec2 screenPos = vec2(
+        vWorldPos.x * projFactor,
+        uCardYInfo.x + (vWorldPos.y - uCardYInfo.x) * projFactor
+      );
+
+      for (int i = 0; i < 8; i++) {
+        if (i >= uCardCount) break;
+        vec4 box = uCardBoxes[i];
+        if (screenPos.x >= box.x && screenPos.x <= box.y &&
+            screenPos.y >= box.z && screenPos.y <= box.w) {
+          float r = 0.04;
+          vec2 cMin = vec2(box.x + r, box.z + r);
+          vec2 cMax = vec2(box.y - r, box.w - r);
+          if (screenPos.x < cMin.x && screenPos.y > cMax.y) {
+            if (length(screenPos - vec2(cMin.x, cMax.y)) > r) continue;
+          } else if (screenPos.x > cMax.x && screenPos.y > cMax.y) {
+            if (length(screenPos - vec2(cMax.x, cMax.y)) > r) continue;
+          } else if (screenPos.x < cMin.x && screenPos.y < cMin.y) {
+            if (length(screenPos - vec2(cMin.x, cMin.y)) > r) continue;
+          } else if (screenPos.x > cMax.x && screenPos.y < cMin.y) {
+            if (length(screenPos - vec2(cMax.x, cMin.y)) > r) continue;
+          }
+          discard;
+        }
+      }
+    }
+
     vec3 col = uColor;
 
     // Luminous energy when floating as facets (warm golden radiance)
@@ -252,7 +436,9 @@ const POINTS_VERTEX_SHADER = `
   uniform float uTime;
   uniform float uOverviewBreak;
   uniform float uSkillsProgress;
+  uniform float uSkillsSpread;
   uniform float uExperienceProgress;
+  uniform float uExperienceTitleYProgress;
   uniform float uContactProgress;
   uniform vec3 uOriginOffset;
   uniform float uOriginScale;
@@ -267,6 +453,8 @@ const POINTS_VERTEX_SHADER = `
   uniform float uMouseActive;
   uniform float uRadius;
   uniform vec2 uViewport;
+  uniform vec2 uCardYInfo;
+  uniform vec2 uSkillsPhraseInfo;
 
   attribute vec3 aCenter;
   attribute vec3 aTargetPos;
@@ -277,7 +465,111 @@ const POINTS_VERTEX_SHADER = `
   attribute vec3 aTarget4Center;
   attribute vec4 aRandom;
 
+  varying vec3 vWorldPos;
   varying float vBreakProgress;
+
+  vec3 computeOrbitalFlight(
+    vec3 startPos,
+    vec3 endPos,
+    float mergeP,
+    vec4 rnd,
+    vec2 viewport
+  ) {
+    float t = smoothstep(0.0, 1.0, mergeP);
+    
+    vec2 halfVp = viewport * 0.5;
+    vec2 nStart = startPos.xy / max(vec2(0.001), halfVp);
+    vec2 nEnd = endPos.xy / max(vec2(0.001), halfVp);
+
+    float rStart = length(nStart);
+    float rEnd = length(nEnd);
+
+    float aStart = atan(nStart.y, nStart.x);
+    float aEnd = atan(nEnd.y, nEnd.x);
+
+    float da = aEnd - aStart;
+    if (da > 3.14159265) da -= 6.2831853;
+    if (da < -3.14159265) da += 6.2831853;
+
+    // Full dramatic rounded loop (360 degrees) around the screen perimeter
+    float spinSign = rnd.y > 0.0 ? 1.0 : -1.0;
+    float angle = aStart + da * t + spinSign * 6.2831853 * (1.0 - t);
+
+    // Very large radius hugging the screen edges during mid-flight
+    float peakRho = 0.90 + abs(rnd.x) * 0.30;
+    float rBase = mix(rStart, rEnd, t);
+    float rArc = max(0.0, peakRho - rBase) * sin(t * 3.14159265);
+    float rho = rBase + rArc;
+
+    vec2 xy = vec2(rho * cos(angle), rho * sin(angle)) * halfVp;
+    
+    // Deep 3D Z-loop forward and backward across perspective depth
+    float zSign = rnd.z > 0.0 ? 1.0 : -1.0;
+    float zArc = zSign * (1.8 + abs(rnd.w) * 1.5) * sin(t * 3.14159265);
+    float z = mix(startPos.z, endPos.z, t) + zArc;
+
+    return vec3(xy, z);
+  }
+
+  // Single 3D spring loop across the cards starting from top-left and ending at top-right
+  vec3 computeSkillsSpringTarget(
+    vec4 rnd,
+    float seqP,
+    vec2 viewport,
+    float time,
+    vec2 cardYInfo
+  ) {
+    // Sequence-aligned distribution along the 1-loop spiral from 0.0 to 1.0
+    // Subtle micro-jitter ensures full volumetric 3D richness without breaking sequence order
+    float uJitter = (rnd.x - 0.5) * 0.06 + (rnd.y - 0.5) * 0.03;
+    float u = clamp(seqP + uJitter, 0.0, 1.0);
+
+    // 1. Equal, symmetrical horizontal traversal across the active cards (wider span)
+    float startX = -viewport.x * (viewport.x < 3.5 ? 0.36 : 0.28);
+    float endX = viewport.x * (viewport.x < 3.5 ? 0.36 : 0.33);
+    float xTarget = mix(startX, endX, u);
+
+    // 2. Exactly 1 equal 360-degree helical loop (theta goes uniformly from 0 to 2*PI)
+    float theta = u * 6.2831853;
+
+    // Amplitude in Y: bigger vertical loop arching high over and deep under cards
+    float yCenter = cardYInfo.x;
+    float Ay = cardYInfo.y + 0.65;
+    float yTarget = yCenter + Ay * cos(theta);
+
+    // 3. True 3D Depth looping around cards:
+    // Left side (u < 0.45): BEHIND cards (Z < -0.15)
+    // Bottom (u ~ 0.50): swoops under the bottom of cards
+    // Right side (u >= 0.50): COMES TO FRONT FROM THE BACK and stays strictly in front (Z >= +0.35 to +1.60)
+    float zCurve = -0.95 * sin(theta);
+    float zShift = mix(-0.35, 0.70, smoothstep(0.35, 0.65, u));
+    float z = zCurve + zShift;
+
+    // 4. Perspective Compensation so the spiral looks 100% equal and uniform on screen:
+    // Camera is at Z = 5.0. Perspective scales screen coordinates by 5.0 / (5.0 - z).
+    // Compensating by (5.0 - z) / 5.0 ensures the projected loop on screen is perfectly uniform!
+    float perspScale = (5.0 - z) / 5.0;
+    float x = xTarget * perspScale;
+    float y = yCenter + (yTarget - yCenter) * perspScale;
+
+    // 5. Thicker 3D volumetric thickness around the spring core
+    float tubeRadius = 0.26;
+    vec3 volumeOffset = vec3(
+      rnd.x * tubeRadius,
+      rnd.y * tubeRadius,
+      rnd.z * 0.18
+    );
+
+    // 6. Living celestial shimmer & wave drift
+    float tDrift = time * 0.75;
+    vec3 waveDrift = vec3(
+      sin(tDrift + u * 6.283) * 0.05,
+      cos(tDrift * 0.85 + u * 6.283) * 0.04,
+      sin(tDrift * 0.65 + u * 3.141) * 0.05
+    );
+
+    return vec3(x, y, z) + volumeOffset + waveDrift;
+  }
 
   void main() {
     vec3 text1Center = uOriginOffset + aCenter * uOriginScale;
@@ -345,27 +637,63 @@ const POINTS_VERTEX_SHADER = `
     float facetP;
 
     if (uContactProgress > 0.001) {
-      float t = smoothstep(0.0, 1.0, mergeContactP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeContactP) * 3.14159);
-      currentCenter = mix(screenTarget, text4Center, t) + arc;
-      currentLocal = mix(text1Local, text4Local, t);
+      currentCenter = computeOrbitalFlight(screenTarget, text4Center, mergeContactP, aRandom, uViewport);
+      currentLocal = mix(text3Local, text4Local, smoothstep(0.0, 1.0, mergeContactP));
       facetP = 1.0 - mergeContactP;
-    } else if (uExperienceProgress > 0.001) {
-      float t = smoothstep(0.0, 1.0, mergeExpP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeExpP) * 3.14159);
-      currentCenter = mix(screenTarget, text3Center, t) + arc;
-      currentLocal = mix(text1Local, text3Local, t);
+    } else if (uExperienceTitleYProgress > 0.5) {
+      // Leaving Work Experience towards Contact: break into the free floating nebula (never back into the Skills spiral)
+      currentCenter = computeOrbitalFlight(screenTarget, text3Center, mergeExpP, aRandom, uViewport);
+      currentLocal = text3Local;
       facetP = 1.0 - mergeExpP;
+    } else if (uExperienceProgress > 0.001) {
+      // In Work Experience: Joined directly to the Skills spiral triangles!
+      float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
+      vec3 spiralPos = computeSkillsSpringTarget(aRandom, seqP, uViewport, uTime, uCardYInfo);
+
+      // Sequential hand-off: the "</>" end of the spiral (seqP ~ 1) leaves first, "SKILLS" end last
+      float handoffStart = (1.0 - seqP) * 0.40 + abs(aRandom.w) * 0.06;
+      float handoffP = clamp((uExperienceProgress - handoffStart) / (0.985 - handoffStart + 0.0001), 0.0, 1.0);
+      if (uExperienceProgress >= 0.985) handoffP = 1.0;
+      float ht = smoothstep(0.0, 1.0, handoffP);
+
+      // Curved on-screen flight (quadratic bezier) from spiral to Work Experience title.
+      // Control point bulges sideways + in depth so the stream reads as a ribbon, never leaving the viewport.
+      vec2 hDir = text3Center.xy - spiralPos.xy;
+      vec2 hPerp = normalize(vec2(-hDir.y, hDir.x) + vec2(0.0001));
+      vec3 hMid = mix(spiralPos, text3Center, 0.5);
+      vec3 hCtrl = hMid + vec3(hPerp * aRandom.x * uViewport.y * 0.18, aRandom.z * 0.9);
+      vec3 hA = mix(spiralPos, hCtrl, ht);
+      vec3 hB = mix(hCtrl, text3Center, ht);
+      currentCenter = mix(hA, hB, ht);
+      vec2 hClamped = clamp(currentCenter.xy, -uViewport * 0.47, uViewport * 0.47);
+      currentCenter.xy = mix(hClamped, currentCenter.xy, smoothstep(0.85, 1.0, handoffP));
+
+      currentLocal = mix(text2Local, text3Local, ht);
+      facetP = 1.0 - handoffP;
+    } else if (uSkillsSpread > 0.001) {
+      // Sequential breakdown from right-to-left: starts breaking from "</>" first, then "SKILLS"
+      float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
+      float seqBreak = 1.0 - seqP;
+      float pTri = clamp(seqBreak + (aRandom.w - 0.5) * 0.05, 0.0, 0.98);
+      float tStart = pTri * 0.50;
+      float localSpread = clamp((uSkillsSpread - tStart) / (1.0 - tStart + 0.0001), 0.0, 1.0);
+      float t = smoothstep(0.0, 1.0, localSpread);
+
+      // Traversal: starts at u = 0.0 (behind cards on the left) and travels along the full spiral shape to uTarget
+      float uTarget = seqP;
+      float uCurrent = mix(0.0, uTarget, t);
+      vec3 spiralPos = computeSkillsSpringTarget(aRandom, uCurrent, uViewport, uTime, uCardYInfo);
+
+      currentCenter = mix(text2Center, spiralPos, smoothstep(0.0, 0.16, t));
+      currentLocal = text2Local;
+      facetP = t;
     } else if (uSkillsProgress > 0.001) {
-      float t = smoothstep(0.0, 1.0, mergeSkillsP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeSkillsP) * 3.14159);
-      currentCenter = mix(screenTarget, text2Center, t) + arc;
-      currentLocal = mix(text1Local, text2Local, t);
+      // From Overview into Skills: Skill text forms NORMALLY via orbital flight from screenTarget
+      currentCenter = computeOrbitalFlight(screenTarget, text2Center, mergeSkillsP, aRandom, uViewport);
+      currentLocal = mix(text1Local, text2Local, smoothstep(0.0, 1.0, mergeSkillsP));
       facetP = 1.0 - mergeSkillsP;
     } else {
-      float t = smoothstep(0.0, 1.0, mergeOverviewP);
-      vec3 arc = vec3(aRandom.x * 0.55, aRandom.y * 0.45, aRandom.z * 0.75) * sin((1.0 - mergeOverviewP) * 3.14159);
-      currentCenter = mix(screenTarget, text1Center, t) + arc;
+      currentCenter = computeOrbitalFlight(screenTarget, text1Center, mergeOverviewP, aRandom, uViewport);
       currentLocal = text1Local;
       facetP = 1.0 - mergeOverviewP;
     }
@@ -383,13 +711,19 @@ const POINTS_VERTEX_SHADER = `
     );
 
     // Apply continuous 3D floating to the dispersed particles (zero when assembled into text)
-    currentCenter += floatOffset * smoothstep(0.0, 0.20, facetP);
+    if (uSkillsSpread > 0.001 && uExperienceTitleYProgress <= 0.5) {
+      currentCenter += floatOffset * 0.15 * smoothstep(0.0, 0.20, facetP);
+    } else {
+      currentCenter += floatOffset * smoothstep(0.0, 0.20, facetP);
+    }
 
     if (facetP > 0.01) {
       float motionP = smoothstep(0.01, 0.15, facetP);
-      float scale = max(0.20, 1.0 - pow(facetP, 0.65) * 0.65 * motionP);
+      float shrinkFactor = (uSkillsSpread > 0.001 || uExperienceProgress > 0.001) ? 0.32 : 0.65;
+      float scale = max(0.35, 1.0 - pow(facetP, 0.65) * shrinkFactor * motionP);
       float dynamicSpin = uTime * (0.35 + abs(aRandom.w) * 0.55) * (aRandom.y > 0.0 ? 1.0 : -1.0);
-      float angle = (facetP * 6.0 + dynamicSpin) * (aRandom.x > 0.0 ? 1.0 : -1.0) * motionP;
+      float orbitSpin = facetP * 6.28318 * (aRandom.x > 0.0 ? 1.0 : -1.0);
+      float angle = (facetP * 6.0 + dynamicSpin + orbitSpin) * motionP;
       vec3 axis = normalize(aRandom.xyz + vec3(0.001));
       currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
       currentLocal *= scale;
@@ -404,10 +738,13 @@ const POINTS_VERTEX_SHADER = `
     finalWorldPos.z -= repel * 0.3;
 
     vBreakProgress = facetP;
+    vWorldPos = finalWorldPos;
 
     // Optical distance attenuation for true 3D perspective point sizing
     float distToCam = max(1.2, 5.0 - finalWorldPos.z);
-    gl_PointSize = clamp((facetP * 18.0) / distToCam, 0.0, 7.5);
+    float ptMultiplier = (uSkillsSpread > 0.001 || uExperienceProgress > 0.001) ? 28.0 : 18.0;
+    float maxPt = (uSkillsSpread > 0.001 || uExperienceProgress > 0.001) ? 11.0 : 7.5;
+    gl_PointSize = clamp((facetP * ptMultiplier) / distToCam, 0.0, maxPt);
     gl_Position = projectionMatrix * viewMatrix * vec4(finalWorldPos, 1.0);
   }
 `;
@@ -415,10 +752,49 @@ const POINTS_VERTEX_SHADER = `
 const POINTS_FRAGMENT_SHADER = `
   uniform vec3 uColor;
   uniform float uOpacity;
+  uniform float uSkillsSpread;
+  uniform float uExperienceProgress;
+  uniform vec4 uCardBoxes[8];
+  uniform int uCardCount;
+  uniform vec2 uCardYInfo;
+  varying vec3 vWorldPos;
   varying float vBreakProgress;
 
   void main() {
     if (vBreakProgress < 0.01) discard;
+
+    // Precise per-card occlusion during Skills spread:
+    // Only discard if the point is BEHIND (z < -0.05) AND located directly inside an individual card body.
+    // In the space/gap between cards, or above/below the cards, points remain fully visible!
+    if (uSkillsSpread > 0.05 && (uExperienceProgress < 0.001 || vBreakProgress > 0.97) && vWorldPos.z < -0.05) {
+      float projFactor = 5.0 / max(0.1, 5.0 - vWorldPos.z);
+      vec2 screenPos = vec2(
+        vWorldPos.x * projFactor,
+        uCardYInfo.x + (vWorldPos.y - uCardYInfo.x) * projFactor
+      );
+
+      for (int i = 0; i < 8; i++) {
+        if (i >= uCardCount) break;
+        vec4 box = uCardBoxes[i];
+        if (screenPos.x >= box.x && screenPos.x <= box.y &&
+            screenPos.y >= box.z && screenPos.y <= box.w) {
+          float r = 0.04;
+          vec2 cMin = vec2(box.x + r, box.z + r);
+          vec2 cMax = vec2(box.y - r, box.w - r);
+          if (screenPos.x < cMin.x && screenPos.y > cMax.y) {
+            if (length(screenPos - vec2(cMin.x, cMax.y)) > r) continue;
+          } else if (screenPos.x > cMax.x && screenPos.y > cMax.y) {
+            if (length(screenPos - vec2(cMax.x, cMax.y)) > r) continue;
+          } else if (screenPos.x < cMin.x && screenPos.y < cMin.y) {
+            if (length(screenPos - vec2(cMin.x, cMin.y)) > r) continue;
+          } else if (screenPos.x > cMax.x && screenPos.y < cMin.y) {
+            if (length(screenPos - vec2(cMax.x, cMin.y)) > r) continue;
+          }
+          discard;
+        }
+      }
+    }
+
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
     float alpha = uOpacity * max(0.40, 1.0 - vBreakProgress * 0.35) * (1.0 - dist * 2.0);
@@ -438,7 +814,9 @@ function createBreakdownMeshMaterial(colorHex: string, radius = 0.40) {
       uTime: { value: 0.0 },
       uOverviewBreak: { value: 0.0 },
       uSkillsProgress: { value: 0.0 },
+      uSkillsSpread: { value: 0.0 },
       uExperienceProgress: { value: 0.0 },
+      uExperienceTitleYProgress: { value: 0.0 },
       uContactProgress: { value: 0.0 },
       uOriginOffset: { value: new THREE.Vector3(0, 0, 0) },
       uOriginScale: { value: 1.0 },
@@ -452,6 +830,12 @@ function createBreakdownMeshMaterial(colorHex: string, radius = 0.40) {
       uMouseActive: { value: 0.0 },
       uRadius: { value: radius },
       uViewport: { value: new THREE.Vector2(6.0, 4.0) },
+      uCardBoxes: {
+        value: Array.from({ length: 8 }, () => new THREE.Vector4(-100, -100, -100, -100)),
+      },
+      uCardCount: { value: 0 },
+      uCardYInfo: { value: new THREE.Vector2(0.0, 0.85) },
+      uSkillsPhraseInfo: { value: new THREE.Vector2(-3.0, 1.0 / 6.0) },
       uColor: { value: new THREE.Color(colorHex) },
       uOpacity: { value: 1.0 },
     },
@@ -469,7 +853,9 @@ function createBreakdownPointsMaterial(colorHex: string, radius = 0.40) {
       uTime: { value: 0.0 },
       uOverviewBreak: { value: 0.0 },
       uSkillsProgress: { value: 0.0 },
+      uSkillsSpread: { value: 0.0 },
       uExperienceProgress: { value: 0.0 },
+      uExperienceTitleYProgress: { value: 0.0 },
       uContactProgress: { value: 0.0 },
       uOriginOffset: { value: new THREE.Vector3(0, 0, 0) },
       uOriginScale: { value: 1.0 },
@@ -483,6 +869,12 @@ function createBreakdownPointsMaterial(colorHex: string, radius = 0.40) {
       uMouseActive: { value: 0.0 },
       uRadius: { value: radius },
       uViewport: { value: new THREE.Vector2(6.0, 4.0) },
+      uCardBoxes: {
+        value: Array.from({ length: 8 }, () => new THREE.Vector4(-100, -100, -100, -100)),
+      },
+      uCardCount: { value: 0 },
+      uCardYInfo: { value: new THREE.Vector2(0.0, 0.85) },
+      uSkillsPhraseInfo: { value: new THREE.Vector2(-3.0, 1.0 / 6.0) },
       uColor: { value: new THREE.Color(colorHex) },
       uOpacity: { value: 1.0 },
     },
@@ -499,12 +891,19 @@ function UnifiedCelestialMesh({
 
   const smoothOverviewProgress = useRef(0);
   const smoothSkillsProgress = useRef(0);
+  const smoothSkillsSpread = useRef(0);
   const smoothExperienceProgress = useRef(0);
   const smoothExperienceTitleYProgress = useRef(0);
   const smoothContactProgress = useRef(0);
   const smoothDarkActive = useRef(0);
   const smoothMouseWorld = useRef(new THREE.Vector2(0, 0));
   const smoothMouseActive = useRef(0.0);
+  const cardBoxesRef = useRef(
+    Array.from({ length: 8 }, () => new THREE.Vector4(-100, -100, -100, -100))
+  );
+  if (typeof window !== "undefined") {
+    (window as any).__particleBridge = particleBridge;
+  }
 
   const textLayout = useMemo(() => {
     const edges = getHeaderContentEdgesWorld(viewport.width, size.width);
@@ -560,6 +959,8 @@ function UnifiedCelestialMesh({
     // [ SKILLS (White) ] [space] [ </> (Red) ]
     const xSkills = edges.left + wSkills * 0.5;
     const xCode = edges.left + wSkills + spaceSkillsW + wCode * 0.5;
+    const phraseLeft = edges.left;
+    const phraseTotalW = wSkills + spaceSkillsW + wCode;
 
     // Work Experience Layout:
     // Initial center position (Y = 0.0):
@@ -640,6 +1041,8 @@ function UnifiedCelestialMesh({
     const yContactRed = yContactCenter + lineOffsetRed;
 
     return {
+      phraseLeft,
+      phraseTotalW,
       overviewCenterY,
       scale,
       xAbout,
@@ -724,6 +1127,20 @@ function UnifiedCelestialMesh({
       smoothSkillsProgress.current = 0.0;
     } else if (smoothSkillsProgress.current > 0.995) {
       smoothSkillsProgress.current = 1.0;
+    }
+
+    smoothSkillsSpread.current = THREE.MathUtils.lerp(
+      smoothSkillsSpread.current,
+      particleBridge.skillsSpreadProgress,
+      0.15
+    );
+    if (Math.abs(smoothSkillsSpread.current - particleBridge.skillsSpreadProgress) < 0.002) {
+      smoothSkillsSpread.current = particleBridge.skillsSpreadProgress;
+    }
+    if (smoothSkillsSpread.current < 0.005) {
+      smoothSkillsSpread.current = 0.0;
+    } else if (smoothSkillsSpread.current > 0.995) {
+      smoothSkillsSpread.current = 1.0;
     }
 
     smoothExperienceProgress.current = THREE.MathUtils.lerp(
@@ -817,14 +1234,58 @@ function UnifiedCelestialMesh({
     const currentYContactWhite = liveContactYCenter + textLayout.lineOffsetWhite;
     const currentYContactRed = liveContactYCenter + textLayout.lineOffsetRed;
 
+    // Card bounds in Three.js world space for accurate occlusion during Skills spread
+    let cardCenterY = 0.0;
+    let cardHalfH = 0.85;
+    let cardCount = 0;
+
+    if (typeof document !== "undefined") {
+      const cardsEl = document.getElementById("skills-cards-wrapper");
+      if (cardsEl) {
+        const rect = cardsEl.getBoundingClientRect();
+        const rawCenterY = ((window.innerHeight * 0.5 - (rect.top + rect.bottom) * 0.5) / window.innerHeight) * vH;
+        cardCenterY = Math.max(-1.5, Math.min(0.2, rawCenterY));
+        const cardMaxY = ((window.innerHeight * 0.5 - rect.top) / window.innerHeight) * vH;
+        const cardMinY = ((window.innerHeight * 0.5 - rect.bottom) / window.innerHeight) * vH;
+        cardHalfH = Math.max(0.4, (cardMaxY - cardMinY) * 0.5);
+      }
+
+      // Query each individual card to track exact card boundaries for gap-through visibility
+      const cardNodes = document.querySelectorAll(
+        '#skills-cards-track [data-skill-card="true"], #skills-cards-wrapper [data-skill-card="true"]'
+      );
+      if (cardNodes && cardNodes.length > 0) {
+        for (let i = 0; i < cardNodes.length; i++) {
+          const r = cardNodes[i].getBoundingClientRect();
+          if (r.right > -60 && r.left < window.innerWidth + 60 && cardCount < 8) {
+            const minX = ((r.left - window.innerWidth * 0.5) / window.innerWidth) * vW;
+            const maxX = ((r.right - window.innerWidth * 0.5) / window.innerWidth) * vW;
+            const maxY = ((window.innerHeight * 0.5 - r.top) / window.innerHeight) * vH;
+            const minY = ((window.innerHeight * 0.5 - r.bottom) / window.innerHeight) * vH;
+            cardBoxesRef.current[cardCount].set(minX, maxX, minY, maxY);
+            cardCount++;
+          }
+        }
+      }
+    }
+
     // White Mesh & Points (Morphs ABOUT -> Spread Screen Triangles -> SKILLS -> Work -> Let's Get In)
     const whiteMats = [whiteMeshMat, whitePointsMat];
     for (const mat of whiteMats) {
       mat.uniforms.uTime.value = time;
       mat.uniforms.uViewport.value.set(vW, vH);
+      mat.uniforms.uCardBoxes.value = cardBoxesRef.current;
+      mat.uniforms.uCardCount.value = cardCount;
+      mat.uniforms.uCardYInfo.value.set(cardCenterY, cardHalfH);
+      mat.uniforms.uSkillsPhraseInfo.value.set(
+        textLayout.phraseLeft,
+        1.0 / Math.max(0.001, textLayout.phraseTotalW)
+      );
       mat.uniforms.uOverviewBreak.value = ovBreak;
       mat.uniforms.uSkillsProgress.value = skProgress;
+      mat.uniforms.uSkillsSpread.value = smoothSkillsSpread.current;
       mat.uniforms.uExperienceProgress.value = expProgress;
+      mat.uniforms.uExperienceTitleYProgress.value = titleP;
       mat.uniforms.uContactProgress.value = ctProgress;
       mat.uniforms.uOriginOffset.value.set(textLayout.xAbout, textLayout.overviewCenterY, 0);
       mat.uniforms.uOriginScale.value = textLayout.scale;
@@ -844,9 +1305,18 @@ function UnifiedCelestialMesh({
     for (const mat of goldMats) {
       mat.uniforms.uTime.value = time;
       mat.uniforms.uViewport.value.set(vW, vH);
+      mat.uniforms.uCardBoxes.value = cardBoxesRef.current;
+      mat.uniforms.uCardCount.value = cardCount;
+      mat.uniforms.uCardYInfo.value.set(cardCenterY, cardHalfH);
+      mat.uniforms.uSkillsPhraseInfo.value.set(
+        textLayout.phraseLeft,
+        1.0 / Math.max(0.001, textLayout.phraseTotalW)
+      );
       mat.uniforms.uOverviewBreak.value = ovBreak;
       mat.uniforms.uSkillsProgress.value = skProgress;
+      mat.uniforms.uSkillsSpread.value = smoothSkillsSpread.current;
       mat.uniforms.uExperienceProgress.value = expProgress;
+      mat.uniforms.uExperienceTitleYProgress.value = titleP;
       mat.uniforms.uContactProgress.value = ctProgress;
       mat.uniforms.uOriginOffset.value.set(textLayout.xMe, textLayout.overviewCenterY, 0);
       mat.uniforms.uOriginScale.value = textLayout.scale;

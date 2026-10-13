@@ -179,34 +179,44 @@ export default function Skills() {
           invalidateOnRefresh: true,
           onEnter: () => {
             particleBridge.isDarkActive = true;
+            particleBridge.activeWord = "SKILLS";
           },
           onEnterBack: () => {
             particleBridge.isDarkActive = true;
+            particleBridge.activeWord = "SKILLS";
+          },
+          onLeave: () => {
+            if (particleBridge.activeWord === "SKILLS") {
+              particleBridge.activeWord = "EXPERIENCE";
+            }
           },
           onLeaveBack: () => {
             particleBridge.skillsProgress = 0.0;
+            particleBridge.skillsSpreadProgress = 0.0;
+            particleBridge.activeWord = "ABOUT ME";
           },
           onUpdate: (self) => {
             const p = self.progress;
 
             // 70% Section Height Scroll Threshold:
-            // Phase 1 (0.00 -> 0.12): As Skills enters, triangles re-form the word "SKILLS </>"
+            // Phase 1 (0.00 -> 0.12): As Skills enters from Overview, triangles normally re-form the word "SKILLS </>"
             // Phase 2 (0.12 -> 0.70): Title stays fully assembled while cards scroll horizontally
-            // Phase 3 (0.70 -> 0.90): When 70% of Skills height is scrolled, particles break down again into triangles
-            // Phase 4 (0.90 -> 1.00): Particles stay broken / dispersed between 70% and 100%
+            // Phase 3 (0.70 -> 0.90): When 70% of Skills height is scrolled, particles spread into the 1-loop spring structure across cards
+            // Phase 4 (0.90 -> 1.00): Particles stay in the 1-loop spring structure
             const mergeDuration = 0.12;
             const breakStart = 0.70;
             const breakEnd = 0.90;
 
             if (p < mergeDuration) {
               particleBridge.skillsProgress = p / mergeDuration;
+              particleBridge.skillsSpreadProgress = 0.0;
             } else if (p < breakStart) {
               particleBridge.skillsProgress = 1.0;
-            } else if (p > breakEnd) {
-              particleBridge.skillsProgress = 0.0;
+              particleBridge.skillsSpreadProgress = 0.0;
             } else {
-              const spreadProgress = (p - breakStart) / (breakEnd - breakStart);
-              particleBridge.skillsProgress = Math.max(0.0, Math.min(1.0, 1.0 - spreadProgress));
+              particleBridge.skillsProgress = 1.0;
+              const spreadProgress = Math.min(1.0, (p - breakStart) / (breakEnd - breakStart));
+              particleBridge.skillsSpreadProgress = Math.max(0.0, spreadProgress);
             }
 
             particleBridge.isDarkActive = true;
@@ -262,15 +272,18 @@ export default function Skills() {
       {/* Horizontal Cards Track Container */}
       <div
         ref={cardsWrapperRef}
+        id="skills-cards-wrapper"
         className="w-full overflow-visible mt-auto mb-[105px] sm:mb-[125px] md:mb-[135px] relative z-20 will-change-transform opacity-0"
       >
         <div
           ref={trackRef}
+          id="skills-cards-track"
           className="flex flex-row items-stretch gap-5 sm:gap-7 md:gap-8 px-5 sm:px-8 md:px-12 w-max will-change-transform"
         >
           {SKILL_CARDS.map((card) => (
             <AppCard
               key={card.id}
+              data-skill-card="true"
               accent={card.accent ?? "moss"}
               className="w-max max-w-[80vw] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-earth-cream/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-earth-moss/10"
             >

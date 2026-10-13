@@ -81,7 +81,7 @@ export default function ParticleExperienceWrapper({
       {/* 3D Particle Canvas Viewport & Single Continuous Background */}
       {/* CSS sticky keeps this viewport locked across Overview & Skills with ZERO GSAP pin conflicts */}
       <div
-        className="sticky top-0 left-0 w-full h-screen h-[100dvh] pointer-events-none z-0 overflow-hidden"
+        className="sticky top-0 left-0 w-full h-screen h-[100dvh] pointer-events-none z-20 overflow-hidden"
       >
         <CharacterPointsCanvas className="relative z-10" />
       </div>
