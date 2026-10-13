@@ -22,8 +22,12 @@ interface RawTriangle {
   area: number;
 }
 
-function getTrianglesFromShapes(shapes: THREE.Shape[], maxEdge = 0.08): RawTriangle[] {
-  const geom = new THREE.ShapeGeometry(shapes);
+function getTrianglesFromShapes(
+  shapes: THREE.Shape[],
+  maxEdge = 0.50,
+  curveSegments = 4
+): RawTriangle[] {
+  const geom = new THREE.ShapeGeometry(shapes, curveSegments);
   geom.center();
   const nonIndexed = geom.toNonIndexed();
   const pos = nonIndexed.attributes.position.array;
@@ -295,10 +299,10 @@ export async function loadMeshFontGeometries(): Promise<TextMeshGeometries> {
       geomContactWhite.boundingBox!.max.y - geomContactWhite.boundingBox!.min.y;
 
     const white = buildMorphableGeometry(
-      getTrianglesFromShapes(shapesAbout, 0.16),
-      getTrianglesFromShapes(shapesSkills, 0.17),
-      getTrianglesFromShapes(shapesWork, 0.12),
-      getTrianglesFromShapes(shapesContactWhite, 0.14)
+      getTrianglesFromShapes(shapesAbout, 0.50, 4),
+      getTrianglesFromShapes(shapesSkills, 0.50, 4),
+      getTrianglesFromShapes(shapesWork, 0.50, 4),
+      getTrianglesFromShapes(shapesContactWhite, 0.60, 4)
     );
 
     const shapesMe = font.generateShapes("ME", 1);
@@ -314,10 +318,10 @@ export async function loadMeshFontGeometries(): Promise<TextMeshGeometries> {
       geomContactRed.boundingBox!.max.y - geomContactRed.boundingBox!.min.y;
 
     const red = buildMorphableGeometry(
-      getTrianglesFromShapes(shapesMe, 0.06),
-      getTrianglesFromShapes(shapesCode, 0.06),
-      getTrianglesFromShapes(shapesExperience, 0.20),
-      getTrianglesFromShapes(shapesContactRed, 0.08)
+      getTrianglesFromShapes(shapesMe, 0.25, 4),
+      getTrianglesFromShapes(shapesCode, 0.25, 4),
+      getTrianglesFromShapes(shapesExperience, 0.60, 4),
+      getTrianglesFromShapes(shapesContactRed, 0.35, 4)
     );
 
     cachedGeometries = {
