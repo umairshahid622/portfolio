@@ -174,6 +174,60 @@ const BREAKDOWN_VERTEX_SHADER = `
     return vec3(x, y, z) + volumeOffset + waveDrift;
   }
 
+  // =======================================================================
+  // EXTENDED SPIRAL PATH (Skills -> Work Experience)
+  // The Skills spiral is the FIRST SEGMENT of one continuous spiral thread.
+  // u in [0, LOOP_SPLIT]   : walks the existing Skills loop around the cards
+  // u in [LOOP_SPLIT, 1.0] : the SAME thread keeps winding as a descending
+  //                          coil that carries the stream down to the title
+  // Both segments meet exactly, and the coil collapses to zero radius at the
+  // title so every triangle lands precisely in its glyph slot.
+  // =======================================================================
+  vec3 computeExperienceSpiralPath(
+    vec4 rnd,
+    float u,
+    vec2 viewport,
+    float time,
+    vec2 cardYInfo,
+    vec3 titleCenter
+  ) {
+    float LOOP_SPLIT = 0.42;
+
+    if (u <= LOOP_SPLIT) {
+      // Segment 1: the Skills loop itself (unchanged geometry)
+      return computeSkillsSpringTarget(rnd, u / LOOP_SPLIT, viewport, time, cardYInfo);
+    }
+
+    // Segment 2: the same thread keeps winding as an inward spiral. It sweeps across the
+    // whole screen and funnels down into the title centre, which is why the particles read
+    // as travelling along the spiral path instead of dropping straight down.
+    float v = clamp((u - LOOP_SPLIT) / (1.0 - LOOP_SPLIT), 0.0, 1.0);
+    float vEase = v * v * (3.0 - 2.0 * v);
+
+    vec3 anchor = computeSkillsSpringTarget(rnd, 1.0, viewport, time, cardYInfo);
+
+    // Radius + angle are measured from the title centre (screen centre during the hand-off),
+    // so BOTH the cream and gold meshes start their spiral at the exact same loop exit point.
+    float r0 = max(length(anchor.xy), 0.001);
+    float th0 = atan(anchor.y, anchor.x);
+
+    float spiralTurns = 1.75;
+    float th = th0 - 6.2831853 * spiralTurns * vEase;   // clockwise, continuing the loop exit
+    float r = r0 * pow(max(1.0 - vEase, 0.0), 1.15);     // radius collapses to 0 at the title
+
+    // The spiral's hub drifts from the title centre onto this mesh's own word centre, so the
+    // two colour streams unfurl into "Work" and "Experience" as the spiral tightens.
+    float settle = smoothstep(0.55, 1.0, vEase);
+    vec2 hub = mix(vec2(0.0, 0.0), titleCenter.xy, settle);
+
+    vec2 xy = hub + vec2(cos(th), sin(th)) * r;
+
+    // Depth: the thread dives toward the viewer through the spiral, then settles flat
+    float z = mix(anchor.z, titleCenter.z, vEase) + 0.75 * sin(th - th0) * (1.0 - vEase);
+
+    return vec3(xy, z);
+  }
+
   void main() {
     // 1. Text 1 World Coordinates (ABOUT or ME)
     vec3 text1Center = uOriginOffset + aCenter * uOriginScale;
@@ -261,30 +315,36 @@ const BREAKDOWN_VERTEX_SHADER = `
       currentLocal = text3Local;
       facetP = 1.0 - mergeExpP;
     } else if (uExperienceProgress > 0.001) {
-      // In Work Experience: Joined directly to the Skills spiral triangles!
+      // Skills -> Work Experience: the particles never leave the spiral thread.
+      // Each one keeps its own slot on the thread and marches along it (loop segment
+      // first, then the descending coil) until the thread arrives at the title.
       float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
-      vec3 spiralPos = computeSkillsSpringTarget(aRandom, seqP, uViewport, uTime, uCardYInfo);
 
-      // Sequential hand-off: the "</>" end of the spiral (seqP ~ 1) leaves first, "SKILLS" end last
-      float handoffStart = (1.0 - seqP) * 0.40 + abs(aRandom.w) * 0.06;
-      float handoffP = clamp((uExperienceProgress - handoffStart) / (0.985 - handoffStart + 0.0001), 0.0, 1.0);
-      if (uExperienceProgress >= 0.985) handoffP = 1.0;
-      float ht = smoothstep(0.0, 1.0, handoffP);
+      // Slot on the thread: u = 0 is the Skills loop start, u = 1 is the title
+      float uStart = seqP * 0.42;
 
-      // Curved on-screen flight (quadratic bezier) from spiral to Work Experience title.
-      // Control point bulges sideways + in depth so the stream reads as a ribbon, never leaving the viewport.
-      vec2 hDir = text3Center.xy - spiralPos.xy;
-      vec2 hPerp = normalize(vec2(-hDir.y, hDir.x) + vec2(0.0001));
-      vec3 hMid = mix(spiralPos, text3Center, 0.5);
-      vec3 hCtrl = hMid + vec3(hPerp * aRandom.x * uViewport.y * 0.18, aRandom.z * 0.9);
-      vec3 hA = mix(spiralPos, hCtrl, ht);
-      vec3 hB = mix(hCtrl, text3Center, ht);
-      currentCenter = mix(hA, hB, ht);
-      vec2 hClamped = clamp(currentCenter.xy, -uViewport * 0.47, uViewport * 0.47);
-      currentCenter.xy = mix(hClamped, currentCenter.xy, smoothstep(0.85, 1.0, handoffP));
+      // Eased march. Spacing along the thread is preserved, so the spiral reads as one
+      // continuous ribbon flowing down toward the Experience section instead of scattering.
+      float marchP = smoothstep(0.0, 1.0, clamp(uExperienceProgress, 0.0, 1.0));
+      float uNow = clamp(
+        mix(uStart, 1.0, marchP) + (aRandom.w - 0.5) * 0.05 * sin(marchP * 3.14159265),
+        0.0,
+        1.0
+      );
 
-      currentLocal = mix(text2Local, text3Local, ht);
-      facetP = 1.0 - handoffP;
+      vec3 pathPos = computeExperienceSpiralPath(
+        aRandom, uNow, uViewport, uTime, uCardYInfo, text3Center
+      );
+
+      // Glyph assembly: as the spiral tightens onto the title, each triangle morphs into its
+      // own glyph slot (the spiral hub has already migrated onto the word centre by then)
+      float settleV = clamp((uNow - 0.42) / 0.58, 0.0, 1.0);
+      settleV = settleV * settleV * (3.0 - 2.0 * settleV);
+      float converge = smoothstep(0.55, 1.0, settleV);
+
+      currentCenter = pathPos;
+      currentLocal = mix(text2Local, text3Local, converge);
+      facetP = 1.0 - converge;
     } else if (uSkillsSpread > 0.001) {
       // Sequential breakdown from right-to-left: starts breaking from "</>" first, then "SKILLS"
       float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
@@ -571,6 +631,60 @@ const POINTS_VERTEX_SHADER = `
     return vec3(x, y, z) + volumeOffset + waveDrift;
   }
 
+  // =======================================================================
+  // EXTENDED SPIRAL PATH (Skills -> Work Experience)
+  // The Skills spiral is the FIRST SEGMENT of one continuous spiral thread.
+  // u in [0, LOOP_SPLIT]   : walks the existing Skills loop around the cards
+  // u in [LOOP_SPLIT, 1.0] : the SAME thread keeps winding as a descending
+  //                          coil that carries the stream down to the title
+  // Both segments meet exactly, and the coil collapses to zero radius at the
+  // title so every triangle lands precisely in its glyph slot.
+  // =======================================================================
+  vec3 computeExperienceSpiralPath(
+    vec4 rnd,
+    float u,
+    vec2 viewport,
+    float time,
+    vec2 cardYInfo,
+    vec3 titleCenter
+  ) {
+    float LOOP_SPLIT = 0.42;
+
+    if (u <= LOOP_SPLIT) {
+      // Segment 1: the Skills loop itself (unchanged geometry)
+      return computeSkillsSpringTarget(rnd, u / LOOP_SPLIT, viewport, time, cardYInfo);
+    }
+
+    // Segment 2: the same thread keeps winding as an inward spiral. It sweeps across the
+    // whole screen and funnels down into the title centre, which is why the particles read
+    // as travelling along the spiral path instead of dropping straight down.
+    float v = clamp((u - LOOP_SPLIT) / (1.0 - LOOP_SPLIT), 0.0, 1.0);
+    float vEase = v * v * (3.0 - 2.0 * v);
+
+    vec3 anchor = computeSkillsSpringTarget(rnd, 1.0, viewport, time, cardYInfo);
+
+    // Radius + angle are measured from the title centre (screen centre during the hand-off),
+    // so BOTH the cream and gold meshes start their spiral at the exact same loop exit point.
+    float r0 = max(length(anchor.xy), 0.001);
+    float th0 = atan(anchor.y, anchor.x);
+
+    float spiralTurns = 1.75;
+    float th = th0 - 6.2831853 * spiralTurns * vEase;   // clockwise, continuing the loop exit
+    float r = r0 * pow(max(1.0 - vEase, 0.0), 1.15);     // radius collapses to 0 at the title
+
+    // The spiral's hub drifts from the title centre onto this mesh's own word centre, so the
+    // two colour streams unfurl into "Work" and "Experience" as the spiral tightens.
+    float settle = smoothstep(0.55, 1.0, vEase);
+    vec2 hub = mix(vec2(0.0, 0.0), titleCenter.xy, settle);
+
+    vec2 xy = hub + vec2(cos(th), sin(th)) * r;
+
+    // Depth: the thread dives toward the viewer through the spiral, then settles flat
+    float z = mix(anchor.z, titleCenter.z, vEase) + 0.75 * sin(th - th0) * (1.0 - vEase);
+
+    return vec3(xy, z);
+  }
+
   void main() {
     vec3 text1Center = uOriginOffset + aCenter * uOriginScale;
     vec3 text1Local = (position - aCenter) * uOriginScale;
@@ -646,30 +760,36 @@ const POINTS_VERTEX_SHADER = `
       currentLocal = text3Local;
       facetP = 1.0 - mergeExpP;
     } else if (uExperienceProgress > 0.001) {
-      // In Work Experience: Joined directly to the Skills spiral triangles!
+      // Skills -> Work Experience: the particles never leave the spiral thread.
+      // Each one keeps its own slot on the thread and marches along it (loop segment
+      // first, then the descending coil) until the thread arrives at the title.
       float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
-      vec3 spiralPos = computeSkillsSpringTarget(aRandom, seqP, uViewport, uTime, uCardYInfo);
 
-      // Sequential hand-off: the "</>" end of the spiral (seqP ~ 1) leaves first, "SKILLS" end last
-      float handoffStart = (1.0 - seqP) * 0.40 + abs(aRandom.w) * 0.06;
-      float handoffP = clamp((uExperienceProgress - handoffStart) / (0.985 - handoffStart + 0.0001), 0.0, 1.0);
-      if (uExperienceProgress >= 0.985) handoffP = 1.0;
-      float ht = smoothstep(0.0, 1.0, handoffP);
+      // Slot on the thread: u = 0 is the Skills loop start, u = 1 is the title
+      float uStart = seqP * 0.42;
 
-      // Curved on-screen flight (quadratic bezier) from spiral to Work Experience title.
-      // Control point bulges sideways + in depth so the stream reads as a ribbon, never leaving the viewport.
-      vec2 hDir = text3Center.xy - spiralPos.xy;
-      vec2 hPerp = normalize(vec2(-hDir.y, hDir.x) + vec2(0.0001));
-      vec3 hMid = mix(spiralPos, text3Center, 0.5);
-      vec3 hCtrl = hMid + vec3(hPerp * aRandom.x * uViewport.y * 0.18, aRandom.z * 0.9);
-      vec3 hA = mix(spiralPos, hCtrl, ht);
-      vec3 hB = mix(hCtrl, text3Center, ht);
-      currentCenter = mix(hA, hB, ht);
-      vec2 hClamped = clamp(currentCenter.xy, -uViewport * 0.47, uViewport * 0.47);
-      currentCenter.xy = mix(hClamped, currentCenter.xy, smoothstep(0.85, 1.0, handoffP));
+      // Eased march. Spacing along the thread is preserved, so the spiral reads as one
+      // continuous ribbon flowing down toward the Experience section instead of scattering.
+      float marchP = smoothstep(0.0, 1.0, clamp(uExperienceProgress, 0.0, 1.0));
+      float uNow = clamp(
+        mix(uStart, 1.0, marchP) + (aRandom.w - 0.5) * 0.05 * sin(marchP * 3.14159265),
+        0.0,
+        1.0
+      );
 
-      currentLocal = mix(text2Local, text3Local, ht);
-      facetP = 1.0 - handoffP;
+      vec3 pathPos = computeExperienceSpiralPath(
+        aRandom, uNow, uViewport, uTime, uCardYInfo, text3Center
+      );
+
+      // Glyph assembly: as the spiral tightens onto the title, each triangle morphs into its
+      // own glyph slot (the spiral hub has already migrated onto the word centre by then)
+      float settleV = clamp((uNow - 0.42) / 0.58, 0.0, 1.0);
+      settleV = settleV * settleV * (3.0 - 2.0 * settleV);
+      float converge = smoothstep(0.55, 1.0, settleV);
+
+      currentCenter = pathPos;
+      currentLocal = mix(text2Local, text3Local, converge);
+      facetP = 1.0 - converge;
     } else if (uSkillsSpread > 0.001) {
       // Sequential breakdown from right-to-left: starts breaking from "</>" first, then "SKILLS"
       float seqP = clamp((text2Center.x - uSkillsPhraseInfo.x) * uSkillsPhraseInfo.y, 0.0, 1.0);
