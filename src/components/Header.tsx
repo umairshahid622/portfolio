@@ -323,13 +323,13 @@ export default function Header() {
 
   return (
     <>
-      <header className="nav-bar fixed top-0 left-0 right-0 z-50 w-full px-5 sm:px-8 md:px-12 py-4 bg-transparent transition-all duration-300">
+      <header className="nav-bar fixed top-0 left-0 right-0 z-[70] w-full px-5 sm:px-8 md:px-12 py-4 bg-transparent pointer-events-none transition-all duration-300">
         <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
           {/* Brand Monogram & Name */}
           <a
             href="#"
             onClick={handleBrandClick}
-            className="flex items-center gap-3 group cursor-pointer relative z-50 select-none"
+            className="flex items-center gap-3 group cursor-pointer relative z-50 select-none pointer-events-auto"
           >
             <div className="relative w-10 h-10 rounded-xl bg-earth-sand flex items-center justify-center text-earth-forest font-bold text-base shadow-md shadow-earth-sand/20 group-hover:scale-105 group-hover:shadow-earth-sand/40 transition-all duration-200">
               <span>US</span>
@@ -348,7 +348,7 @@ export default function Header() {
           {/* Navigation Controls */}
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Desktop Navigation Links */}
-            <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-earth-sand/90">
+            <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-earth-sand/90 pointer-events-auto">
               <a
                 href="#about"
                 onClick={(e) => handleNavClick(e, "about")}
@@ -419,7 +419,7 @@ export default function Header() {
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav-menu"
               className={cn(
-                "sm:hidden relative z-50 w-11 h-11 rounded-xl bg-earth-card border active:scale-95 transition-all duration-300 flex flex-col items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-earth-sand shadow-lg backdrop-blur-md cursor-pointer",
+                "sm:hidden relative z-50 w-11 h-11 rounded-xl bg-earth-card border active:scale-95 transition-all duration-300 flex flex-col items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-earth-sand shadow-lg backdrop-blur-md cursor-pointer pointer-events-auto",
                 isMobileMenuOpen
                   ? "border-earth-sand/40 shadow-earth-sand/15"
                   : "border-earth-cream/15 hover:border-earth-sand/40"
