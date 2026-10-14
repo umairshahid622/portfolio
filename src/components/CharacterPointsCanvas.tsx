@@ -127,8 +127,10 @@ const BREAKDOWN_VERTEX_SHADER = `
     float uJitter = (rnd.x - 0.5) * 0.06 + (rnd.y - 0.5) * 0.03;
     float u = clamp(seqP + uJitter, 0.0, 1.0);
 
-    // 1. Equal, symmetrical horizontal traversal across the active cards (wider span)
-    float startX = -viewport.x * (viewport.x < 3.5 ? 0.36 : 0.28);
+    // 1. Horizontal traversal: starts from the place of "S" (the letter S of SKILLS) to endX across cards
+    float defaultStartX = -viewport.x * (viewport.x < 3.5 ? 0.42 : 0.39);
+    float sPlaceX = uSkillsPhraseInfo.y > 0.0001 ? (uSkillsPhraseInfo.x + (1.0 / uSkillsPhraseInfo.y) * 0.055) / 1.07 : defaultStartX;
+    float startX = sPlaceX;
     float endX = viewport.x * (viewport.x < 3.5 ? 0.36 : 0.33);
     float xTarget = mix(startX, endX, u);
 
@@ -393,18 +395,11 @@ const BREAKDOWN_VERTEX_SHADER = `
       currentCenter += floatOffset * smoothstep(0.0, 0.20, facetP);
     }
 
-    // 3D rotation and scaling of facet when dispersed (smoothly eased once facet begins motion)
+    // Scaling of facet when dispersed (smoothly eased once facet begins motion)
     if (facetP > 0.01) {
       float motionP = smoothstep(0.01, 0.15, facetP);
       float shrinkFactor = (uSkillsSpread > 0.001 || uExperienceProgress > 0.001) ? 0.32 : 0.65;
       float scale = max(0.35, 1.0 - pow(facetP, 0.65) * shrinkFactor * motionP);
-
-      // Dynamic continuous 3D tumbling as shards orbit around the screen
-      float dynamicSpin = uTime * (0.35 + abs(aRandom.w) * 0.55) * (aRandom.y > 0.0 ? 1.0 : -1.0);
-      float orbitSpin = facetP * 6.28318 * (aRandom.x > 0.0 ? 1.0 : -1.0);
-      float angle = (facetP * 6.0 + dynamicSpin + orbitSpin) * motionP;
-      vec3 axis = normalize(aRandom.xyz + vec3(0.001));
-      currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
       currentLocal *= scale;
     }
 
@@ -588,8 +583,10 @@ const POINTS_VERTEX_SHADER = `
     float uJitter = (rnd.x - 0.5) * 0.06 + (rnd.y - 0.5) * 0.03;
     float u = clamp(seqP + uJitter, 0.0, 1.0);
 
-    // 1. Equal, symmetrical horizontal traversal across the active cards (wider span)
-    float startX = -viewport.x * (viewport.x < 3.5 ? 0.36 : 0.28);
+    // 1. Horizontal traversal: starts from the place of "S" (the letter S of SKILLS) to endX across cards
+    float defaultStartX = -viewport.x * (viewport.x < 3.5 ? 0.42 : 0.39);
+    float sPlaceX = uSkillsPhraseInfo.y > 0.0001 ? (uSkillsPhraseInfo.x + (1.0 / uSkillsPhraseInfo.y) * 0.055) / 1.07 : defaultStartX;
+    float startX = sPlaceX;
     float endX = viewport.x * (viewport.x < 3.5 ? 0.36 : 0.33);
     float xTarget = mix(startX, endX, u);
 
@@ -845,11 +842,6 @@ const POINTS_VERTEX_SHADER = `
       float motionP = smoothstep(0.01, 0.15, facetP);
       float shrinkFactor = (uSkillsSpread > 0.001 || uExperienceProgress > 0.001) ? 0.32 : 0.65;
       float scale = max(0.35, 1.0 - pow(facetP, 0.65) * shrinkFactor * motionP);
-      float dynamicSpin = uTime * (0.35 + abs(aRandom.w) * 0.55) * (aRandom.y > 0.0 ? 1.0 : -1.0);
-      float orbitSpin = facetP * 6.28318 * (aRandom.x > 0.0 ? 1.0 : -1.0);
-      float angle = (facetP * 6.0 + dynamicSpin + orbitSpin) * motionP;
-      vec3 axis = normalize(aRandom.xyz + vec3(0.001));
-      currentLocal = currentLocal * cos(angle) + cross(axis, currentLocal) * sin(angle) + axis * dot(axis, currentLocal) * (1.0 - cos(angle));
       currentLocal *= scale;
     }
 
