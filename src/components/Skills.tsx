@@ -156,10 +156,36 @@ export default function Skills() {
       const cardsWrapper = cardsWrapperRef.current;
       if (!section || !cardsTrack || !cardsWrapper) return;
 
-      // Horizontal Cards Scroll: begins after skill text finishes merging
-      const getTotalScroll = () => {
-        const pad = window.innerWidth >= 768 ? 96 : window.innerWidth >= 640 ? 64 : 40;
-        return Math.max(0, cardsTrack.scrollWidth - window.innerWidth + pad);
+      // Calculate precise scroll bounds and middle point alignment
+      const getCardScrollBounds = () => {
+        const cardNodes = cardsTrack.querySelectorAll<HTMLElement>('[data-skill-card="true"]');
+        if (cardNodes.length === 0) {
+          return { startX: 0, endX: 0, totalScroll: 0 };
+        }
+
+        const isMobile = window.innerWidth < 768;
+        const firstCard = cardNodes[0];
+        const lastCard = cardNodes[cardNodes.length - 1];
+
+        if (isMobile) {
+          // On mobile: Calculate the middle point of each card in the slider!
+          // startX centers the first card (Card 01) directly in the middle of the viewport
+          // endX centers the last card (Card 07) directly in the middle of the viewport
+          const halfWinW = window.innerWidth * 0.5;
+          const firstCardCenter = firstCard.offsetLeft + firstCard.offsetWidth * 0.5;
+          const lastCardCenter = lastCard.offsetLeft + lastCard.offsetWidth * 0.5;
+
+          const startX = halfWinW - firstCardCenter;
+          const endX = halfWinW - lastCardCenter;
+          const totalScroll = Math.abs(startX - endX);
+
+          return { startX, endX, totalScroll };
+        } else {
+          // On desktop: Standard horizontal scroll
+          const pad = window.innerWidth >= 1024 ? 96 : 64;
+          const totalScroll = Math.max(0, cardsTrack.scrollWidth - window.innerWidth + pad);
+          return { startX: 0, endX: -totalScroll, totalScroll };
+        }
       };
 
       const existingSt = ScrollTrigger.getById("skills-timeline");
@@ -172,22 +198,28 @@ export default function Skills() {
         const cardNodes = cardsTrack.querySelectorAll<HTMLElement>('[data-skill-card="true"]');
         if (cardNodes.length >= 2) {
           const card2 = cardNodes[1];
-          const totalScroll = getTotalScroll();
-          if (totalScroll > 0) {
-            const card2ExitDist = card2.offsetLeft + card2.offsetWidth;
-            const fraction = Math.min(0.70, Math.max(0.25, card2ExitDist / totalScroll));
+          const bounds = getCardScrollBounds();
+          if (bounds.totalScroll > 0) {
+            const isMobile = window.innerWidth < 768;
+            const card2ExitDist = isMobile
+              ? card2.offsetLeft + card2.offsetWidth * 0.5 - (cardNodes[0].offsetLeft + cardNodes[0].offsetWidth * 0.5)
+              : card2.offsetLeft + card2.offsetWidth;
+            const fraction = Math.min(0.70, Math.max(0.25, card2ExitDist / bounds.totalScroll));
             return 0.14 + fraction * 0.74;
           }
         }
         return 0.46;
       };
 
+      // Set initial x position so the first card is centered immediately
+      gsap.set(cardsTrack, { x: () => getCardScrollBounds().startX });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           id: "skills-timeline",
           trigger: section,
           start: "top top",
-          end: () => `+=${Math.max(3000, getTotalScroll() * 1.6)}`,
+          end: () => `+=${Math.max(3000, getCardScrollBounds().totalScroll * 1.6)}`,
           pin: true,
           scrub: 0.8,
           anticipatePin: 1,
@@ -209,6 +241,7 @@ export default function Skills() {
             particleBridge.skillsProgress = 0.0;
             particleBridge.skillsSpreadProgress = 0.0;
             particleBridge.activeWord = "ABOUT ME";
+            gsap.set(cardsTrack, { x: getCardScrollBounds().startX });
           },
           onUpdate: (self) => {
             const p = self.progress;
@@ -252,10 +285,12 @@ export default function Skills() {
       );
 
       // 2. Horizontal translation begins strictly after skill text is merged (0.14 -> 0.88)
-      tl.to(
+      // Smoothly glides cards through the center point
+      tl.fromTo(
         cardsTrack,
+        { x: () => getCardScrollBounds().startX },
         {
-          x: () => -getTotalScroll(),
+          x: () => getCardScrollBounds().endX,
           ease: "none",
           duration: 0.74,
         },
@@ -283,23 +318,23 @@ export default function Skills() {
       {/* Accessible Section Heading */}
       <h2 className="sr-only">Skills — Core Technical Domains</h2>
 
-      {/* Horizontal Cards Track Container */}
+      {/* Horizontal Cards Track Container with overflow-hidden to prevent browser horizontal scrolling */}
       <div
         ref={cardsWrapperRef}
         id="skills-cards-wrapper"
-        className="w-full overflow-visible mt-auto mb-[105px] sm:mb-[125px] md:mb-[135px] relative z-20 will-change-transform opacity-0"
+        className="w-full overflow-hidden mt-auto mb-[105px] sm:mb-[125px] md:mb-[135px] relative z-20 will-change-transform opacity-0"
       >
         <div
           ref={trackRef}
           id="skills-cards-track"
-          className="flex flex-row items-stretch gap-5 sm:gap-7 md:gap-8 px-5 sm:px-8 md:px-12 w-max will-change-transform"
+          className="flex flex-row items-stretch gap-4 sm:gap-7 md:gap-8 px-4 sm:px-8 md:px-12 w-max will-change-transform"
         >
           {SKILL_CARDS.map((card) => (
             <AppCard
               key={card.id}
               data-skill-card="true"
               accent={card.accent ?? "secondary"}
-              className="w-max max-w-[80vw] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-foreground/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-secondary/10"
+              className="w-[82vw] max-w-[340px] sm:w-max sm:max-w-[440px] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-foreground/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-secondary/10"
             >
               <div className="w-full min-w-0">
                 {/* Number & Heading */}
