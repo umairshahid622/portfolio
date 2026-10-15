@@ -13,6 +13,7 @@ import {
   AppCardSummary,
   AppCardPill,
   AppCardFooter,
+  type CardAccent,
 } from "./AppCard";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -28,6 +29,11 @@ export interface WorkExperienceItem {
   summary: string;
   bullets: string[];
   skills: string[];
+  accent: CardAccent;
+  badgeAccent: CardAccent;
+  roleColorClass: string;
+  bulletDotClass: string;
+  periodBadgeClass: string;
 }
 
 export const WORK_EXPERIENCES: WorkExperienceItem[] = [
@@ -47,6 +53,11 @@ export const WORK_EXPERIENCES: WorkExperienceItem[] = [
       "Implemented state management using GetX, along with validations and optimized UI rendering, improving performance, security, and overall stability.",
     ],
     skills: ["Flutter", "Dart", "GetX", "RESTful APIs", "Fintech", "Security", "Real-Time Sync"],
+    accent: "primary",
+    badgeAccent: "secondary",
+    roleColorClass: "text-primary",
+    bulletDotClass: "bg-secondary text-secondary shadow-[0_0_8px_currentColor]",
+    periodBadgeClass: "border-primary/30 bg-primary/10 text-primary",
   },
   {
     id: "bx-technologies",
@@ -64,6 +75,11 @@ export const WORK_EXPERIENCES: WorkExperienceItem[] = [
       "Optimized performance through lazy loading, code splitting, and efficient rendering improving speed and user experience.",
     ],
     skills: ["React.js", "TypeScript", "JavaScript", "Framer Motion", "Lazy Loading", "Code Splitting", "Responsive UI"],
+    accent: "secondary",
+    badgeAccent: "tertiary",
+    roleColorClass: "text-secondary",
+    bulletDotClass: "bg-tertiary text-tertiary shadow-[0_0_8px_currentColor]",
+    periodBadgeClass: "border-secondary/30 bg-secondary/10 text-secondary",
   },
   {
     id: "tecklogics",
@@ -81,6 +97,11 @@ export const WORK_EXPERIENCES: WorkExperienceItem[] = [
       "Integrated RESTful APIs enabling real-time data synchronization ensuring smooth functionality and enhanced user experience.",
     ],
     skills: ["Angular", "TypeScript", "Tailwind CSS", "Component Architecture", "RESTful APIs", "CSS Grid", "Flexbox"],
+    accent: "tertiary",
+    badgeAccent: "accent",
+    roleColorClass: "text-tertiary",
+    bulletDotClass: "bg-accent text-accent shadow-[0_0_8px_currentColor]",
+    periodBadgeClass: "border-tertiary/30 bg-tertiary/10 text-tertiary",
   },
   {
     id: "cyber-reconnaissance",
@@ -98,6 +119,11 @@ export const WORK_EXPERIENCES: WorkExperienceItem[] = [
       "Optimized performance using state management, lazy loading, and efficient rendering improving scalability and responsiveness.",
     ],
     skills: ["Angular", "TypeScript", "Web Security", "Authentication", "Access Control", "State Management", "Performance"],
+    accent: "accent",
+    badgeAccent: "primary",
+    roleColorClass: "text-accent",
+    bulletDotClass: "bg-primary text-primary shadow-[0_0_8px_currentColor]",
+    periodBadgeClass: "border-accent/30 bg-accent/10 text-accent",
   },
 ];
 
@@ -370,7 +396,7 @@ export default function WorkExperience() {
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
-              accent="secondary"
+              accent={item.accent}
               className={cn(
                 "experience-card absolute top-0 left-0 w-full h-full",
                 index === 0 && "z-10",
@@ -387,19 +413,26 @@ export default function WorkExperience() {
                     <AppCardNumber>{item.number}</AppCardNumber>
                     <AppCardTitle>{item.company}</AppCardTitle>
                   </div>
-                  <span className="font-heading text-xs sm:text-sm md:text-base font-medium tracking-normal text-primary/85 shrink-0 text-right">
+                  <span className="font-heading text-xs sm:text-sm md:text-base font-medium tracking-normal text-muted/90 shrink-0 text-right">
                     {item.location}
                   </span>
                 </div>
 
                 {/* Role */}
-                <h4 className="text-base sm:text-lg md:text-xl font-bold text-primary tracking-tight">
+                <h4
+                  className={cn(
+                    "text-base sm:text-lg md:text-xl font-bold tracking-tight",
+                    item.roleColorClass
+                  )}
+                >
                   {item.role}
                 </h4>
 
                 {/* Domain under Role */}
                 <div className="mt-1 mb-2.5 sm:mb-3">
-                  <AppCardBadge accent="primary">{item.domain}</AppCardBadge>
+                  <AppCardBadge accent={item.badgeAccent}>
+                    {item.domain}
+                  </AppCardBadge>
                 </div>
 
                 {/* Role Summary */}
@@ -412,9 +445,14 @@ export default function WorkExperience() {
                   {item.bullets.map((bullet, bIdx) => (
                     <li
                       key={bIdx}
-                      className="text-[12px] sm:text-[13px] text-primary/90 leading-relaxed flex items-start gap-2.5"
+                      className="text-[12px] sm:text-[13px] text-foreground/85 leading-relaxed flex items-start gap-2.5"
                     >
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 bg-secondary" />
+                      <span
+                        className={cn(
+                          "mt-1.5 w-1.5 h-1.5 rounded-full shrink-0",
+                          item.bulletDotClass
+                        )}
+                      />
                       <span>{bullet}</span>
                     </li>
                   ))}
@@ -424,19 +462,26 @@ export default function WorkExperience() {
               {/* Card Footer: Tech Stack & Date */}
               <AppCardFooter>
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="text-[11px] font-sans text-foreground/40 uppercase tracking-wider mr-1">
+                  <span className="text-[11px] font-sans text-tertiary/80 uppercase tracking-wider mr-1">
                     Stack:
                   </span>
                   {item.skills.map((skill, sIdx) => (
-                    <AppCardPill key={sIdx}>{skill}</AppCardPill>
+                    <AppCardPill key={sIdx} variant="tertiary">
+                      {skill}
+                    </AppCardPill>
                   ))}
                 </div>
 
                 {/* Date / Period in Footer */}
                 <div className="shrink-0 self-start sm:self-auto">
-                  <span className="inline-flex items-center gap-1.5 font-sans text-[11px] sm:text-xs px-3 py-1 rounded-full bg-foreground/[0.05] border border-foreground/10 text-primary font-medium">
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 font-sans text-[11px] sm:text-xs px-3 py-1 rounded-full border font-medium transition-colors",
+                      item.periodBadgeClass
+                    )}
+                  >
                     <svg
-                      className="w-3.5 h-3.5 opacity-60"
+                      className="w-3.5 h-3.5 opacity-70"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

@@ -14,6 +14,7 @@ export type CardAccent =
   | "secondary"
   | "tertiary"
   | "accent"
+  | "muted"
   | "moss"
   | "sand"
   | "terracotta"
@@ -57,17 +58,36 @@ const TERTIARY_STYLE: CardAccentStyles = {
   dot: "bg-tertiary",
 };
 
+const ACCENT_STYLE: CardAccentStyles = {
+  text: "text-accent",
+  glow: "bg-accent",
+  via: "via-accent",
+  badge: "bg-accent/20 border-accent/50 text-accent",
+  borderL: "border-accent",
+  dot: "bg-accent",
+};
+
+const MUTED_STYLE: CardAccentStyles = {
+  text: "text-muted",
+  glow: "bg-muted",
+  via: "via-muted",
+  badge: "bg-muted/20 border-muted/50 text-muted",
+  borderL: "border-muted",
+  dot: "bg-muted",
+};
+
 export const ACCENT_STYLES: Record<CardAccent, CardAccentStyles> = {
   primary: PRIMARY_STYLE,
   secondary: SECONDARY_STYLE,
   tertiary: TERTIARY_STYLE,
-  accent: TERTIARY_STYLE,
+  accent: ACCENT_STYLE,
+  muted: MUTED_STYLE,
   sand: PRIMARY_STYLE,
   moss: SECONDARY_STYLE,
   olive: SECONDARY_STYLE,
   terracotta: TERTIARY_STYLE,
   copper: TERTIARY_STYLE,
-  rust: TERTIARY_STYLE,
+  rust: ACCENT_STYLE,
 };
 
 interface AppCardContextValue {
@@ -252,20 +272,46 @@ export function AppCardSummary({
   );
 }
 
+export type AppCardPillVariant =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "accent"
+  | "muted"
+  | "default";
+
+const PILL_VARIANTS: Record<AppCardPillVariant, string> = {
+  primary:
+    "bg-primary/10 border-primary/25 text-primary hover:border-primary/50 hover:bg-primary/20",
+  secondary:
+    "bg-secondary/10 border-secondary/25 text-secondary hover:border-secondary/50 hover:bg-secondary/20",
+  tertiary:
+    "bg-tertiary/10 border-tertiary/25 text-tertiary hover:border-tertiary/50 hover:bg-tertiary/20",
+  accent:
+    "bg-accent/10 border-accent/25 text-accent hover:border-accent/50 hover:bg-accent/20",
+  muted:
+    "bg-muted/10 border-muted/25 text-muted hover:border-muted/50 hover:bg-muted/20",
+  default:
+    "bg-tertiary/10 border-tertiary/25 text-tertiary hover:border-tertiary/50 hover:bg-tertiary/20",
+};
+
 export interface AppCardPillProps extends HTMLAttributes<HTMLSpanElement> {
   children?: ReactNode;
   className?: string;
+  variant?: AppCardPillVariant;
 }
 
 export function AppCardPill({
   children,
   className,
+  variant = "tertiary",
   ...props
 }: AppCardPillProps) {
   return (
     <span
       className={cn(
-        "text-[11px] sm:text-xs font-sans px-2.5 py-0.5 sm:py-1 rounded-md bg-foreground/[0.04] border border-foreground/10 text-primary hover:text-foreground transition-colors",
+        "text-[11px] sm:text-xs font-sans px-2.5 py-0.5 sm:py-1 rounded-md border transition-all duration-200",
+        PILL_VARIANTS[variant] ?? PILL_VARIANTS.default,
         className
       )}
       {...props}

@@ -42,6 +42,7 @@
   --color-foreground: #ffffff;       /* Crisp Foreground / Headings & Body */
   --color-text: var(--color-foreground);
   --color-text-muted: #bde0fe;       /* Soft Ice / Sky Blue Muted Text */
+  --color-muted: var(--color-text-muted);
 
   /* Contrast / On-Accent Colors */
   --color-primary-contrast: #0e0c18;
@@ -83,6 +84,7 @@
   --color-foreground: var(--color-foreground);
   --color-text: var(--color-foreground);
   --color-text-muted: var(--color-text-muted);
+  --color-muted: var(--color-muted);
   --color-card: var(--color-surface);
 
   /* Backward Compatible Descriptive Names */
