@@ -63,6 +63,26 @@ export default function HeroOverviewPortal() {
         onEnterBack: () => {
           particleBridge.isDarkActive = true;
         },
+        onRefresh: (self) => {
+          const scrollY =
+            typeof window !== "undefined"
+              ? window.scrollY || document.documentElement.scrollTop || 0
+              : 0;
+          if (scrollY <= 10 || self.progress <= 0.04) {
+            particleBridge.isDarkActive = false;
+            heroLayer.style.webkitMaskImage = "";
+            heroLayer.style.maskImage = "";
+            heroLayer.style.opacity = "1";
+            heroLayer.style.pointerEvents = "auto";
+            centerPoint.style.opacity = "1";
+            centerPoint.style.transform = "translate(-50%, -50%) scale(1)";
+            portalRing.style.opacity = "0";
+            portalRing.style.width = "0px";
+            portalRing.style.height = "0px";
+            portalRing.style.left = "50%";
+            portalRing.style.top = "50%";
+          }
+        },
         onLeaveBack: () => {
           particleBridge.isDarkActive = false;
           particleBridge.overviewProgress = 0.0;
@@ -79,7 +99,32 @@ export default function HeroOverviewPortal() {
           portalRing.style.top = "50%";
         },
         onUpdate: (self) => {
-          const p = self.progress;
+          const scrollY =
+            typeof window !== "undefined"
+              ? window.scrollY || document.documentElement.scrollTop || 0
+              : 0;
+          // Guard: if physically at the top of the page, force 0
+          const rawP = scrollY <= 8 ? 0 : self.progress;
+
+          // Deadzone threshold (first ~35px of scroll): portal remains 100% closed with zero aperture
+          const DEADZONE = 0.04;
+          if (rawP <= DEADZONE) {
+            particleBridge.isDarkActive = false;
+            heroLayer.style.webkitMaskImage = "";
+            heroLayer.style.maskImage = "";
+            heroLayer.style.opacity = "1";
+            heroLayer.style.pointerEvents = "auto";
+            centerPoint.style.opacity = "1";
+            centerPoint.style.transform = "translate(-50%, -50%) scale(1)";
+            portalRing.style.opacity = "0";
+            portalRing.style.width = "0px";
+            portalRing.style.height = "0px";
+            portalRing.style.left = "50%";
+            portalRing.style.top = "50%";
+            return;
+          }
+
+          const p = (rawP - DEADZONE) / (1.0 - DEADZONE);
 
           // Calculate exact sub-pixel center of the singularity beacon dot relative to heroLayer
           let originX = heroLayer.clientWidth * 0.5;
@@ -92,22 +137,6 @@ export default function HeroOverviewPortal() {
               originX = ptRect.left + ptRect.width * 0.5 - heroRect.left;
               originY = ptRect.top + ptRect.height * 0.5 - heroRect.top;
             }
-          }
-
-          if (p <= 0.002) {
-            particleBridge.isDarkActive = false;
-            heroLayer.style.webkitMaskImage = "";
-            heroLayer.style.maskImage = "";
-            heroLayer.style.opacity = "1";
-            heroLayer.style.pointerEvents = "auto";
-            centerPoint.style.opacity = "1";
-            centerPoint.style.transform = "translate(-50%, -50%) scale(1)";
-            portalRing.style.opacity = "0";
-            portalRing.style.width = "0px";
-            portalRing.style.height = "0px";
-            portalRing.style.left = `${originX.toFixed(1)}px`;
-            portalRing.style.top = `${originY.toFixed(1)}px`;
-            return;
           }
 
           particleBridge.isDarkActive = true;
@@ -169,7 +198,7 @@ export default function HeroOverviewPortal() {
       id="hero-portal-wrapper"
       className="relative w-full"
       style={{
-        height: `calc(100vh + ${TOTAL_PORTAL_OVERVIEW_DISTANCE}px)`,
+        height: `calc(100dvh + ${TOTAL_PORTAL_OVERVIEW_DISTANCE}px)`,
       }}
     >
       {/* Sticky Viewport locks at top: 0 for the entire portal expansion + overview scrub */}

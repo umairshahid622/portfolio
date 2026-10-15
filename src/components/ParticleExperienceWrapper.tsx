@@ -177,7 +177,10 @@ export default function ParticleExperienceWrapper({
       </div>
 
       {/* Content Layer: Overview, Skills, and future particle sections */}
-      <div className="relative z-10 -mt-[100vh] w-full pointer-events-auto">
+      <div
+        className="relative z-10 w-full pointer-events-auto"
+        style={{ marginTop: "-100dvh" }}
+      >
         {children}
       </div>
     </div>
