@@ -331,15 +331,15 @@ export default function Header() {
             onClick={handleBrandClick}
             className="flex items-center gap-3 group cursor-pointer relative z-50 select-none pointer-events-auto"
           >
-            <div className="relative w-10 h-10 rounded-xl bg-earth-sand flex items-center justify-center text-earth-forest font-bold text-base shadow-md shadow-earth-sand/20 group-hover:scale-105 group-hover:shadow-earth-sand/40 transition-all duration-200">
+            <div className="relative w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-background font-bold text-base shadow-md shadow-primary/20 group-hover:scale-105 group-hover:shadow-primary/40 transition-all duration-200">
               <span>US</span>
               <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-sm sm:text-base tracking-tight leading-tight text-earth-cream">
+              <span className="font-semibold text-sm sm:text-base tracking-tight leading-tight text-foreground">
                 Umair Shahid
               </span>
-              <span className="text-[11px] font-sans font-medium uppercase tracking-wider leading-tight text-earth-sand">
+              <span className="text-[11px] font-sans font-medium uppercase tracking-wider leading-tight text-primary">
                 Full-Stack Developer
               </span>
             </div>
@@ -348,15 +348,15 @@ export default function Header() {
           {/* Navigation Controls */}
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Desktop Navigation Links */}
-            <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-earth-sand/90 pointer-events-auto">
+            <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-primary/90 pointer-events-auto">
               <a
                 href="#about"
                 onClick={(e) => handleNavClick(e, "about")}
                 className={cn(
                   "transition-colors cursor-pointer py-1 whitespace-nowrap",
                   activeSection === "about"
-                    ? "text-earth-cream font-medium"
-                    : "text-earth-sand/80 hover:text-earth-cream"
+                    ? "text-foreground font-medium"
+                    : "text-primary/80 hover:text-foreground"
                 )}
               >
                 About me
@@ -367,8 +367,8 @@ export default function Header() {
                 className={cn(
                   "transition-colors cursor-pointer py-1 whitespace-nowrap",
                   activeSection === "skills"
-                    ? "text-earth-cream font-medium"
-                    : "text-earth-sand/80 hover:text-earth-cream"
+                    ? "text-foreground font-medium"
+                    : "text-primary/80 hover:text-foreground"
                 )}
               >
                 Skills
@@ -379,8 +379,8 @@ export default function Header() {
                 className={cn(
                   "transition-colors cursor-pointer py-1 whitespace-nowrap",
                   activeSection === "experience"
-                    ? "text-earth-cream font-medium"
-                    : "text-earth-sand/80 hover:text-earth-cream"
+                    ? "text-foreground font-medium"
+                    : "text-primary/80 hover:text-foreground"
                 )}
               >
                 Work Experience
@@ -391,8 +391,8 @@ export default function Header() {
                 className={cn(
                   "transition-colors cursor-pointer py-1 whitespace-nowrap",
                   activeSection === "contact"
-                    ? "text-earth-cream font-medium"
-                    : "text-earth-sand/80 hover:text-earth-cream"
+                    ? "text-foreground font-medium"
+                    : "text-primary/80 hover:text-foreground"
                 )}
               >
                 Contact
@@ -404,7 +404,7 @@ export default function Header() {
                 size="sm"
                 icon="external-link"
                 iconPosition="right"
-                className="!text-earth-sand !border-earth-sand/30 hover:!text-earth-cream hover:!border-earth-sand/60"
+                className="!text-primary !border-primary/30 hover:!text-foreground hover:!border-primary/60"
               >
                 Resume
               </AppButton>
@@ -419,28 +419,28 @@ export default function Header() {
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav-menu"
               className={cn(
-                "sm:hidden relative z-50 w-11 h-11 rounded-xl bg-earth-card border active:scale-95 transition-all duration-300 flex flex-col items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-earth-sand shadow-lg backdrop-blur-md cursor-pointer pointer-events-auto",
+                "sm:hidden relative z-50 w-11 h-11 rounded-xl bg-surface border active:scale-95 transition-all duration-300 flex flex-col items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-lg backdrop-blur-md cursor-pointer pointer-events-auto",
                 isMobileMenuOpen
-                  ? "border-earth-sand/40 shadow-earth-sand/15"
-                  : "border-earth-cream/15 hover:border-earth-sand/40"
+                  ? "border-primary/40 shadow-primary/15"
+                  : "border-foreground/15 hover:border-primary/40"
               )}
             >
               <span
                 className={cn(
-                  "w-5 h-[2px] rounded-full bg-earth-cream transition-all duration-300 origin-center",
-                  isMobileMenuOpen && "translate-y-[8px] rotate-45 bg-earth-sand"
+                  "w-5 h-[2px] rounded-full bg-foreground transition-all duration-300 origin-center",
+                  isMobileMenuOpen && "translate-y-[8px] rotate-45 bg-primary"
                 )}
               />
               <span
                 className={cn(
-                  "w-5 h-[2px] rounded-full bg-earth-cream transition-all duration-200",
+                  "w-5 h-[2px] rounded-full bg-foreground transition-all duration-200",
                   isMobileMenuOpen && "opacity-0 scale-x-0"
                 )}
               />
               <span
                 className={cn(
-                  "w-5 h-[2px] rounded-full bg-earth-cream transition-all duration-300 origin-center",
-                  isMobileMenuOpen && "-translate-y-[8px] -rotate-45 bg-earth-sand"
+                  "w-5 h-[2px] rounded-full bg-foreground transition-all duration-300 origin-center",
+                  isMobileMenuOpen && "-translate-y-[8px] -rotate-45 bg-primary"
                 )}
               />
             </button>
@@ -467,23 +467,23 @@ export default function Header() {
             : "clip-path 0.45s cubic-bezier(0.76, 0, 0.24, 1), -webkit-clip-path 0.45s cubic-bezier(0.76, 0, 0.24, 1)",
         }}
         className={cn(
-          "fixed inset-0 z-[60] bg-earth-card text-earth-cream backdrop-blur-3xl sm:hidden flex flex-col justify-between overflow-y-auto px-5 pt-24 pb-8 overscroll-contain will-change-[clip-path]",
+          "fixed inset-0 z-[60] bg-surface text-foreground backdrop-blur-3xl sm:hidden flex flex-col justify-between overflow-y-auto px-5 pt-24 pb-8 overscroll-contain will-change-[clip-path]",
           isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
         )}
       >
         {/* Ambient Celestial Glow Orbs inside the expanding menu */}
         <div
-          className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-earth-sand/15 blur-3xl pointer-events-none"
+          className="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-primary/15 blur-3xl pointer-events-none"
           aria-hidden="true"
         />
         <div
-          className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full bg-earth-terracotta/15 blur-3xl pointer-events-none"
+          className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full bg-tertiary/15 blur-3xl pointer-events-none"
           aria-hidden="true"
         />
 
         {/* Navigation Items List */}
         <div className="relative z-10 flex flex-col gap-2.5 pt-2">
-          <div className="mobile-menu-anim opacity-0 text-[11px] font-mono uppercase tracking-widest text-earth-sand/60 px-2 pb-1 will-change-transform">
+          <div className="mobile-menu-anim opacity-0 text-[11px] font-mono uppercase tracking-widest text-primary/60 px-2 pb-1 will-change-transform">
             Navigation Menu
           </div>
 
@@ -497,8 +497,8 @@ export default function Header() {
                 className={cn(
                   "mobile-menu-anim opacity-0 group relative flex items-center justify-between p-3.5 rounded-2xl border select-none will-change-transform",
                   isActive
-                    ? "bg-earth-forest/70 border-earth-sand/50 shadow-lg shadow-earth-sand/10 text-earth-cream"
-                    : "bg-earth-forest/30 border-earth-cream/10 hover:bg-earth-forest/50 hover:border-earth-sand/30 text-earth-cream/80 hover:text-earth-cream"
+                    ? "bg-background/70 border-primary/50 shadow-lg shadow-primary/10 text-foreground"
+                    : "bg-background/30 border-foreground/10 hover:bg-background/50 hover:border-primary/30 text-foreground/80 hover:text-foreground"
                 )}
               >
                 <div className="flex items-center gap-3.5">
@@ -506,8 +506,8 @@ export default function Header() {
                     className={cn(
                       "font-mono text-[11px] px-2 py-0.5 rounded-md border transition-colors",
                       isActive
-                        ? "border-earth-sand/50 text-earth-sand bg-earth-sand/15 font-semibold"
-                        : "border-earth-cream/10 text-earth-sand/60 bg-white/[0.02]"
+                        ? "border-primary/50 text-primary bg-primary/15 font-semibold"
+                        : "border-foreground/10 text-primary/60 bg-white/[0.02]"
                     )}
                   >
                     {item.number}
@@ -516,12 +516,12 @@ export default function Header() {
                     <span
                       className={cn(
                         "font-heading text-lg font-semibold tracking-tight leading-snug transition-colors",
-                        isActive ? "text-earth-cream" : "text-earth-cream/90 group-hover:text-earth-cream"
+                        isActive ? "text-foreground" : "text-foreground/90 group-hover:text-foreground"
                       )}
                     >
                       {item.label}
                     </span>
-                    <span className="text-[11px] font-sans text-earth-sand/70 leading-tight">
+                    <span className="text-[11px] font-sans text-primary/70 leading-tight">
                       {item.description}
                     </span>
                   </div>
@@ -540,7 +540,7 @@ export default function Header() {
               icon="external-link"
               iconPosition="right"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full !rounded-2xl !py-3.5 shadow-lg shadow-earth-sand/20 text-xs font-semibold uppercase tracking-widest"
+              className="w-full !rounded-2xl !py-3.5 shadow-lg shadow-primary/20 text-xs font-semibold uppercase tracking-widest"
             >
               View Resume
             </AppButton>
@@ -548,24 +548,24 @@ export default function Header() {
         </div>
 
         {/* Quick Contact Footer */}
-        <div className="mobile-menu-anim opacity-0 relative z-10 pt-5 mt-6 border-t border-earth-cream/10 flex flex-col gap-2.5 text-xs font-sans text-earth-sand/85 will-change-transform">
+        <div className="mobile-menu-anim opacity-0 relative z-10 pt-5 mt-6 border-t border-foreground/10 flex flex-col gap-2.5 text-xs font-sans text-primary/85 will-change-transform">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <a
               href="mailto:shahidumair622@gmail.com"
-              className="flex items-center gap-2 hover:text-earth-cream transition-colors py-1 group min-w-0"
+              className="flex items-center gap-2 hover:text-foreground transition-colors py-1 group min-w-0"
             >
-              <AppIcon icon="mail" className="w-3.5 h-3.5 text-earth-sand shrink-0 group-hover:text-earth-cream transition-colors" />
-              <span className="truncate text-earth-cream/90 group-hover:text-earth-cream font-medium">
+              <AppIcon icon="mail" className="w-3.5 h-3.5 text-primary shrink-0 group-hover:text-foreground transition-colors" />
+              <span className="truncate text-foreground/90 group-hover:text-foreground font-medium">
                 shahidumair622@gmail.com
               </span>
             </a>
 
             <a
               href="tel:+923215215701"
-              className="flex items-center gap-2 hover:text-earth-cream transition-colors py-1 group shrink-0"
+              className="flex items-center gap-2 hover:text-foreground transition-colors py-1 group shrink-0"
             >
-              <AppIcon icon="phone" className="w-3.5 h-3.5 text-earth-sand shrink-0 group-hover:text-earth-cream transition-colors" />
-              <span className="text-earth-cream/90 group-hover:text-earth-cream font-medium">
+              <AppIcon icon="phone" className="w-3.5 h-3.5 text-primary shrink-0 group-hover:text-foreground transition-colors" />
+              <span className="text-foreground/90 group-hover:text-foreground font-medium">
                 +92-321-5215701
               </span>
             </a>

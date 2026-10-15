@@ -74,12 +74,12 @@ export default function BackgroundParticles({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Palette sourced dynamically from CSS variables
-    const creamRgb = getRgbPrefixFromVar("--color-cream", "rgba(254, 250, 224,");
-    const terracottaRgb = getRgbPrefixFromVar("--color-terracotta", "rgba(188, 108, 37,");
-    const mossRgb = getRgbPrefixFromVar("--color-moss", "rgba(96, 108, 56,");
-    const sandRgb = getRgbPrefixFromVar("--color-sand", "rgba(221, 161, 94,");
+    const foregroundRgb = getRgbPrefixFromVar("--color-foreground", "rgba(254, 250, 224,");
+    const tertiaryRgb = getRgbPrefixFromVar("--color-tertiary", "rgba(188, 108, 37,");
+    const secondaryRgb = getRgbPrefixFromVar("--color-secondary", "rgba(96, 108, 56,");
+    const primaryRgb = getRgbPrefixFromVar("--color-primary", "rgba(221, 161, 94,");
 
-    const activeColors = [creamRgb, sandRgb];
+    const activeColors = [foregroundRgb, primaryRgb];
 
     // Mouse tracking for subtle interactive parallax
     let mouseX = width / 2;
@@ -121,7 +121,7 @@ export default function BackgroundParticles({
         amplitude: 45,
         wavelength: 0.0018,
         speed: 0.0003,
-        color: mossRgb,
+        color: secondaryRgb,
         alpha: 0.09,
         offset: 0,
       },
@@ -130,7 +130,7 @@ export default function BackgroundParticles({
         amplitude: 65,
         wavelength: 0.0012,
         speed: -0.00025,
-        color: sandRgb,
+        color: primaryRgb,
         alpha: 0.06,
         offset: 2.5,
       },
@@ -139,7 +139,7 @@ export default function BackgroundParticles({
         amplitude: 50,
         wavelength: 0.0015,
         speed: 0.0002,
-        color: terracottaRgb,
+        color: tertiaryRgb,
         alpha: 0.05,
         offset: 4.1,
       },
@@ -281,11 +281,11 @@ export default function BackgroundParticles({
         <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
           {/* Unified ambient background glows - single consistent lighting source */}
           <div
-            className="absolute top-1/3 left-0 -translate-y-1/2 -translate-x-1/3 w-[620px] h-[620px] rounded-full bg-gradient-to-tr from-earth-moss/20 to-earth-sand/15 blur-[140px] pointer-events-none"
+            className="absolute top-1/3 left-0 -translate-y-1/2 -translate-x-1/3 w-[620px] h-[620px] rounded-full bg-gradient-to-tr from-secondary/20 to-primary/15 blur-[140px] pointer-events-none"
             aria-hidden="true"
           />
           <div
-            className="absolute bottom-1/4 right-0 translate-x-1/4 translate-y-1/4 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-earth-terracotta/20 to-earth-sand/10 blur-[130px] pointer-events-none"
+            className="absolute bottom-1/4 right-0 translate-x-1/4 translate-y-1/4 w-[560px] h-[560px] rounded-full bg-gradient-to-br from-tertiary/20 to-primary/10 blur-[130px] pointer-events-none"
             aria-hidden="true"
           />
         </div>

@@ -157,7 +157,7 @@ export default function Overview({ embedded = false }: OverviewProps) {
     <section
       ref={sectionRef}
       id="about"
-      className="relative w-full h-screen h-[100dvh] max-h-screen px-4 sm:px-6 md:px-8 bg-transparent text-earth-cream transition-colors duration-300 flex flex-col items-center justify-center overflow-hidden select-none"
+      className="relative w-full h-screen h-[100dvh] max-h-screen px-4 sm:px-6 md:px-8 bg-transparent text-foreground transition-colors duration-300 flex flex-col items-center justify-center overflow-hidden select-none"
     >
       <div className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1400px] mx-auto flex flex-col items-center justify-center relative z-10 px-3 sm:px-6 md:px-8 mt-[12vh] sm:mt-[14vh] md:mt-[16vh]">
         {/* Single Continuous Paragraph Drum Roller */}
@@ -186,8 +186,8 @@ export default function Overview({ embedded = false }: OverviewProps) {
             onWheel={handleWheel}
           >
             {/* Top & Bottom Cylindrical Drum Specular Reflection Rays */}
-            <div className="absolute top-0 left-12 right-12 h-[1px] bg-gradient-to-r from-transparent via-earth-cream/25 to-transparent pointer-events-none z-10" />
-            <div className="absolute bottom-0 left-12 right-12 h-[1px] bg-gradient-to-r from-transparent via-earth-cream/15 to-transparent pointer-events-none z-10" />
+            <div className="absolute top-0 left-12 right-12 h-[1px] bg-gradient-to-r from-transparent via-foreground/25 to-transparent pointer-events-none z-10" />
+            <div className="absolute bottom-0 left-12 right-12 h-[1px] bg-gradient-to-r from-transparent via-foreground/15 to-transparent pointer-events-none z-10" />
 
             {/* Rolling Track (Translates the single continuous paragraph vertically) */}
             <div

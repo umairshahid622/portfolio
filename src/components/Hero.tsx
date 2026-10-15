@@ -139,7 +139,7 @@ export default function Hero() {
     <section
       ref={containerRef}
       id="hero"
-      className="relative z-20 w-full min-h-screen flex flex-col justify-center items-center py-20 px-5 sm:px-8 md:px-12 overflow-hidden bg-earth-forest text-earth-cream"
+      className="relative z-20 w-full min-h-screen flex flex-col justify-center items-center py-20 px-5 sm:px-8 md:px-12 overflow-hidden bg-background text-foreground"
     >
       {/* Subtle grid pattern overlay */}
       <div className="hero-grid-pattern absolute inset-0 pointer-events-none -z-10 opacity-[0.03]" />
@@ -152,21 +152,21 @@ export default function Hero() {
         <div className="relative w-full flex flex-col items-center justify-center text-center">
           {/* Main Title: Umair Shahid */}
           <h1 className="w-full flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-6 md:gap-x-8 gap-y-2 select-none pointer-events-none text-center">
-            <span className="hero-popout-umair opacity-0 inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-earth-cream leading-none will-change-transform pointer-events-auto">
+            <span className="hero-popout-umair opacity-0 inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-foreground leading-none will-change-transform pointer-events-auto">
               <TextSpiralWrap>Umair</TextSpiralWrap>
             </span>
-            <span className="hero-popout-shahid opacity-0 inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-earth-sand leading-none will-change-transform pointer-events-auto">
+            <span className="hero-popout-shahid opacity-0 inline-block text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight text-primary leading-none will-change-transform pointer-events-auto">
               <TextSpiralWrap>Shahid</TextSpiralWrap>
             </span>
           </h1>
 
           {/* Subcontent: Role, Tagline, CTAs */}
           <div className="pt-4 sm:pt-6 md:pt-8 flex flex-col items-center justify-center text-center space-y-3 sm:space-y-4 pointer-events-none">
-            <h2 className="hero-popout-role opacity-0 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-earth-cream/90 tracking-tight text-center will-change-transform pointer-events-auto">
+            <h2 className="hero-popout-role opacity-0 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground/90 tracking-tight text-center will-change-transform pointer-events-auto">
               <TextSpiralWrap strokeWidth={2}>Full-stack Developer</TextSpiralWrap>
             </h2>
 
-            <p className="hero-popout-tagline opacity-0 text-sm sm:text-base md:text-lg text-earth-cream/75 max-w-xl font-medium tracking-wide text-center will-change-transform pointer-events-auto px-4">
+            <p className="hero-popout-tagline opacity-0 text-sm sm:text-base md:text-lg text-foreground/75 max-w-xl font-medium tracking-wide text-center will-change-transform pointer-events-auto px-4">
               Engineering scalable solutions across web & mobile
             </p>
 

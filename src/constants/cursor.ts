@@ -13,18 +13,18 @@ import gsapLogo from "../assets/CursorIcons/gsap.svg";
 import framerLogo from "../assets/CursorIcons/framermotion.svg";
 
 export const LOGOS: LogoItem[] = [
-  { name: "React", src: reactLogo, isMonochrome: false, accentColor: "var(--color-sand)" },
-  { name: "Next.js", src: nextjsLogo, isMonochrome: true, accentColor: "var(--color-forest)" },
-  { name: "Flutter", src: flutterLogo, isMonochrome: false, accentColor: "var(--color-terracotta)" },
-  { name: "Node.js", src: nodejsLogo, isMonochrome: false, accentColor: "var(--color-moss)" },
-  { name: "Express", src: expressLogo, isMonochrome: true, accentColor: "var(--color-forest)" },
-  { name: "NestJS", src: nestjsLogo, isMonochrome: false, accentColor: "var(--color-terracotta)" },
-  { name: "PostgreSQL", src: postgresLogo, isMonochrome: false, accentColor: "var(--color-sand)" },
-  { name: "MongoDB", src: mongodbLogo, isMonochrome: false, accentColor: "var(--color-moss)" },
-  { name: "GitHub", src: githubLogo, isMonochrome: true, accentColor: "var(--color-forest)" },
-  { name: "Tailwind CSS", src: tailwindLogo, isMonochrome: false, accentColor: "var(--color-sand)" },
-  { name: "GSAP", src: gsapLogo, isMonochrome: false, accentColor: "var(--color-moss)" },
-  { name: "Framer Motion", src: framerLogo, isMonochrome: false, accentColor: "var(--color-terracotta)" },
+  { name: "React", src: reactLogo, isMonochrome: false, accentColor: "var(--color-primary)" },
+  { name: "Next.js", src: nextjsLogo, isMonochrome: true, accentColor: "var(--color-background)" },
+  { name: "Flutter", src: flutterLogo, isMonochrome: false, accentColor: "var(--color-tertiary)" },
+  { name: "Node.js", src: nodejsLogo, isMonochrome: false, accentColor: "var(--color-secondary)" },
+  { name: "Express", src: expressLogo, isMonochrome: true, accentColor: "var(--color-background)" },
+  { name: "NestJS", src: nestjsLogo, isMonochrome: false, accentColor: "var(--color-tertiary)" },
+  { name: "PostgreSQL", src: postgresLogo, isMonochrome: false, accentColor: "var(--color-primary)" },
+  { name: "MongoDB", src: mongodbLogo, isMonochrome: false, accentColor: "var(--color-secondary)" },
+  { name: "GitHub", src: githubLogo, isMonochrome: true, accentColor: "var(--color-background)" },
+  { name: "Tailwind CSS", src: tailwindLogo, isMonochrome: false, accentColor: "var(--color-primary)" },
+  { name: "GSAP", src: gsapLogo, isMonochrome: false, accentColor: "var(--color-secondary)" },
+  { name: "Framer Motion", src: framerLogo, isMonochrome: false, accentColor: "var(--color-tertiary)" },
 ];
 
 export const CURSOR_CONFIG = {

@@ -232,15 +232,15 @@ export default function Contact() {
     <section
       ref={sectionRef}
       id="contact"
-      className="relative w-full min-h-screen px-5 sm:px-8 md:px-12 bg-transparent text-earth-cream overflow-hidden flex items-center justify-center pt-24 pb-12 lg:py-0"
+      className="relative w-full min-h-screen px-5 sm:px-8 md:px-12 bg-transparent text-foreground overflow-hidden flex items-center justify-center pt-24 pb-12 lg:py-0"
     >
       {/* Ambient background glows */}
       <div
-        className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-earth-moss/10 blur-[120px] pointer-events-none"
+        className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-secondary/10 blur-[120px] pointer-events-none"
         aria-hidden="true"
       />
       <div
-        className="absolute bottom-10 -right-32 w-96 h-96 rounded-full bg-earth-sand/10 blur-[130px] pointer-events-none"
+        className="absolute bottom-10 -right-32 w-96 h-96 rounded-full bg-primary/10 blur-[130px] pointer-events-none"
         aria-hidden="true"
       />
 
@@ -264,22 +264,22 @@ export default function Contact() {
               {/* Email */}
               <a
                 href="mailto:shahidumair622@gmail.com"
-                className="group flex items-center justify-between gap-3.5 p-3 sm:p-3.5 rounded-2xl bg-earth-card/80 hover:bg-earth-card border border-earth-cream/10 hover:border-earth-sand/40 transition-all duration-300 shadow-md hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+                className="group flex items-center justify-between gap-3.5 p-3 sm:p-3.5 rounded-2xl bg-surface/80 hover:bg-surface border border-foreground/10 hover:border-primary/40 transition-all duration-300 shadow-md hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-earth-sand/15 group-hover:bg-earth-sand/25 border border-earth-sand/30 flex items-center justify-center text-earth-sand transition-all shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/15 group-hover:bg-primary/25 border border-primary/30 flex items-center justify-center text-primary transition-all shrink-0">
                     <AppIcon icon="mail" className="w-4 h-4" />
                   </div>
                   <div className="flex flex-col min-w-0 text-left">
-                    <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-earth-sand/80">
+                    <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-primary/80">
                       Email
                     </span>
-                    <span className="text-sm sm:text-base font-medium text-earth-cream group-hover:text-earth-sand transition-colors truncate">
+                    <span className="text-sm sm:text-base font-medium text-foreground group-hover:text-primary transition-colors truncate">
                       shahidumair622@gmail.com
                     </span>
                   </div>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-earth-sand pr-1 shrink-0">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-primary pr-1 shrink-0">
                   <AppIcon icon="arrow-up-right" className="w-4 h-4" />
                 </div>
               </a>
@@ -287,22 +287,22 @@ export default function Contact() {
               {/* Phone */}
               <a
                 href="tel:+923215215701"
-                className="group flex items-center justify-between gap-3.5 p-3 sm:p-3.5 rounded-2xl bg-earth-card/80 hover:bg-earth-card border border-earth-cream/10 hover:border-earth-sand/40 transition-all duration-300 shadow-md hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+                className="group flex items-center justify-between gap-3.5 p-3 sm:p-3.5 rounded-2xl bg-surface/80 hover:bg-surface border border-foreground/10 hover:border-primary/40 transition-all duration-300 shadow-md hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-earth-sand/15 group-hover:bg-earth-sand/25 border border-earth-sand/30 flex items-center justify-center text-earth-sand transition-all shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/15 group-hover:bg-primary/25 border border-primary/30 flex items-center justify-center text-primary transition-all shrink-0">
                     <AppIcon icon="phone" className="w-4 h-4" />
                   </div>
                   <div className="flex flex-col min-w-0 text-left">
-                    <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-earth-sand/80">
+                    <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-primary/80">
                       Phone
                     </span>
-                    <span className="text-sm sm:text-base font-medium text-earth-cream group-hover:text-earth-sand transition-colors truncate">
+                    <span className="text-sm sm:text-base font-medium text-foreground group-hover:text-primary transition-colors truncate">
                       +92-321-5215701
                     </span>
                   </div>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-earth-sand pr-1 shrink-0">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity text-primary pr-1 shrink-0">
                   <AppIcon icon="arrow-up-right" className="w-4 h-4" />
                 </div>
               </a>
@@ -311,22 +311,22 @@ export default function Contact() {
 
           {/* Right Column: Contact Form (Scrolls) */}
           <div ref={rightColRef} className="w-full will-change-transform">
-            <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 bg-earth-card border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden">
+            <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 bg-surface border border-foreground/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden">
               {/* Subtle top golden accent line */}
               <div
-                className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-earth-sand/60 to-transparent pointer-events-none"
+                className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent pointer-events-none"
                 aria-hidden="true"
               />
 
               {isSuccess ? (
                 <div className="py-10 flex flex-col items-center text-center space-y-4">
-                  <div className="w-14 h-14 rounded-2xl bg-earth-sand/20 border border-earth-sand/40 flex items-center justify-center text-earth-sand shadow-lg shadow-earth-sand/20">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shadow-lg shadow-primary/20">
                     <AppIcon icon="check" className="w-7 h-7" />
                   </div>
-                  <h3 className="text-2xl sm:text-3xl font-bold font-heading text-earth-cream tracking-tight">
+                  <h3 className="text-2xl sm:text-3xl font-bold font-heading text-foreground tracking-tight">
                     Message Sent!
                   </h3>
-                  <p className="text-earth-cream/70 text-sm sm:text-base max-w-md font-sans">
+                  <p className="text-foreground/70 text-sm sm:text-base max-w-md font-sans">
                     Thank you for reaching out. Your message has been received, and I'll get back to you as soon as possible.
                   </p>
                   <div className="pt-4">
@@ -338,7 +338,7 @@ export default function Contact() {
                         setErrorMessage(null);
                         setFieldErrors({});
                       }}
-                      className="!border-earth-sand/40 !text-earth-sand hover:!text-earth-cream hover:!border-earth-sand"
+                      className="!border-primary/40 !text-primary hover:!text-foreground hover:!border-primary"
                     >
                       Send Another Message
                     </AppButton>
@@ -346,7 +346,7 @@ export default function Contact() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5" noValidate>
-                  <h3 className="text-xl sm:text-2xl font-bold font-heading text-earth-cream tracking-tight mb-1">
+                  <h3 className="text-xl sm:text-2xl font-bold font-heading text-foreground tracking-tight mb-1">
                     Send a Message
                   </h3>
 
@@ -354,10 +354,10 @@ export default function Contact() {
                   {errorMessage && (
                     <div
                       role="alert"
-                      className="p-3.5 sm:p-4 rounded-xl bg-earth-terracotta/20 border border-earth-terracotta/50 text-earth-cream text-sm flex items-start gap-3 backdrop-blur-sm animate-in fade-in duration-200"
+                      className="p-3.5 sm:p-4 rounded-xl bg-tertiary/20 border border-tertiary/50 text-foreground text-sm flex items-start gap-3 backdrop-blur-sm animate-in fade-in duration-200"
                     >
                       <svg
-                        className="w-5 h-5 text-earth-sand shrink-0 mt-0.5"
+                        className="w-5 h-5 text-primary shrink-0 mt-0.5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -369,12 +369,12 @@ export default function Contact() {
                         <line x1="12" y1="16" x2="12.01" y2="16" />
                       </svg>
                       <div className="flex-1 space-y-1 text-left">
-                        <p className="font-semibold text-earth-cream">{errorMessage}</p>
-                        <p className="text-xs text-earth-cream/70">
+                        <p className="font-semibold text-foreground">{errorMessage}</p>
+                        <p className="text-xs text-foreground/70">
                           You can also reach me directly at{" "}
                           <a
                             href="mailto:shahidumair622@gmail.com"
-                            className="text-earth-sand underline underline-offset-2 hover:text-earth-cream font-medium transition-colors"
+                            className="text-primary underline underline-offset-2 hover:text-foreground font-medium transition-colors"
                           >
                             shahidumair622@gmail.com
                           </a>

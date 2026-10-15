@@ -29,28 +29,37 @@
   --font-mono: "Archivo", sans-serif;
 
   /* ==========================================================================
-   * 2. COLOR PALETTE VARIABLES (NO HARDCODED COLORS ANYWHERE)
-   * #606c38 - Olive / Moss Green
-   * #283618 - Dark Moss / Deep Forest Green
-   * #fefae0 - Cornsilk / Warm Cream
-   * #dda15e - Earth Yellow / Warm Sand
-   * #bc6c25 - Tiger's Eye / Terracotta / Copper
-   * #0e140a - Deep Onyx
-   * #161412 - Dark Card Surface
+   * 2. SEMANTIC COLOR PALETTE
+   * Change these core variables here to instantly re-theme the entire website!
    * ========================================================================== */
-  --color-moss: #606c38;
-  --color-olive: #606c38;
-  --color-forest: #283618;
-  --color-cream: #fefae0;
-  --color-cornsilk: #fefae0;
-  --color-sand: #dda15e;
-  --color-earth-yellow: #dda15e;
-  --color-terracotta: #bc6c25;
-  --color-copper: #bc6c25;
-  --color-tigers-eye: #bc6c25;
-  --color-onyx: #0e140a;
-  --color-surface-dark: #161412;
-  --color-card-dark: #161412;
+  --color-primary: #dda15e;          /* Primary Accent / CTA / Highlights */
+  --color-secondary: #606c38;        /* Secondary Accent / Badges / Complement */
+  --color-tertiary: #bc6c25;         /* Tertiary Accent / Attention / Warm highlights */
+  --color-accent: var(--color-tertiary); /* Accent alias */
+  --color-background: #283618;       /* Deep Page / Canvas Background */
+  --color-surface: #161412;          /* Card / Modal / Surface Background */
+  --color-surface-dark: #0e140a;     /* Pure Deep Surface / Backdrop */
+  --color-foreground: #fefae0;       /* Main Foreground / Body Text & Headings */
+  --color-text: var(--color-foreground);
+  --color-text-muted: color-mix(in srgb, var(--color-foreground) 75%, transparent);
+
+  /* Contrast / On-Accent Colors */
+  --color-primary-contrast: var(--color-background);
+  --color-secondary-contrast: var(--color-foreground);
+
+  /* Backward Compatibility Aliases (Preserves existing code & extensions) */
+  --color-sand: var(--color-primary);
+  --color-earth-yellow: var(--color-primary);
+  --color-moss: var(--color-secondary);
+  --color-olive: var(--color-secondary);
+  --color-forest: var(--color-background);
+  --color-terracotta: var(--color-tertiary);
+  --color-copper: var(--color-tertiary);
+  --color-tigers-eye: var(--color-tertiary);
+  --color-cream: var(--color-foreground);
+  --color-cornsilk: var(--color-foreground);
+  --color-onyx: var(--color-surface-dark);
+  --color-card-dark: var(--color-surface);
 }
 
 @theme {
@@ -58,44 +67,58 @@
   --font-sans: "Archivo", sans-serif;
   --font-mono: "Archivo", sans-serif;
 
-  /* Natural / Descriptive names */
-  --color-moss: var(--color-moss);
-  --color-olive: var(--color-olive);
-  --color-forest: var(--color-forest);
-  --color-cream: var(--color-cream);
-  --color-cornsilk: var(--color-cream);
-  --color-sand: var(--color-sand);
-  --color-earth-yellow: var(--color-sand);
-  --color-terracotta: var(--color-terracotta);
-  --color-copper: var(--color-copper);
-  --color-tigers-eye: var(--color-terracotta);
-  --color-onyx: var(--color-onyx);
-
-  /* Earth namespace: `bg-earth-moss`, `text-earth-cream`, etc. */
-  --color-earth-black: var(--color-onyx);
-  --color-earth-onyx: var(--color-onyx);
-  --color-earth-moss: var(--color-moss);
-  --color-earth-olive: var(--color-olive);
-  --color-earth-forest: var(--color-forest);
-  --color-earth-dark: var(--color-forest);
-  --color-earth-cream: var(--color-cream);
-  --color-earth-cornsilk: var(--color-cream);
-  --color-earth-light: var(--color-cream);
-  --color-earth-sand: var(--color-sand);
-  --color-earth-yellow: var(--color-sand);
-  --color-earth-terracotta: var(--color-terracotta);
-  --color-earth-copper: var(--color-copper);
-  --color-earth-rust: var(--color-terracotta);
-  --color-earth-card: var(--color-card-dark);
+  /* Semantic Theme Tokens (Enables `bg-primary`, `text-primary`, `bg-secondary`, `bg-background`, `text-foreground`, etc.) */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-tertiary: var(--color-tertiary);
+  --color-accent: var(--color-accent);
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
   --color-surface-dark: var(--color-surface-dark);
+  --color-foreground: var(--color-foreground);
+  --color-text: var(--color-foreground);
+  --color-text-muted: var(--color-text-muted);
+  --color-card: var(--color-surface);
 
-  /* Numbered palette tokens */
-  --color-palette-1: var(--color-moss);
-  --color-palette-2: var(--color-forest);
-  --color-palette-3: var(--color-cream);
-  --color-palette-4: var(--color-sand);
-  --color-palette-5: var(--color-terracotta);
-  --color-palette-black: var(--color-onyx);
+  /* Backward Compatible Descriptive Names */
+  --color-sand: var(--color-primary);
+  --color-moss: var(--color-secondary);
+  --color-olive: var(--color-secondary);
+  --color-forest: var(--color-background);
+  --color-terracotta: var(--color-tertiary);
+  --color-copper: var(--color-tertiary);
+  --color-cream: var(--color-foreground);
+  --color-cornsilk: var(--color-foreground);
+  --color-onyx: var(--color-surface-dark);
+
+  /* Backward Compatible Earth Namespace */
+  --color-earth-sand: var(--color-primary);
+  --color-earth-yellow: var(--color-primary);
+  --color-earth-moss: var(--color-secondary);
+  --color-earth-olive: var(--color-secondary);
+  --color-earth-forest: var(--color-background);
+  --color-earth-dark: var(--color-background);
+  --color-earth-cream: var(--color-foreground);
+  --color-earth-cornsilk: var(--color-foreground);
+  --color-earth-light: var(--color-foreground);
+  --color-earth-terracotta: var(--color-tertiary);
+  --color-earth-copper: var(--color-tertiary);
+  --color-earth-rust: var(--color-tertiary);
+  --color-earth-card: var(--color-surface);
+  --color-earth-black: var(--color-surface-dark);
+  --color-earth-onyx: var(--color-surface-dark);
+
+  /* Numbered Palette Tokens */
+  --color-palette-primary: var(--color-primary);
+  --color-palette-secondary: var(--color-secondary);
+  --color-palette-tertiary: var(--color-tertiary);
+  --color-palette-1: var(--color-primary);
+  --color-palette-2: var(--color-secondary);
+  --color-palette-3: var(--color-tertiary);
+  --color-palette-4: var(--color-background);
+  --color-palette-5: var(--color-foreground);
+  --color-palette-surface: var(--color-surface);
+  --color-palette-black: var(--color-surface-dark);
 }
 
 /* Base typography */
@@ -148,8 +171,8 @@ samp,
  */
 
 .app-btn {
-  --accent: var(--color-sand);
-  --accent-contrast: var(--color-forest);
+  --accent: var(--color-primary);
+  --accent-contrast: var(--color-primary-contrast);
   --btn-ring: var(--accent);
   background-color: var(--accent);
   color: var(--accent-contrast);
@@ -161,9 +184,9 @@ samp,
 
 /* Primary Variant */
 .app-btn-primary {
-  --accent: var(--color-sand);
-  --accent-contrast: var(--color-forest);
-  --btn-ring: var(--color-sand);
+  --accent: var(--color-primary);
+  --accent-contrast: var(--color-primary-contrast);
+  --btn-ring: var(--color-primary);
   background-color: var(--accent);
   color: var(--accent-contrast);
 }
@@ -173,11 +196,11 @@ samp,
 
 /* Secondary Variant */
 .app-btn-secondary {
-  --accent: var(--color-forest);
-  --accent-contrast: var(--color-sand);
-  --btn-ring: color-mix(in srgb, var(--color-sand) 35%, transparent);
-  background-color: color-mix(in srgb, var(--color-sand) 8%, transparent);
-  color: var(--color-sand);
+  --accent: var(--color-background);
+  --accent-contrast: var(--color-primary);
+  --btn-ring: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  color: var(--color-primary);
 }
 .app-btn-secondary .app-btn-fill {
   background-color: var(--accent-contrast);
@@ -185,11 +208,11 @@ samp,
 
 /* Outline Variant */
 .app-btn-outline {
-  --accent: var(--color-forest);
-  --accent-contrast: var(--color-sand);
-  --btn-ring: color-mix(in srgb, var(--color-sand) 40%, transparent);
-  background-color: color-mix(in srgb, var(--color-sand) 8%, transparent);
-  color: var(--color-sand);
+  --accent: var(--color-background);
+  --accent-contrast: var(--color-primary);
+  --btn-ring: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  color: var(--color-primary);
 }
 .app-btn-outline .app-btn-fill {
   background-color: var(--accent-contrast);
@@ -197,11 +220,11 @@ samp,
 
 /* Ghost Variant */
 .app-btn-ghost {
-  --accent: var(--color-sand);
-  --accent-contrast: color-mix(in srgb, var(--color-cream) 10%, transparent);
+  --accent: var(--color-primary);
+  --accent-contrast: color-mix(in srgb, var(--color-foreground) 10%, transparent);
   --btn-ring: transparent;
   background-color: transparent;
-  color: var(--color-cream);
+  color: var(--color-foreground);
 }
 .app-btn-ghost .app-btn-fill {
   background-color: var(--accent-contrast);
@@ -209,17 +232,17 @@ samp,
 
 /* Icon Variant */
 .app-btn-icon {
-  --accent: var(--color-sand);
-  --btn-ring: color-mix(in srgb, var(--color-cream) 20%, transparent);
-  background-color: color-mix(in srgb, var(--color-cream) 8%, transparent);
-  color: var(--color-sand);
+  --accent: var(--color-primary);
+  --btn-ring: color-mix(in srgb, var(--color-foreground) 20%, transparent);
+  background-color: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+  color: var(--color-primary);
   transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 .app-btn-icon:hover {
-  background-color: color-mix(in srgb, var(--color-sand) 18%, transparent);
-  color: var(--color-cream);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--color-sand) 30%, transparent);
-  --btn-ring: color-mix(in srgb, var(--color-sand) 50%, transparent);
+  background-color: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-foreground);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-primary) 30%, transparent);
+  --btn-ring: color-mix(in srgb, var(--color-primary) 50%, transparent);
 }
 .app-btn-icon .app-btn-fill {
   display: none !important;
@@ -239,16 +262,16 @@ samp,
 
 /* Curtain Loader */
 .curtain-panel-left {
-  background: radial-gradient(circle at 100% 50%, var(--color-forest) 0%, var(--color-surface-dark) 60%, var(--color-onyx) 100%);
+  background: radial-gradient(circle at 100% 50%, var(--color-background) 0%, var(--color-surface) 60%, var(--color-surface-dark) 100%);
 }
 
 .curtain-panel-right {
-  background: radial-gradient(circle at 0% 50%, var(--color-forest) 0%, var(--color-surface-dark) 60%, var(--color-onyx) 100%);
+  background: radial-gradient(circle at 0% 50%, var(--color-background) 0%, var(--color-surface) 60%, var(--color-surface-dark) 100%);
 }
 
 .curtain-luminous-border {
-  background: linear-gradient(to bottom, transparent 0%, var(--color-terracotta) 20%, var(--color-sand) 50%, var(--color-terracotta) 80%, transparent 100%);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-terracotta) 50%, transparent), 0 0 2px color-mix(in srgb, var(--color-sand) 50%, transparent);
+  background: linear-gradient(to bottom, transparent 0%, var(--color-tertiary) 20%, var(--color-primary) 50%, var(--color-tertiary) 80%, transparent 100%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-tertiary) 50%, transparent), 0 0 2px color-mix(in srgb, var(--color-primary) 50%, transparent);
 }
 
 /* Overview 3D roller mask */

@@ -41,7 +41,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "HTML5 / CSS3",
       "Responsive UI/UX",
     ],
-    accent: "moss",
+    accent: "secondary",
   },
   {
     id: "mobile",
@@ -58,7 +58,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Localization",
       "Dart Isolates",
     ],
-    accent: "moss",
+    accent: "secondary",
   },
   {
     id: "backend",
@@ -75,7 +75,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Authentication (JWT)",
       "Supabase Auth",
     ],
-    accent: "moss",
+    accent: "secondary",
   },
   {
     id: "state-management",
@@ -91,7 +91,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Zustand",
       "Reactive Streams",
     ],
-    accent: "moss",
+    accent: "secondary",
   },
   {
     id: "database",
@@ -107,7 +107,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Supabase",
       "Data Modeling & Optimization",
     ],
-    accent: "moss",
+    accent: "secondary",
   },
   {
     id: "devops",
@@ -124,7 +124,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Version Control",
       "Codacy Static Analysis",
     ],
-    accent: "moss",
+    accent: "secondary",
   },
   {
     id: "performance",
@@ -140,7 +140,7 @@ export const SKILL_CARDS: SkillCard[] = [
       "Unit Testing",
       "Code Reviews & Debugging",
     ],
-    accent: "moss",
+    accent: "secondary",
   },
 ];
 
@@ -264,7 +264,7 @@ export default function Skills() {
     <section
       ref={sectionRef}
       id="skills"
-      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent text-earth-cream transition-colors duration-300 flex flex-col justify-end overflow-hidden select-none"
+      className="relative w-full h-screen h-[100dvh] min-h-screen bg-transparent text-foreground transition-colors duration-300 flex flex-col justify-end overflow-hidden select-none"
     >
       {/* Accessible Section Heading */}
       <h2 className="sr-only">Skills — Core Technical Domains</h2>
@@ -284,8 +284,8 @@ export default function Skills() {
             <AppCard
               key={card.id}
               data-skill-card="true"
-              accent={card.accent ?? "moss"}
-              className="w-max max-w-[80vw] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-earth-cream/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-earth-moss/10"
+              accent={card.accent ?? "secondary"}
+              className="w-max max-w-[80vw] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-foreground/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-secondary/10"
             >
               <div className="w-full min-w-0">
                 {/* Number & Heading */}
@@ -307,7 +307,7 @@ export default function Skills() {
               {/* Core Skills Pill Cloud */}
               <AppCardFooter className="w-0 min-w-full">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="text-[11px] font-sans text-earth-cream/40 uppercase tracking-wider mr-1">
+                  <span className="text-[11px] font-sans text-foreground/40 uppercase tracking-wider mr-1">
                     Skills:
                   </span>
                   {card.skills.map((skill, sIdx) => (

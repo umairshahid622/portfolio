@@ -231,8 +231,8 @@ export default function CurtainLoader() {
       >
         {/* Soft atmospheric ambient glow container */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-earth-terracotta/15 blur-[120px]" />
-          <div className="absolute bottom-1/4 right-0 w-72 h-72 rounded-full bg-earth-moss/20 blur-[100px]" />
+          <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-tertiary/15 blur-[120px]" />
+          <div className="absolute bottom-1/4 right-0 w-72 h-72 rounded-full bg-secondary/20 blur-[100px]" />
         </div>
 
         {/* Luminous Right Border - attached to and travels with Left Door */}
@@ -249,8 +249,8 @@ export default function CurtainLoader() {
       >
         {/* Soft atmospheric ambient glow container */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/3 -right-20 w-96 h-96 rounded-full bg-earth-sand/15 blur-[120px]" />
-          <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full bg-earth-terracotta/15 blur-[100px]" />
+          <div className="absolute top-1/3 -right-20 w-96 h-96 rounded-full bg-primary/15 blur-[120px]" />
+          <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full bg-tertiary/15 blur-[100px]" />
         </div>
 
         {/* Luminous Left Border - attached to and travels with Right Door */}
@@ -267,10 +267,10 @@ export default function CurtainLoader() {
       >
         {/* Large Minimalist Progress Counter */}
         <div className="flex items-baseline justify-center">
-          <span className="text-7xl sm:text-9xl font-black font-heading text-earth-cream tracking-tight tabular-nums drop-shadow-2xl">
+          <span className="text-7xl sm:text-9xl font-black font-heading text-foreground tracking-tight tabular-nums drop-shadow-2xl">
             {displayProgress}
           </span>
-          <span className="text-3xl sm:text-5xl font-heading font-bold text-earth-sand ml-2">
+          <span className="text-3xl sm:text-5xl font-heading font-bold text-primary ml-2">
             %
           </span>
         </div>        

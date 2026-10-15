@@ -787,10 +787,14 @@ function UnifiedCelestialMesh({
 
   // Color tokens
   const creamColor = typeof window !== "undefined"
-    ? getComputedStyle(document.documentElement).getPropertyValue("--color-cream").trim() || "#fefae0"
+    ? getComputedStyle(document.documentElement).getPropertyValue("--color-foreground").trim() ||
+      getComputedStyle(document.documentElement).getPropertyValue("--color-cream").trim() ||
+      "#fefae0"
     : "#fefae0";
   const goldenSandColor = typeof window !== "undefined"
-    ? getComputedStyle(document.documentElement).getPropertyValue("--color-sand").trim() || "#dda15e"
+    ? getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim() ||
+      getComputedStyle(document.documentElement).getPropertyValue("--color-sand").trim() ||
+      "#dda15e"
     : "#dda15e";
 
   // Create shared uniform dictionaries:

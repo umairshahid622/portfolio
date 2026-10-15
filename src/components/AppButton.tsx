@@ -54,7 +54,7 @@ const LABEL_DURATION = 0.22;
 const LABEL_DELAY = 0.12;
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "app-btn-primary shadow-lg shadow-earth-sand/20",
+  primary: "app-btn-primary shadow-lg shadow-primary/20",
   secondary: "app-btn-secondary shadow-sm",
   outline: "app-btn-outline shadow-sm",
   ghost: "app-btn-ghost",
@@ -309,7 +309,7 @@ export function AppButton({
 
   const combinedClasses = cn(
     "relative inline-flex items-center justify-center overflow-hidden rounded-full ring-1 ring-[var(--btn-ring,var(--accent))]",
-    "select-none hover:transition-shadow focus-visible:transition-shadow duration-200 outline-none focus-visible:ring-2 focus-visible:ring-earth-terracotta focus-visible:ring-offset-2",
+    "select-none hover:transition-shadow focus-visible:transition-shadow duration-200 outline-none focus-visible:ring-2 focus-visible:ring-tertiary focus-visible:ring-offset-2",
     variant === "icon" ? "w-10 h-10 p-0 rounded-full flex items-center justify-center" : sizeStyles[size],
     variantStyles[variant],
     disabled ? "cursor-not-allowed opacity-45 pointer-events-none" : "cursor-pointer",

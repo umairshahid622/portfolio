@@ -370,7 +370,7 @@ export default function WorkExperience() {
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
-              accent="moss"
+              accent="secondary"
               className={cn(
                 "experience-card absolute top-0 left-0 w-full h-full",
                 index === 0 && "z-10",
@@ -387,19 +387,19 @@ export default function WorkExperience() {
                     <AppCardNumber>{item.number}</AppCardNumber>
                     <AppCardTitle>{item.company}</AppCardTitle>
                   </div>
-                  <span className="font-heading text-xs sm:text-sm md:text-base font-medium tracking-normal text-earth-sand/85 shrink-0 text-right">
+                  <span className="font-heading text-xs sm:text-sm md:text-base font-medium tracking-normal text-primary/85 shrink-0 text-right">
                     {item.location}
                   </span>
                 </div>
 
                 {/* Role */}
-                <h4 className="text-base sm:text-lg md:text-xl font-bold text-earth-sand tracking-tight">
+                <h4 className="text-base sm:text-lg md:text-xl font-bold text-primary tracking-tight">
                   {item.role}
                 </h4>
 
                 {/* Domain under Role */}
                 <div className="mt-1 mb-2.5 sm:mb-3">
-                  <AppCardBadge accent="sand">{item.domain}</AppCardBadge>
+                  <AppCardBadge accent="primary">{item.domain}</AppCardBadge>
                 </div>
 
                 {/* Role Summary */}
@@ -412,9 +412,9 @@ export default function WorkExperience() {
                   {item.bullets.map((bullet, bIdx) => (
                     <li
                       key={bIdx}
-                      className="text-[12px] sm:text-[13px] text-earth-sand/90 leading-relaxed flex items-start gap-2.5"
+                      className="text-[12px] sm:text-[13px] text-primary/90 leading-relaxed flex items-start gap-2.5"
                     >
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 bg-earth-moss" />
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 bg-secondary" />
                       <span>{bullet}</span>
                     </li>
                   ))}
@@ -424,7 +424,7 @@ export default function WorkExperience() {
               {/* Card Footer: Tech Stack & Date */}
               <AppCardFooter>
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="text-[11px] font-sans text-earth-cream/40 uppercase tracking-wider mr-1">
+                  <span className="text-[11px] font-sans text-foreground/40 uppercase tracking-wider mr-1">
                     Stack:
                   </span>
                   {item.skills.map((skill, sIdx) => (
@@ -434,7 +434,7 @@ export default function WorkExperience() {
 
                 {/* Date / Period in Footer */}
                 <div className="shrink-0 self-start sm:self-auto">
-                  <span className="inline-flex items-center gap-1.5 font-sans text-[11px] sm:text-xs px-3 py-1 rounded-full bg-earth-cream/[0.05] border border-earth-cream/10 text-earth-sand font-medium">
+                  <span className="inline-flex items-center gap-1.5 font-sans text-[11px] sm:text-xs px-3 py-1 rounded-full bg-foreground/[0.05] border border-foreground/10 text-primary font-medium">
                     <svg
                       className="w-3.5 h-3.5 opacity-60"
                       fill="none"

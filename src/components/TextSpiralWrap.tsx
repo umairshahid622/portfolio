@@ -110,17 +110,17 @@ export default function TextSpiralWrap({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="var(--color-terracotta)" />
-            <stop offset="30%" stopColor="var(--color-sand)" />
-            <stop offset="70%" stopColor="var(--color-terracotta)" />
-            <stop offset="100%" stopColor="var(--color-sand)" />
+            <stop offset="0%" stopColor="var(--color-tertiary)" />
+            <stop offset="30%" stopColor="var(--color-primary)" />
+            <stop offset="70%" stopColor="var(--color-tertiary)" />
+            <stop offset="100%" stopColor="var(--color-primary)" />
           </linearGradient>
           <filter id={`glow-${uniqueId}`} x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow
               dx="0"
               dy="0"
               stdDeviation="2.5"
-              floodColor="var(--color-sand)"
+              floodColor="var(--color-primary)"
               floodOpacity="0.75"
             />
           </filter>
@@ -131,7 +131,7 @@ export default function TextSpiralWrap({
           d={LASSO_PATH}
           vectorEffect="non-scaling-stroke"
           fill="none"
-          stroke={strokeColor || "var(--color-terracotta)"}
+          stroke={strokeColor || "var(--color-tertiary)"}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"

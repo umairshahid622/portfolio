@@ -43,7 +43,7 @@ export default function App() {
   return (
     <LoadingProvider>
       <CurtainLoader />
-      <div className="dark min-h-screen w-full relative bg-earth-forest text-earth-cream overflow-x-clip selection:bg-earth-terracotta selection:text-earth-cream">
+      <div className="dark min-h-screen w-full relative bg-background text-foreground overflow-x-clip selection:bg-tertiary selection:text-foreground">
         <Header />
         <main className="w-full relative z-10">
           {/* Unified particle experience wrapper for Hero portal, Overview, Skills, Work Experience & Contact */}

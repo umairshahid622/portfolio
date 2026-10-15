@@ -10,6 +10,10 @@ import {
 import { cn } from "../utils/cn";
 
 export type CardAccent =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "accent"
   | "moss"
   | "sand"
   | "terracotta"
@@ -26,55 +30,44 @@ export interface CardAccentStyles {
   dot: string;
 }
 
+const PRIMARY_STYLE: CardAccentStyles = {
+  text: "text-primary",
+  glow: "bg-primary",
+  via: "via-primary",
+  badge: "bg-primary/20 border-primary/50 text-primary",
+  borderL: "border-primary",
+  dot: "bg-primary",
+};
+
+const SECONDARY_STYLE: CardAccentStyles = {
+  text: "text-secondary",
+  glow: "bg-secondary",
+  via: "via-secondary",
+  badge: "bg-secondary/20 border-secondary/50 text-secondary",
+  borderL: "border-secondary",
+  dot: "bg-secondary",
+};
+
+const TERTIARY_STYLE: CardAccentStyles = {
+  text: "text-tertiary",
+  glow: "bg-tertiary",
+  via: "via-tertiary",
+  badge: "bg-tertiary/20 border-tertiary/50 text-tertiary",
+  borderL: "border-tertiary",
+  dot: "bg-tertiary",
+};
+
 export const ACCENT_STYLES: Record<CardAccent, CardAccentStyles> = {
-  moss: {
-    text: "text-earth-moss",
-    glow: "bg-earth-moss",
-    via: "via-earth-moss",
-    badge: "bg-earth-moss/20 border-earth-moss/50 text-earth-moss",
-    borderL: "border-earth-moss",
-    dot: "bg-earth-moss",
-  },
-  sand: {
-    text: "text-earth-sand",
-    glow: "bg-earth-sand",
-    via: "via-earth-sand",
-    badge: "bg-earth-sand/20 border-earth-sand/50 text-earth-sand",
-    borderL: "border-earth-sand",
-    dot: "bg-earth-sand",
-  },
-  terracotta: {
-    text: "text-earth-terracotta",
-    glow: "bg-earth-terracotta",
-    via: "via-earth-terracotta",
-    badge: "bg-earth-terracotta/20 border-earth-terracotta/50 text-earth-terracotta",
-    borderL: "border-earth-terracotta",
-    dot: "bg-earth-terracotta",
-  },
-  copper: {
-    text: "text-earth-copper",
-    glow: "bg-earth-copper",
-    via: "via-earth-copper",
-    badge: "bg-earth-copper/20 border-earth-copper/50 text-earth-copper",
-    borderL: "border-earth-copper",
-    dot: "bg-earth-copper",
-  },
-  olive: {
-    text: "text-earth-olive",
-    glow: "bg-earth-olive",
-    via: "via-earth-olive",
-    badge: "bg-earth-olive/20 border-earth-olive/50 text-earth-olive",
-    borderL: "border-earth-olive",
-    dot: "bg-earth-olive",
-  },
-  rust: {
-    text: "text-earth-rust",
-    glow: "bg-earth-rust",
-    via: "via-earth-rust",
-    badge: "bg-earth-rust/20 border-earth-rust/50 text-earth-rust",
-    borderL: "border-earth-rust",
-    dot: "bg-earth-rust",
-  },
+  primary: PRIMARY_STYLE,
+  secondary: SECONDARY_STYLE,
+  tertiary: TERTIARY_STYLE,
+  accent: TERTIARY_STYLE,
+  sand: PRIMARY_STYLE,
+  moss: SECONDARY_STYLE,
+  olive: SECONDARY_STYLE,
+  terracotta: TERTIARY_STYLE,
+  copper: TERTIARY_STYLE,
+  rust: TERTIARY_STYLE,
 };
 
 interface AppCardContextValue {
@@ -83,8 +76,8 @@ interface AppCardContextValue {
 }
 
 const AppCardContext = createContext<AppCardContextValue>({
-  accent: "moss",
-  accentStyles: ACCENT_STYLES.moss,
+  accent: "secondary",
+  accentStyles: ACCENT_STYLES.secondary,
 });
 
 export function useAppCard() {
@@ -103,21 +96,21 @@ export const AppCard = forwardRef<HTMLDivElement, AppCardProps>(function AppCard
   {
     children,
     className,
-    accent = "moss",
+    accent = "secondary",
     topGradient = true,
     ambientGlow = true,
     ...props
   },
   ref
 ) {
-  const accentStyles = ACCENT_STYLES[accent] ?? ACCENT_STYLES.moss;
+  const accentStyles = ACCENT_STYLES[accent] ?? ACCENT_STYLES.secondary;
 
   return (
     <AppCardContext.Provider value={{ accent, accentStyles }}>
       <div
         ref={ref}
         className={cn(
-          "rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-6 bg-earth-card border border-earth-cream/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between",
+          "rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-6 bg-surface border border-foreground/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between",
           !className?.includes("absolute") && "relative",
           className
         )}
@@ -195,7 +188,7 @@ export function AppCardTitle({
   return (
     <Component
       className={cn(
-        "font-heading text-xl sm:text-2xl md:text-3xl font-bold text-earth-cream tracking-tight",
+        "font-heading text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight",
         className
       )}
       {...props}
@@ -248,7 +241,7 @@ export function AppCardSummary({
   return (
     <p
       className={cn(
-        "text-xs sm:text-[13px] text-earth-cream/80 leading-relaxed border-l-2 pl-3 py-0.5",
+        "text-xs sm:text-[13px] text-foreground/80 leading-relaxed border-l-2 pl-3 py-0.5",
         accentStyles.borderL,
         className
       )}
@@ -272,7 +265,7 @@ export function AppCardPill({
   return (
     <span
       className={cn(
-        "text-[11px] sm:text-xs font-sans px-2.5 py-0.5 sm:py-1 rounded-md bg-earth-cream/[0.04] border border-earth-cream/10 text-earth-sand hover:text-earth-cream transition-colors",
+        "text-[11px] sm:text-xs font-sans px-2.5 py-0.5 sm:py-1 rounded-md bg-foreground/[0.04] border border-foreground/10 text-primary hover:text-foreground transition-colors",
         className
       )}
       {...props}
@@ -295,7 +288,7 @@ export function AppCardFooter({
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 pt-2.5 sm:pt-3 border-t border-earth-cream/10 mt-auto",
+        "flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 pt-2.5 sm:pt-3 border-t border-foreground/10 mt-auto",
         className
       )}
       {...props}

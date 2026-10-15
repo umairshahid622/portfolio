@@ -240,8 +240,8 @@ export default function SmoothCursor() {
           gsap.to(ring, {
             scale: 1.45,
             opacity: 1,
-            borderColor: "var(--color-terracotta)",
-            backgroundColor: "color-mix(in srgb, var(--color-terracotta) 12%, transparent)",
+            borderColor: "var(--color-tertiary)",
+            backgroundColor: "color-mix(in srgb, var(--color-tertiary) 12%, transparent)",
             duration: 0.25,
             ease: "power2.out",
           });
@@ -265,7 +265,7 @@ export default function SmoothCursor() {
           gsap.to(ring, {
             scale: 1,
             opacity: 1,
-            borderColor: "color-mix(in srgb, var(--color-terracotta) 40%, transparent)",
+            borderColor: "color-mix(in srgb, var(--color-tertiary) 40%, transparent)",
             backgroundColor: "transparent",
             duration: 0.3,
             ease: "back.out(2)",
@@ -310,7 +310,7 @@ export default function SmoothCursor() {
       {/* Smooth Cursor Follower Ring */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 size-8 rounded-full border-2 border-earth-sand/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
+        className="fixed top-0 left-0 size-8 rounded-full border-2 border-primary/40 pointer-events-none z-[9999] opacity-0 will-change-transform transition-[border-color,background-color] duration-200"
       />
     </div>
   );

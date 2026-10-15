@@ -65,7 +65,7 @@ export const AppInput = forwardRef<
     helperText,
     autoComplete,
     animationMode = "single",
-    accentColor = "var(--color-sand, #dda15e)",
+    accentColor = "var(--color-primary, #dda15e)",
     borderRadius = 12,
     ...props
   },
@@ -212,11 +212,11 @@ export const AppInput = forwardRef<
         <label
           htmlFor={inputId}
           className={cn(
-            "block text-xs sm:text-sm font-semibold uppercase tracking-wider text-earth-cream/80 font-sans cursor-pointer select-none",
+            "block text-xs sm:text-sm font-semibold uppercase tracking-wider text-foreground/80 font-sans cursor-pointer select-none",
             labelClassName
           )}
         >
-          {label} {required && <span className="text-earth-sand ml-0.5">*</span>}
+          {label} {required && <span className="text-primary ml-0.5">*</span>}
         </label>
       )}
 
@@ -224,7 +224,7 @@ export const AppInput = forwardRef<
       <div
         ref={containerRef}
         className={cn(
-          "relative w-full rounded-xl bg-earth-black/60 overflow-visible transition-colors duration-200",
+          "relative w-full rounded-xl bg-surface-dark/60 overflow-visible transition-colors duration-200",
           disabled && "opacity-50 cursor-not-allowed"
         )}
       >
@@ -242,7 +242,7 @@ export const AppInput = forwardRef<
                   dx="0"
                   dy="0"
                   stdDeviation="2.5"
-                  floodColor={error ? "#bc6c25" : "#dda15e"}
+                  floodColor={error ? "var(--color-tertiary, #bc6c25)" : "var(--color-primary, #dda15e)"}
                   floodOpacity="0.65"
                 />
               </filter>
@@ -256,7 +256,7 @@ export const AppInput = forwardRef<
               height={Math.max(0, yMax - yMin)}
               rx={r}
               ry={r}
-              stroke={error ? "var(--color-terracotta, #bc6c25)" : "rgba(254, 250, 224, 0.15)"}
+              stroke={error ? "var(--color-tertiary, #bc6c25)" : "color-mix(in srgb, var(--color-foreground) 15%, transparent)"}
               strokeWidth={1}
               fill="none"
               className="transition-colors duration-200"
@@ -268,7 +268,7 @@ export const AppInput = forwardRef<
                 <path
                   ref={path1Ref}
                   d={dPath1}
-                  stroke={error ? "var(--color-terracotta, #bc6c25)" : accentColor}
+                  stroke={error ? "var(--color-tertiary, #bc6c25)" : accentColor}
                   strokeWidth={strokeWidth}
                   strokeLinecap="round"
                 />
@@ -276,7 +276,7 @@ export const AppInput = forwardRef<
                 <path
                   ref={path2Ref}
                   d={dPath2}
-                  stroke={error ? "var(--color-terracotta, #bc6c25)" : accentColor}
+                  stroke={error ? "var(--color-tertiary, #bc6c25)" : accentColor}
                   strokeWidth={strokeWidth}
                   strokeLinecap="round"
                 />
@@ -287,7 +287,7 @@ export const AppInput = forwardRef<
                 <path
                   ref={loopPathRef}
                   d={dLoop}
-                  stroke={error ? "var(--color-terracotta, #bc6c25)" : accentColor}
+                  stroke={error ? "var(--color-tertiary, #bc6c25)" : accentColor}
                   strokeWidth={strokeWidth}
                   strokeLinecap="round"
                 />
@@ -313,8 +313,8 @@ export const AppInput = forwardRef<
             placeholder={placeholder}
             disabled={disabled}
             className={cn(
-              "w-full px-4 py-3.5 bg-transparent border-0 outline-none text-earth-cream text-sm sm:text-base",
-              "placeholder:text-earth-cream/30 resize-none font-sans relative z-0",
+              "w-full px-4 py-3.5 bg-transparent border-0 outline-none text-foreground text-sm sm:text-base",
+              "placeholder:text-foreground/30 resize-none font-sans relative z-0",
               inputClassName
             )}
             {...(props as TextareaHTMLAttributes<HTMLTextAreaElement>)}
@@ -335,8 +335,8 @@ export const AppInput = forwardRef<
             disabled={disabled}
             autoComplete={autoComplete}
             className={cn(
-              "w-full px-4 py-3.5 bg-transparent border-0 outline-none text-earth-cream text-sm sm:text-base",
-              "placeholder:text-earth-cream/30 font-sans relative z-0",
+              "w-full px-4 py-3.5 bg-transparent border-0 outline-none text-foreground text-sm sm:text-base",
+              "placeholder:text-foreground/30 font-sans relative z-0",
               inputClassName
             )}
             {...(props as InputHTMLAttributes<HTMLInputElement>)}
@@ -346,12 +346,12 @@ export const AppInput = forwardRef<
 
       {/* Error or Helper Text */}
       {error && (
-        <p className="text-xs text-earth-terracotta font-medium tracking-wide">
+        <p className="text-xs text-tertiary font-medium tracking-wide">
           {error}
         </p>
       )}
       {!error && helperText && (
-        <p className="text-xs text-earth-cream/50 font-normal">
+        <p className="text-xs text-foreground/50 font-normal">
           {helperText}
         </p>
       )}

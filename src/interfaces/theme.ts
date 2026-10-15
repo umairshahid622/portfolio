@@ -1,11 +1,20 @@
 export type Theme = "dark";
 
 export interface ThemePalette {
-  moss: string;
-  forest: string;
-  cream: string;
-  sand: string;
-  terracotta: string;
+  primary: string;
+  secondary: string;
+  tertiary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  surfaceDark: string;
+  foreground: string;
+  // Backward compatibility aliases
+  moss?: string;
+  forest?: string;
+  cream?: string;
+  sand?: string;
+  terracotta?: string;
 }
 
 export interface ThemeColors extends ThemePalette {
@@ -15,6 +24,9 @@ export interface ThemeColors extends ThemePalette {
   textMuted: string;
   accent: string;
   primary: string;
+  secondary: string;
+  tertiary: string;
+  foreground: string;
 }
 
 export interface ThemeContextType {

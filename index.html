@@ -38,14 +38,16 @@
     </script>
     <style>
       :root {
-        --color-forest: #283618;
-        --color-cream: #fefae0;
+        --color-background: #283618;
+        --color-foreground: #fefae0;
+        --color-forest: var(--color-background);
+        --color-cream: var(--color-foreground);
       }
       /* Critical styles to prevent FOUC / flash before CSS loads */
       html {
         color-scheme: dark;
-        background-color: var(--color-forest);
-        color: var(--color-cream);
+        background-color: var(--color-background);
+        color: var(--color-foreground);
       }
       body {
         margin: 0;
