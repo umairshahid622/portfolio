@@ -75,11 +75,24 @@ export default function HeroOverviewPortal() {
           portalRing.style.opacity = "0";
           portalRing.style.width = "0px";
           portalRing.style.height = "0px";
+          portalRing.style.left = "50%";
+          portalRing.style.top = "50%";
         },
         onUpdate: (self) => {
           const p = self.progress;
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
+
+          // Calculate exact sub-pixel center of the singularity beacon dot relative to heroLayer
+          let originX = heroLayer.clientWidth * 0.5;
+          let originY = heroLayer.clientHeight * 0.5;
+
+          if (centerPoint) {
+            const ptRect = centerPoint.getBoundingClientRect();
+            const heroRect = heroLayer.getBoundingClientRect();
+            if (heroRect.width > 0 && heroRect.height > 0) {
+              originX = ptRect.left + ptRect.width * 0.5 - heroRect.left;
+              originY = ptRect.top + ptRect.height * 0.5 - heroRect.top;
+            }
+          }
 
           if (p <= 0.002) {
             particleBridge.isDarkActive = false;
@@ -92,17 +105,22 @@ export default function HeroOverviewPortal() {
             portalRing.style.opacity = "0";
             portalRing.style.width = "0px";
             portalRing.style.height = "0px";
+            portalRing.style.left = `${originX.toFixed(1)}px`;
+            portalRing.style.top = `${originY.toFixed(1)}px`;
             return;
           }
 
           particleBridge.isDarkActive = true;
           particleBridge.overviewProgress = 0.0;
 
-          centerPoint.style.opacity = "0";
-          centerPoint.style.transform = "translate(-50%, -50%) scale(0.3)";
+          // Smoothly scale down and fade out the center beacon dot in place as the portal opens
+          centerPoint.style.opacity = p > 0.08 ? "0" : `${(1 - p / 0.08).toFixed(2)}`;
+          centerPoint.style.transform = `translate(-50%, -50%) scale(${Math.max(0.2, 1 - p * 3).toFixed(2)})`;
 
-          // Calculate radius needed to fully encompass the viewport corners from center (50% 50%)
-          const maxRadius = Math.hypot(centerX, centerY) * 1.25;
+          // Calculate radius needed to fully encompass the viewport corners from the exact beacon center
+          const maxDistX = Math.max(originX, heroLayer.clientWidth - originX);
+          const maxDistY = Math.max(originY, heroLayer.clientHeight - originY);
+          const maxRadius = Math.hypot(maxDistX, maxDistY) * 1.15;
           const currentRadius = p * maxRadius;
 
           if (p >= 0.998) {
@@ -114,8 +132,8 @@ export default function HeroOverviewPortal() {
             return;
           }
 
-          // Cutout aperture in Hero centered at exact pixel coordinates (centerX, centerY)
-          const mask = `radial-gradient(circle at ${centerX.toFixed(1)}px ${centerY.toFixed(
+          // Cutout aperture in Hero centered at the exact pixel coordinates of the beacon point
+          const mask = `radial-gradient(circle at ${originX.toFixed(1)}px ${originY.toFixed(
             1
           )}px, transparent 0px, transparent ${currentRadius.toFixed(
             1
@@ -128,10 +146,10 @@ export default function HeroOverviewPortal() {
             p > 0.88 ? `${Math.max(0, 1 - (p - 0.88) / 0.12)}` : "1";
           heroLayer.style.pointerEvents = p > 0.25 ? "none" : "auto";
 
-          // Luminous portal boundary ring locked to the exact same center & radius
+          // Luminous portal boundary ring locked to the exact same beacon center & radius
           const diameter = currentRadius * 2;
-          portalRing.style.left = `${(centerX - currentRadius).toFixed(1)}px`;
-          portalRing.style.top = `${(centerY - currentRadius).toFixed(1)}px`;
+          portalRing.style.left = `${originX.toFixed(1)}px`;
+          portalRing.style.top = `${originY.toFixed(1)}px`;
           portalRing.style.width = `${diameter.toFixed(1)}px`;
           portalRing.style.height = `${diameter.toFixed(1)}px`;
           portalRing.style.opacity =
@@ -186,7 +204,7 @@ export default function HeroOverviewPortal() {
         {/* Layer 4: Expanding Celestial Portal Boundary Ring with Dynamic Theme Glow */}
         <div
           ref={portalRingRef}
-          className="absolute rounded-full pointer-events-none z-30 opacity-0 will-change-[width,height,left,top,opacity] border-[2.5px] border-primary/90 portal-ring-glow"
+          className="absolute rounded-full pointer-events-none z-30 opacity-0 will-change-[width,height,left,top,opacity] border-[2.5px] border-primary/90 portal-ring-glow -translate-x-1/2 -translate-y-1/2"
           style={{ width: 0, height: 0, left: "50%", top: "50%" }}
         />
       </div>
