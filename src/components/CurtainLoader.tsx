@@ -179,7 +179,7 @@ export default function CurtainLoader() {
           [leftBorderRef.current, rightBorderRef.current],
           {
             boxShadow:
-              "0 0 12px rgba(221, 161, 94, 0.75), 0 0 3px rgba(255, 255, 255, 0.6)",
+              "0 0 12px color-mix(in srgb, var(--color-primary) 75%, transparent), 0 0 3px rgba(255, 255, 255, 0.6)",
             duration: 0.25,
           },
           "-=0.2"

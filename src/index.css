@@ -32,20 +32,25 @@
    * 2. SEMANTIC COLOR PALETTE
    * Change these core variables here to instantly re-theme the entire website!
    * ========================================================================== */
-  --color-primary: #dda15e;          /* Primary Accent / CTA / Highlights */
-  --color-secondary: #606c38;        /* Secondary Accent / Badges / Complement */
-  --color-tertiary: #bc6c25;         /* Tertiary Accent / Attention / Warm highlights */
-  --color-accent: var(--color-tertiary); /* Accent alias */
-  --color-background: #283618;       /* Deep Page / Canvas Background */
-  --color-surface: #161412;          /* Card / Modal / Surface Background */
-  --color-surface-dark: #0e140a;     /* Pure Deep Surface / Backdrop */
-  --color-foreground: #fefae0;       /* Main Foreground / Body Text & Headings */
+  --color-primary: #a2d2ff;          /* Vibrant Pastel Sky Blue - CTA / Glows / Highlights */
+  --color-secondary: #cdb4db;        /* Soft Lilac / Lavender - Secondary Badges / Borders */
+  --color-tertiary: #ffafcc;         /* Carnation Pink - Warm Attention / Highlights */
+  --color-accent: #ffc8dd;           /* Soft Pastel Pink - Shimmer Accents */
+  --color-background: #0e0c18;       /* Deep Twilight / Midnight-Plum Background */
+  --color-surface: #161324;          /* Deep Card & Modal Surface */
+  --color-surface-dark: #090710;     /* Deepest Backdrop */
+  --color-foreground: #ffffff;       /* Crisp Foreground / Headings & Body */
   --color-text: var(--color-foreground);
-  --color-text-muted: color-mix(in srgb, var(--color-foreground) 75%, transparent);
+  --color-text-muted: #bde0fe;       /* Soft Ice / Sky Blue Muted Text */
 
   /* Contrast / On-Accent Colors */
-  --color-primary-contrast: var(--color-background);
-  --color-secondary-contrast: var(--color-foreground);
+  --color-primary-contrast: #0e0c18;
+  --color-secondary-contrast: #0e0c18;
+
+  /* Portal Glow System - dynamically inherits theme palette */
+  --portal-glow-inner: color-mix(in srgb, var(--color-foreground) 85%, transparent);
+  --portal-glow-mid: color-mix(in srgb, var(--color-primary) 65%, transparent);
+  --portal-glow-outer: color-mix(in srgb, var(--color-secondary) 50%, transparent);
 
   /* Backward Compatibility Aliases (Preserves existing code & extensions) */
   --color-sand: var(--color-primary);
@@ -302,4 +307,20 @@ samp,
   -webkit-mask-position: center;
   mask-size: contain;
   -webkit-mask-size: contain;
+}
+
+/* Hero Overview Portal Glow */
+.portal-ring-glow {
+  box-shadow:
+    0 0 25px 6px var(--portal-glow-inner),
+    0 0 65px 18px var(--portal-glow-mid),
+    0 0 110px 35px var(--portal-glow-outer),
+    inset 0 0 30px 6px var(--portal-glow-inner),
+    inset 0 0 65px 18px var(--portal-glow-mid);
+}
+
+.portal-beacon-glow {
+  box-shadow:
+    0 0 12px var(--portal-glow-inner),
+    0 0 24px var(--portal-glow-mid);
 }

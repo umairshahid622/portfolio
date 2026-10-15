@@ -202,7 +202,7 @@ export default function Overview({ embedded = false }: OverviewProps) {
                 ref={paragraphRef}
                 className="text-center font-sans font-medium text-white text-[15px] sm:text-[17px] md:text-[19px] leading-[34px] sm:leading-[38px] md:leading-[42px] tracking-normal px-2 sm:px-6 m-0"
                 style={{
-                  textShadow: "0 0 22px rgba(254, 250, 224, 0.20)",
+                  textShadow: "0 0 22px color-mix(in srgb, var(--color-foreground) 20%, transparent)",
                 }}
               >
                 {OVERVIEW_PARAGRAPH}

@@ -176,17 +176,17 @@ export default function HeroOverviewPortal() {
         >
           <div className="relative flex items-center justify-center">
             {/* Core 0px Origin Singularity Dot */}
-            <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_12px_rgba(254,250,224,0.95),0_0_24px_rgba(209,102,68,0.7)]" />
+            <div className="w-2 h-2 rounded-full bg-primary portal-beacon-glow" />
             {/* Ambient Pulse Ping Rings */}
             <div className="absolute w-5 h-5 rounded-full border border-primary/50 animate-ping opacity-60" />
             <div className="absolute w-9 h-9 rounded-full border border-primary/25 animate-pulse opacity-40" />
           </div>
         </div>
 
-        {/* Layer 4: Expanding Celestial Portal Boundary Ring with Rich Atmospheric Glow */}
+        {/* Layer 4: Expanding Celestial Portal Boundary Ring with Dynamic Theme Glow */}
         <div
           ref={portalRingRef}
-          className="absolute rounded-full pointer-events-none z-30 opacity-0 will-change-[width,height,left,top,opacity] border-[2.5px] border-foreground/90 shadow-[0_0_25px_6px_rgba(254,250,224,0.85),0_0_65px_18px_rgba(254,250,224,0.5),0_0_110px_35px_rgba(218,165,32,0.4),inset_0_0_30px_6px_rgba(254,250,224,0.75),inset_0_0_65px_18px_rgba(254,250,224,0.4)]"
+          className="absolute rounded-full pointer-events-none z-30 opacity-0 will-change-[width,height,left,top,opacity] border-[2.5px] border-primary/90 portal-ring-glow"
           style={{ width: 0, height: 0, left: "50%", top: "50%" }}
         />
       </div>
