@@ -118,7 +118,11 @@ function buildCelestialVertexShader(isPoints: boolean): string {
     return vec3(xy, z);
   }
 
-  // Single 3D spring loop across the cards starting from top-left and ending at top-right
+  // 3D spiral loop across the cards:
+  // - Starts where "Skills </>" is written (top-left)
+  // - Descends towards bottom-center behind the cards (Z < 0)
+  // - Loops under Card 02 at bottom-center
+  // - Ascends to top-right above the cards (Z > 0)
   vec3 computeSkillsSpringTarget(
     vec4 rnd,
     float seqP,
@@ -126,55 +130,71 @@ function buildCelestialVertexShader(isPoints: boolean): string {
     float time,
     vec2 cardYInfo
   ) {
-    // Sequence-aligned distribution along the 1-loop spiral from 0.0 to 1.0
+    // Sequence-aligned distribution along the spiral from 0.0 to 1.0
     // Subtle micro-jitter ensures full volumetric 3D richness without breaking sequence order
-    float uJitter = (rnd.x - 0.5) * 0.06 + (rnd.y - 0.5) * 0.03;
+    float uJitter = (rnd.x - 0.5) * 0.05 + (rnd.y - 0.5) * 0.025;
     float u = clamp(seqP + uJitter, 0.0, 1.0);
 
-    // 1. Horizontal traversal: starts from the place of "S" (the letter S of SKILLS) to endX across cards
+    // 1. Horizontal traversal:
+    // Starts at the exact position of "Skills </>" on the top-left (phraseStartX)
+    // and ends at the top-right across the cards
     float defaultStartX = -viewport.x * (viewport.x < 3.5 ? 0.42 : 0.39);
-    float sPlaceX = uSkillsPhraseInfo.y > 0.0001 ? (uSkillsPhraseInfo.x + (1.0 / uSkillsPhraseInfo.y) * 0.055) / 1.07 : defaultStartX;
-    float startX = sPlaceX;
-    float endX = viewport.x * (viewport.x < 3.5 ? 0.36 : 0.33);
+    float phraseStartX = uSkillsPhraseInfo.y > 0.0001 ? uSkillsPhraseInfo.x + 0.15 : defaultStartX;
+    float startX = phraseStartX;
+    float endX = viewport.x * (viewport.x < 3.5 ? 0.44 : 0.40);
     float xTarget = mix(startX, endX, u);
 
-    // 2. Exactly 1 equal 360-degree helical loop (theta goes uniformly from 0 to 2*PI)
-    float theta = u * 6.2831853;
+    // 2. Vertical Y Trajectory:
+    // - Initial part starts where "Skills </>" is written (top-left)
+    // - Descends towards bottom-center, looping under Card 02
+    // - Ascends upwards to the top-right
+    float skillsTopY = viewport.y * (viewport.x < 3.5 ? 0.34 : 0.32);
+    float yBottom = cardYInfo.x - cardYInfo.y - 0.22;
+    float yTop = skillsTopY;
 
-    // Amplitude in Y: bigger vertical loop arching high over and deep under cards
-    float yCenter = cardYInfo.x;
-    float Ay = cardYInfo.y + 0.65;
-    float yTarget = yCenter + Ay * cos(theta);
+    // Theta: 0 to 2*PI across trajectory (u in [0, 1])
+    // u = 0.0: theta = 0,    cos = 1,  y = yTop (Top-Left at "Skills </>")
+    // u = 0.5: theta = PI,   cos = -1, y = yBottom (Bottom-Center under Card 02)
+    // u = 1.0: theta = 2*PI, cos = 1,  y = yTop (Top-Right across cards)
+    float theta = u * 6.2831853;
+    float yCurveP = 0.5 + 0.5 * cos(theta);
+    float yTarget = mix(yBottom, yTop, yCurveP);
 
     // 3. True 3D Depth looping around cards:
-    // Left side (u < 0.45): BEHIND cards (Z < -0.15)
-    // Bottom (u ~ 0.50): swoops under the bottom of cards
-    // Right side (u >= 0.50): COMES TO FRONT FROM THE BACK and stays strictly in front (Z >= +0.35 to +1.60)
-    float zCurve = -0.95 * sin(theta);
-    float zShift = mix(-0.35, 0.70, smoothstep(0.35, 0.65, u));
-    float z = zCurve + zShift;
+    // "coming towards the bottom center from behind the cards
+    // and from bottom center goind to top right from above the cards"
+    //
+    // Descent (u: 0.0 -> 0.42): BEHIND the cards (Z ~ -1.15).
+    // Fragments falling within Card 01 and Card 02 bounding boxes are occluded!
+    // Bottom swoop (u: 0.42 -> 0.58): sweeps forward in the open space under Card 02.
+    // Ascent (u: 0.58 -> 1.00): ABOVE / IN FRONT of the cards (Z ~ +0.75).
+    float zBehind = -1.15;
+    float zInFront = +0.75;
+    float zBlend = smoothstep(0.35, 0.65, u);
+    float z = mix(zBehind, zInFront, zBlend);
 
-    // 4. Perspective Compensation so the spiral looks 100% equal and uniform on screen:
+    // 4. Perspective Compensation so the projected loop on screen is perfectly uniform:
     // Camera is at Z = 5.0. Perspective scales screen coordinates by 5.0 / (5.0 - z).
-    // Compensating by (5.0 - z) / 5.0 ensures the projected loop on screen is perfectly uniform!
+    // Compensating by (5.0 - z) / 5.0 ensures the screen projection matches the target curve!
     float perspScale = (5.0 - z) / 5.0;
     float x = xTarget * perspScale;
-    float y = yCenter + (yTarget - yCenter) * perspScale;
+    float y = yTarget * perspScale;
 
-    // 5. Thicker 3D volumetric thickness around the spring core
-    float tubeRadius = 0.26;
+    // 5. Volumetric 3D thickness and helical swirl around the core path
+    float tubeRadius = 0.22;
+    float swirlAngle = u * 6.2831853 * 1.5 + rnd.w * 3.14159;
     vec3 volumeOffset = vec3(
-      rnd.x * tubeRadius,
-      rnd.y * tubeRadius,
-      rnd.z * 0.18
+      rnd.x * tubeRadius + cos(swirlAngle) * 0.08,
+      rnd.y * tubeRadius + sin(swirlAngle) * 0.08,
+      rnd.z * 0.16
     );
 
     // 6. Living celestial shimmer & wave drift
     float tDrift = time * 0.75;
     vec3 waveDrift = vec3(
-      sin(tDrift + u * 6.283) * 0.05,
-      cos(tDrift * 0.85 + u * 6.283) * 0.04,
-      sin(tDrift * 0.65 + u * 3.141) * 0.05
+      sin(tDrift + u * 6.283) * 0.04,
+      cos(tDrift * 0.85 + u * 6.283) * 0.035,
+      sin(tDrift * 0.65 + u * 3.141) * 0.04
     );
 
     return vec3(x, y, z) + volumeOffset + waveDrift;
@@ -441,16 +461,17 @@ const POINTS_VERTEX_SHADER = buildCelestialVertexShader(true);
 // =========================================================================
 const CARD_OCCLUSION_GLSL = `
 // Precise per-card occlusion during Skills spread:
-// Depth decides, exactly as it reads in 3D. Measured against the live card rects at the rest state:
-//   u 0.19 -> 0.31  left descent,  z ~ -1.3  -> BEHIND the card, discarded here
-//   u 0.63 -> 0.87  the rise,       z ~ +1.5  -> IN FRONT of the card, drawn opaque
+// Depth decides, exactly as it reads in 3D. Measured against the live card rects:
+//   u 0.00 -> 0.42  left descent,  z ~ -1.15         -> BEHIND the cards, discarded here
+//   u 0.42 -> 0.58  bottom swoop,  z ~ -0.20         -> swoops forward below cards in open space
+//   u 0.58 -> 1.00  the rise/head, z ~ +0.75         -> ABOVE / IN FRONT of cards (worldPos.z >= 0.0)
 // In the space/gap between cards, or above/below the cards, fragments remain fully visible!
 bool isCardOccluded(vec3 worldPos, vec2 cardYInfo, vec4 cardBoxes[8], int cardCount) {
-  if (worldPos.z >= -0.05) return false;
+  if (worldPos.z >= 0.0) return false;
   float projFactor = 5.0 / max(0.1, 5.0 - worldPos.z);
   vec2 screenPos = vec2(
     worldPos.x * projFactor,
-    cardYInfo.x + (worldPos.y - cardYInfo.x) * projFactor
+    worldPos.y * projFactor
   );
 
   for (int i = 0; i < 8; i++) {

@@ -167,6 +167,21 @@ export default function Skills() {
         existingSt.kill(true);
       }
 
+      // Compute exact scroll progress where the 2nd card leaves the screen
+      const getCard2ExitProgress = () => {
+        const cardNodes = cardsTrack.querySelectorAll<HTMLElement>('[data-skill-card="true"]');
+        if (cardNodes.length >= 2) {
+          const card2 = cardNodes[1];
+          const totalScroll = getTotalScroll();
+          if (totalScroll > 0) {
+            const card2ExitDist = card2.offsetLeft + card2.offsetWidth;
+            const fraction = Math.min(0.70, Math.max(0.25, card2ExitDist / totalScroll));
+            return 0.14 + fraction * 0.74;
+          }
+        }
+        return 0.46;
+      };
+
       const tl = gsap.timeline({
         scrollTrigger: {
           id: "skills-timeline",
@@ -198,14 +213,13 @@ export default function Skills() {
           onUpdate: (self) => {
             const p = self.progress;
 
-            // 70% Section Height Scroll Threshold:
-            // Phase 1 (0.00 -> 0.12): As Skills enters from Overview, triangles normally re-form the word "SKILLS </>"
-            // Phase 2 (0.12 -> 0.70): Title stays fully assembled while cards scroll horizontally
-            // Phase 3 (0.70 -> 0.90): When 70% of Skills height is scrolled, particles spread into the 1-loop spring structure across cards
-            // Phase 4 (0.90 -> 1.00): Particles stay in the 1-loop spring structure
-            const mergeDuration = 0.12;
-            const breakStart = 0.70;
-            const breakEnd = 0.90;
+            // Phase 1 (0.00 -> 0.06): As Skills enters, triangles form "SKILLS </>" at top-left
+            // Phase 2 (0.06 -> breakStart): Title stays fully intact until the 2nd card goes out of the screen
+            // Phase 3 (breakStart -> breakEnd): Right after the 2nd card leaves, spiral takes its shape
+            // Phase 4 (breakEnd -> 1.00): Spiral remains active around cards as they continue scrolling
+            const mergeDuration = 0.06;
+            const breakStart = getCard2ExitProgress();
+            const breakEnd = Math.min(0.86, breakStart + 0.16);
 
             if (p < mergeDuration) {
               particleBridge.skillsProgress = p / mergeDuration;
