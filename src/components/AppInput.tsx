@@ -314,7 +314,7 @@ export const AppInput = forwardRef<
             disabled={disabled}
             className={cn(
               "w-full px-4 py-3.5 bg-transparent border-0 outline-none text-foreground text-sm sm:text-base",
-              "placeholder:text-foreground/30 resize-none font-sans relative z-0",
+              "placeholder:text-foreground/30 resize-none font-sans relative z-20 pointer-events-auto cursor-text",
               inputClassName
             )}
             {...(props as TextareaHTMLAttributes<HTMLTextAreaElement>)}
@@ -336,7 +336,7 @@ export const AppInput = forwardRef<
             autoComplete={autoComplete}
             className={cn(
               "w-full px-4 py-3.5 bg-transparent border-0 outline-none text-foreground text-sm sm:text-base",
-              "placeholder:text-foreground/30 font-sans relative z-0",
+              "placeholder:text-foreground/30 font-sans relative z-20 pointer-events-auto cursor-text",
               inputClassName
             )}
             {...(props as InputHTMLAttributes<HTMLInputElement>)}

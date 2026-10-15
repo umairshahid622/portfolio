@@ -324,3 +324,9 @@ samp,
     0 0 12px var(--portal-glow-inner),
     0 0 24px var(--portal-glow-mid);
 }
+
+/* Ensure WebGL background canvas never intercepts mouse or click events */
+canvas,
+.pointer-events-none canvas {
+  pointer-events: none !important;
+}

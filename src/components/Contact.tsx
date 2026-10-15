@@ -232,7 +232,7 @@ export default function Contact() {
     <section
       ref={sectionRef}
       id="contact"
-      className="relative w-full min-h-screen px-5 sm:px-8 md:px-12 bg-transparent text-foreground overflow-hidden flex items-center justify-center pt-24 pb-12 lg:py-0"
+      className="relative z-20 w-full min-h-screen px-5 sm:px-8 md:px-12 bg-transparent text-foreground overflow-hidden flex items-center justify-center pt-24 pb-12 lg:py-0 pointer-events-auto"
     >
       {/* Ambient background glows */}
       <div
@@ -244,12 +244,12 @@ export default function Contact() {
         aria-hidden="true"
       />
 
-      <div className="w-full max-w-7xl mx-auto relative z-10">      
+      <div className="w-full max-w-7xl mx-auto relative z-20 pointer-events-auto">      
 
         {/* Two-Column Grid: Left (Stuck 3D Particle Text & Contact Cards) & Right (Scrolling Form) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 xl:gap-16 items-center">
           {/* Left Column: Stuck at the left side */}
-          <div className="w-full flex flex-col justify-center items-center lg:items-start relative z-10 space-y-4 sm:space-y-6">
+          <div className="w-full flex flex-col justify-center items-center lg:items-start relative z-20 space-y-4 sm:space-y-6 pointer-events-auto">
             {/* Upper Area: Reserved space for 3D particles "Let's Get In Touch" */}
             <div
               id="contact-title-anchor"
@@ -310,8 +310,8 @@ export default function Contact() {
           </div>
 
           {/* Right Column: Contact Form (Scrolls) */}
-          <div ref={rightColRef} className="w-full will-change-transform">
-            <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 bg-surface border border-foreground/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden">
+          <div ref={rightColRef} className="w-full will-change-transform relative z-30 pointer-events-auto">
+            <div className="relative z-30 rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 bg-surface border border-foreground/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] overflow-hidden pointer-events-auto">
               {/* Subtle top golden accent line */}
               <div
                 className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent pointer-events-none"

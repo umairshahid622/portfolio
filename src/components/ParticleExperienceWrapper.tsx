@@ -48,7 +48,8 @@ export default function ParticleExperienceWrapper({
   // (leaving the Hero and returning to it).
   const [portalBehind, setPortalBehind] = useState(true);
   const [experienceBehind, setExperienceBehind] = useState(false);
-  const particlesBehind = portalBehind || experienceBehind;
+  const [contactBehind, setContactBehind] = useState(false);
+  const particlesBehind = portalBehind || experienceBehind || contactBehind;
 
   useGSAP(
     () => {
@@ -132,9 +133,25 @@ export default function ParticleExperienceWrapper({
           })
         : null;
 
+      // Contact phase: keep canvas behind Contact form so all form inputs,
+      // textareas, buttons, and contact links remain 100% clickable with zero layer obstruction
+      const contactFootprint = footprintOf("#contact");
+
+      const contactLayering = contactFootprint
+        ? ScrollTrigger.create({
+            id: "particle-layer-behind-contact",
+            trigger: contactFootprint,
+            start: "top 80%",
+            end: "bottom bottom",
+            onToggle: (self) => setContactBehind(self.isActive),
+            onRefresh: (self) => setContactBehind(self.isActive),
+          })
+        : null;
+
       return () => {
         portalLayering.kill();
         cardLayering?.kill();
+        contactLayering?.kill();
       };
     },
     { scope: wrapperRef }

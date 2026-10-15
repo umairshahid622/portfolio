@@ -1197,6 +1197,7 @@ export default function CharacterPointsCanvas({
           depth: false,
           stencil: false,
         }}
+        style={{ pointerEvents: "none" }}
         className="w-full h-full pointer-events-none"
       >
         {geometries && <UnifiedCelestialMesh geometries={geometries} />}
