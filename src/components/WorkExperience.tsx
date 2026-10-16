@@ -145,7 +145,8 @@ export default function WorkExperience() {
 
       const isMobile = window.innerWidth < 640;
       const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
-      const stepY = isMobile ? 44 : isTablet ? 50 : 56;
+      // Adaptive stepY: compact on mobile so 4 stacked cards stay comfortably in view
+      const stepY = isMobile ? 32 : isTablet ? 46 : 56;
       const halfStep = Math.round(stepY / 2);
 
       // Initial state:
@@ -382,13 +383,13 @@ export default function WorkExperience() {
     <section
       ref={sectionRef}
       id="experience"
-      className="relative w-full h-[100dvh] min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-center items-center pt-14 sm:pt-16 pb-4 pointer-events-auto"
+      className="relative w-full h-[100dvh] min-h-screen bg-transparent overflow-hidden select-none flex flex-col justify-center items-center pt-12 sm:pt-16 pb-4 pointer-events-auto"
     >
-      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto px-4 sm:px-6 md:px-8 mt-5 sm:mt-0">
+      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto px-3.5 sm:px-6 md:px-8 mt-4 sm:mt-0">
         {/* Full-width Stacked Cards Track */}
         <div
           ref={stackWrapperRef}
-          className="relative w-full h-[400px] xs:h-[410px] sm:h-[390px] md:h-[380px] will-change-transform"
+          className="relative w-full h-[450px] xs:h-[465px] sm:h-[410px] md:h-[390px] will-change-transform"
         >
           {WORK_EXPERIENCES.map((item, index) => (
             <AppCard
@@ -408,12 +409,16 @@ export default function WorkExperience() {
               {/* Card Header & Content */}
               <div>
                 {/* Number & Company Name (Left) and Location (Right in Heading Font) */}
-                <div className="flex items-start sm:items-baseline justify-between gap-3 sm:gap-4 mb-1">
-                  <div className="flex items-baseline gap-3 sm:gap-4 min-w-0">
-                    <AppCardNumber>{item.number}</AppCardNumber>
-                    <AppCardTitle>{item.company}</AppCardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 sm:gap-4 mb-1">
+                  <div className="flex items-baseline gap-2.5 sm:gap-4 min-w-0">
+                    <AppCardNumber className="text-xl xs:text-2xl sm:text-3xl md:text-4xl">
+                      {item.number}
+                    </AppCardNumber>
+                    <AppCardTitle className="text-lg xs:text-xl sm:text-2xl md:text-3xl leading-snug sm:leading-tight">
+                      {item.company}
+                    </AppCardTitle>
                   </div>
-                  <span className="font-heading text-xs sm:text-sm md:text-base font-medium tracking-normal text-muted/90 shrink-0 text-right">
+                  <span className="font-heading text-xs sm:text-sm md:text-base font-medium tracking-normal text-muted/80 shrink-0 self-start sm:self-auto">
                     {item.location}
                   </span>
                 </div>
@@ -421,7 +426,7 @@ export default function WorkExperience() {
                 {/* Role */}
                 <h4
                   className={cn(
-                    "text-base sm:text-lg md:text-xl font-bold tracking-tight",
+                    "text-sm xs:text-base sm:text-lg md:text-xl font-bold tracking-tight",
                     item.roleColorClass
                   )}
                 >
@@ -429,27 +434,30 @@ export default function WorkExperience() {
                 </h4>
 
                 {/* Domain under Role */}
-                <div className="mt-1 mb-2.5 sm:mb-3">
+                <div className="mt-1 mb-2 sm:mb-2.5">
                   <AppCardBadge accent={item.badgeAccent}>
                     {item.domain}
                   </AppCardBadge>
                 </div>
 
                 {/* Role Summary */}
-                <AppCardSummary className="mb-2.5 sm:mb-3">
+                <AppCardSummary className="text-[11.5px] xs:text-xs sm:text-[13px] leading-snug sm:leading-relaxed mb-2 sm:mb-2.5 line-clamp-2 sm:line-clamp-none">
                   {item.summary}
                 </AppCardSummary>
 
                 {/* Key Bullet Points from Resume */}
-                <ul className="space-y-1 sm:space-y-1.5 mb-3">
+                <ul className="space-y-1 sm:space-y-1.5 mb-2.5 sm:mb-3">
                   {item.bullets.map((bullet, bIdx) => (
                     <li
                       key={bIdx}
-                      className="text-[12px] sm:text-[13px] text-foreground/85 leading-relaxed flex items-start gap-2.5"
+                      className={cn(
+                        "text-[11px] xs:text-[11.5px] sm:text-[13px] text-foreground/85 leading-snug sm:leading-relaxed flex items-start gap-2",
+                        bIdx === 2 && "hidden xs:flex sm:flex"
+                      )}
                     >
                       <span
                         className={cn(
-                          "mt-1.5 w-1.5 h-1.5 rounded-full shrink-0",
+                          "mt-1 w-1.5 h-1.5 rounded-full shrink-0",
                           item.bulletDotClass
                         )}
                       />
@@ -460,28 +468,28 @@ export default function WorkExperience() {
               </div>
 
               {/* Card Footer: Tech Stack & Date */}
-              <AppCardFooter>
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  <span className="text-[11px] font-sans text-tertiary/80 uppercase tracking-wider mr-1">
+              <AppCardFooter className="pt-2 sm:pt-2.5 border-t border-foreground/10 flex flex-row items-center justify-between gap-2 mt-auto">
+                <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 max-w-[70%] sm:max-w-none">
+                  <span className="text-[10px] sm:text-[11px] font-sans text-tertiary/80 uppercase tracking-wider mr-0.5 shrink-0">
                     Stack:
                   </span>
                   {item.skills.map((skill, sIdx) => (
-                    <AppCardPill key={sIdx} variant="tertiary">
+                    <AppCardPill key={sIdx} variant="tertiary" className="text-[9.5px] xs:text-[10px] sm:text-xs py-0.5 px-1.5 sm:px-2">
                       {skill}
                     </AppCardPill>
                   ))}
                 </div>
 
                 {/* Date / Period in Footer */}
-                <div className="shrink-0 self-start sm:self-auto">
+                <div className="shrink-0">
                   <span
                     className={cn(
-                      "inline-flex items-center gap-1.5 font-sans text-[11px] sm:text-xs px-3 py-1 rounded-full border font-medium transition-colors",
+                      "inline-flex items-center gap-1 font-sans text-[10px] sm:text-xs px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border font-medium transition-colors whitespace-nowrap",
                       item.periodBadgeClass
                     )}
                   >
                     <svg
-                      className="w-3.5 h-3.5 opacity-70"
+                      className="w-3 h-3 sm:w-3.5 sm:h-3.5 opacity-70"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

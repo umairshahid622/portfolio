@@ -130,7 +130,7 @@ export const AppCard = forwardRef<HTMLDivElement, AppCardProps>(function AppCard
       <div
         ref={ref}
         className={cn(
-          "rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-6 bg-surface border border-foreground/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between",
+          "rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-6 bg-surface border border-foreground/10 shadow-[0_-12px_32px_rgba(0,0,0,0.7),0_24px_64px_rgba(0,0,0,0.9)] will-change-transform overflow-hidden flex flex-col justify-between",
           !className?.includes("absolute") && "relative",
           className
         )}
