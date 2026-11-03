@@ -300,9 +300,17 @@ export default function Skills() {
       // 3. Comfortable resting hold for final card before unpinning (0.88 -> 1.00)
       tl.to({}, { duration: 0.12 }, 0.88);
 
+      let isCancelled = false;
+      document.fonts?.ready.then(() => {
+        if (!isCancelled) {
+          ScrollTrigger.refresh();
+        }
+      });
+
       ScrollTrigger.sort();
 
       return () => {
+        isCancelled = true;
         tl.kill();
       };
     },
@@ -334,14 +342,14 @@ export default function Skills() {
               key={card.id}
               data-skill-card="true"
               accent={card.accent ?? "secondary"}
-              className="w-[82vw] max-w-[340px] sm:w-max sm:max-w-[440px] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-foreground/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-secondary/10"
+              className="w-[82vw] max-w-[340px] sm:w-max sm:max-w-[90vw] md:max-w-[85vw] min-h-[280px] sm:min-h-[300px] shrink-0 hover:border-foreground/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-secondary/10"
             >
               <div className="w-full min-w-0">
                 {/* Number & Heading */}
                 <div className="flex items-start sm:items-baseline justify-between gap-3 sm:gap-4 mb-1">
-                  <div className="flex items-baseline gap-3 sm:gap-4 min-w-0 whitespace-nowrap">
+                  <div className="flex items-baseline gap-3 sm:gap-4 min-w-0 sm:whitespace-nowrap">
                     <AppCardNumber>{card.number}</AppCardNumber>
-                    <AppCardTitle className="whitespace-normal sm:whitespace-nowrap">
+                    <AppCardTitle className="min-w-0 whitespace-normal sm:whitespace-nowrap">
                       {card.heading}
                     </AppCardTitle>
                   </div>
