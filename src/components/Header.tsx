@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import AppButton from "./AppButton";
 import { AppIcon } from "./AppIcon";
+import TextSpiralWrap from "./TextSpiralWrap";
 import { particleBridge } from "../utils/particleBridge";
 import { cn } from "../utils/cn";
 import { scrollTo, stopScroll, startScroll } from "../utils/lenis";
@@ -349,54 +350,30 @@ export default function Header() {
           <div className="flex items-center gap-3 sm:gap-6">
             {/* Desktop Navigation Links */}
             <nav className="hidden sm:flex items-center gap-4 md:gap-6 text-xs uppercase tracking-wider md:tracking-widest font-sans font-medium text-primary/90 pointer-events-auto">
-              <a
-                href="#about"
-                onClick={(e) => handleNavClick(e, "about")}
-                className={cn(
-                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                  activeSection === "about"
-                    ? "text-foreground font-medium"
-                    : "text-primary/80 hover:text-foreground"
-                )}
-              >
-                About me
-              </a>
-              <a
-                href="#skills"
-                onClick={(e) => handleNavClick(e, "skills")}
-                className={cn(
-                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                  activeSection === "skills"
-                    ? "text-foreground font-medium"
-                    : "text-primary/80 hover:text-foreground"
-                )}
-              >
-                Skills
-              </a>
-              <a
-                href="#experience"
-                onClick={(e) => handleNavClick(e, "experience")}
-                className={cn(
-                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                  activeSection === "experience"
-                    ? "text-foreground font-medium"
-                    : "text-primary/80 hover:text-foreground"
-                )}
-              >
-                Work Experience
-              </a>
-              <a
-                href="#contact"
-                onClick={(e) => handleNavClick(e, "contact")}
-                className={cn(
-                  "transition-colors cursor-pointer py-1 whitespace-nowrap",
-                  activeSection === "contact"
-                    ? "text-foreground font-medium"
-                    : "text-primary/80 hover:text-foreground"
-                )}
-              >
-                Contact
-              </a>
+              {NAV_ITEMS.map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    onClick={(e) => handleNavClick(e, item.id)}
+                    className={cn(
+                      "transition-colors cursor-pointer py-1 whitespace-nowrap",
+                      isActive
+                        ? "text-foreground font-medium"
+                        : "text-primary/80 hover:text-foreground"
+                    )}
+                  >
+                    <TextSpiralWrap
+                      active={isActive}
+                      strokeWidth={1.6}
+                      svgClassName="absolute -inset-x-3.5 -inset-y-2 w-[calc(100%+1.75rem)] h-[calc(100%+1rem)] pointer-events-none z-30 overflow-visible"
+                    >
+                      {item.label}
+                    </TextSpiralWrap>
+                  </a>
+                );
+              })}
               <AppButton
                 href="/Resume.pdf"
                 target="_blank"
